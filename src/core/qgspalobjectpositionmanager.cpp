@@ -96,10 +96,10 @@ void QgsPALObjectPositionManager::addLayer(QgsVectorLayer* vl, QList<QgsVectorOv
 void QgsPALObjectPositionManager::findObjectPositions(const QgsRenderContext& renderContext)
 {
   //trigger label placement
-  QgsRect viewExtent = renderContext.extent();
-  double bbox[4]; bbox[0] = viewExtent.xMin(); bbox[1] = viewExtent.yMin(); bbox[2] = viewExtent.xMax(); bbox[3] = viewExtent.yMax();
+  QgsRectangle viewExtent = renderContext.extent();
+  double bbox[4]; bbox[0] = viewExtent.xMinimum(); bbox[1] = viewExtent.yMinimum(); bbox[2] = viewExtent.xMaximum(); bbox[3] = viewExtent.yMaximum();
   pal::PalStat* stat = 0;
-  std::list<pal::Label*>* resultLabelList = mPositionEngine.labeller(renderContext.scaleDenominator(), bbox, &stat, true);
+  std::list<pal::Label*>* resultLabelList = mPositionEngine.labeller(renderContext.rendererScale(), bbox, &stat, true);
   delete stat;
 
   //and read the positions back to the overlay objects

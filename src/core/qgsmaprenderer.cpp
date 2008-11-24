@@ -68,18 +68,17 @@ QgsMapRenderer::~QgsMapRenderer()
 }
 
 
-QgsRect QgsMapRenderer::extent() const
+QgsRectangle QgsMapRenderer::extent() const
 {
   return mExtent;
 }
 
 void QgsMapRenderer::updateScale()
 {
-
   mScale = mScaleCalculator->calculate( mExtent, mSize.width() );
 }
 
-bool QgsMapRenderer::setExtent( const QgsRect& extent )
+bool QgsMapRenderer::setExtent( const QgsRectangle& extent )
 {
 
   // Don't allow zooms where the current extent is so small that it
@@ -100,8 +99,8 @@ bool QgsMapRenderer::setExtent( const QgsRect& extent )
   {
     // Use abs() on the extent to avoid the case where the extent is
     // symmetrical about 0.
-    double xMean = ( fabs( extent.xMin() ) + fabs( extent.xMax() ) ) * 0.5;
-    double yMean = ( fabs( extent.yMin() ) + fabs( extent.yMax() ) ) * 0.5;
+    double xMean = ( fabs( extent.xMinimum() ) + fabs( extent.xMaximum() ) ) * 0.5;
+    double yMean = ( fabs( extent.yMinimum() ) + fabs( extent.yMaximum() ) ) * 0.5;
 
     double xRange = extent.width() / xMean;
     double yRange = extent.height() / yMean;
@@ -161,19 +160,19 @@ void QgsMapRenderer::adjustExtentToSize()
 
   if ( mapUnitsPerPixelY > mapUnitsPerPixelX )
   {
-    dymin = mExtent.yMin();
-    dymax = mExtent.yMax();
+    dymin = mExtent.yMinimum();
+    dymax = mExtent.yMaximum();
     whitespace = (( myWidth * mMapUnitsPerPixel ) - mExtent.width() ) * 0.5;
-    dxmin = mExtent.xMin() - whitespace;
-    dxmax = mExtent.xMax() + whitespace;
+    dxmin = mExtent.xMinimum() - whitespace;
+    dxmax = mExtent.xMaximum() + whitespace;
   }
   else
   {
-    dxmin = mExtent.xMin();
-    dxmax = mExtent.xMax();
+    dxmin = mExtent.xMinimum();
+    dxmax = mExtent.xMaximum();
     whitespace = (( myHeight * mMapUnitsPerPixel ) - mExtent.height() ) * 0.5;
-    dymin = mExtent.yMin() - whitespace;
-    dymax = mExtent.yMax() + whitespace;
+    dymin = mExtent.yMinimum() - whitespace;
+    dymax = mExtent.yMaximum() + whitespace;
   }
 
 #ifdef QGISDEBUG
@@ -254,6 +253,7 @@ void QgsMapRenderer::render( QPainter* painter )
   double rasterScaleFactor = ( thePaintDevice->logicalDpiX() + thePaintDevice->logicalDpiY() ) / 2.0 / sceneDpi;
   mRenderContext.setScaleFactor( scaleFactor );
   mRenderContext.setRasterScaleFactor( rasterScaleFactor );
+  mRenderContext.setRendererScale( mScale );
 
   bool placeOverlays = false;
   QgsOverlayObjectPositionManager* overlayManager = overlayManagerFromSettings();
@@ -264,13 +264,13 @@ void QgsMapRenderer::render( QPainter* painter )
   }
 
   //add map scale to render context
-  mRenderContext.setScaleDenominator(mScale);
+  mRenderContext.setRendererScale(mScale);
 
   // render all layers in the stack, starting at the base
   QListIterator<QString> li( mLayerSet );
   li.toBack();
 
-  QgsRect r1, r2;
+  QgsRectangle r1, r2;
 
   while ( li.hasPrevious() )
   {
@@ -306,8 +306,7 @@ void QgsMapRenderer::render( QPainter* painter )
     QgsDebugMsg( "  Scale dep. visibility enabled? " + QString( "%1" ).arg( ml->hasScaleBasedVisibility() ) );
     QgsDebugMsg( "  Input extent: " + ml->extent().toString() );
 
-    if (( ml->hasScaleBasedVisibility() && ml->minimumScale() < mScale && ml->maximumScale() > mScale )
-        || ( !ml->hasScaleBasedVisibility() ) )
+    if ( !ml->hasScaleBasedVisibility() || (ml->minimumScale() < mScale && mScale < ml->maximumScale() ) )
     {
       connect( ml, SIGNAL( drawingProgress( int, int ) ), this, SLOT( onDrawingProgress( int, int ) ) );
 
@@ -430,14 +429,13 @@ void QgsMapRenderer::render( QPainter* painter )
       {
         // only make labels if the layer is visible
         // after scale dep viewing settings are checked
-        if (( ml->hasScaleBasedVisibility() && ml->minimumScale() < mScale  && ml->maximumScale() > mScale )
-            || ( !ml->hasScaleBasedVisibility() ) )
+        if ( !ml->hasScaleBasedVisibility() || (ml->minimumScale() < mScale && mScale < ml->maximumScale() ))
         {
           bool split = false;
 
           if ( hasCrsTransformEnabled() )
           {
-            QgsRect r1 = mExtent;
+            QgsRectangle r1 = mExtent;
             split = splitLayersExtent( ml, r1, r2 );
             ct = new QgsCoordinateTransform( ml->srs(), *mDestCRS );
             mRenderContext.setExtent( r1 );
@@ -547,7 +545,7 @@ const QgsCoordinateReferenceSystem& QgsMapRenderer::destinationSrs()
 }
 
 
-bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, QgsRect& r2 )
+bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRectangle& extent, QgsRectangle& r2 )
 {
   bool split = false;
 
@@ -558,7 +556,7 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, Qgs
       QgsCoordinateTransform tr( layer->srs(), *mDestCRS );
 
 #ifdef QGISDEBUG
-      // QgsLogger::debug<QgsRect>("Getting extent of canvas in layers CS. Canvas is ", extent, __FILE__, __FUNCTION__, __LINE__);
+      // QgsLogger::debug<QgsRectangle>("Getting extent of canvas in layers CS. Canvas is ", extent, __FILE__, __FUNCTION__, __LINE__);
 #endif
       // Split the extent into two if the source CRS is
       // geographic and the extent crosses the split in
@@ -571,10 +569,10 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, Qgs
       {
         // Note: ll = lower left point
         //   and ur = upper right point
-        QgsPoint ll = tr.transform( extent.xMin(), extent.yMin(),
+        QgsPoint ll = tr.transform( extent.xMinimum(), extent.yMinimum(),
                                     QgsCoordinateTransform::ReverseTransform );
 
-        QgsPoint ur = tr.transform( extent.xMax(), extent.yMax(),
+        QgsPoint ur = tr.transform( extent.xMaximum(), extent.yMaximum(),
                                     QgsCoordinateTransform::ReverseTransform );
 
         if ( ll.x() > ur.x() )
@@ -597,15 +595,15 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, Qgs
     {
       Q_UNUSED( cse );
       QgsLogger::warning( "Transform error caught in " + QString( __FILE__ ) + ", line " + QString::number( __LINE__ ) );
-      extent = QgsRect( -DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX );
-      r2     = QgsRect( -DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX );
+      extent = QgsRectangle( -DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX );
+      r2     = QgsRectangle( -DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX );
     }
   }
   return split;
 }
 
 
-QgsRect QgsMapRenderer::layerExtentToOutputExtent( QgsMapLayer* theLayer, QgsRect extent )
+QgsRectangle QgsMapRenderer::layerExtentToOutputExtent( QgsMapLayer* theLayer, QgsRectangle extent )
 {
   if ( hasCrsTransformEnabled() )
   {
@@ -670,7 +668,7 @@ QgsPoint QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsPoint 
   return point;
 }
 
-QgsRect QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsRect rect )
+QgsRectangle QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsRectangle rect )
 {
   if ( hasCrsTransformEnabled() )
   {
@@ -695,7 +693,7 @@ void QgsMapRenderer::updateFullExtent()
   QgsMapLayerRegistry* registry = QgsMapLayerRegistry::instance();
 
   // reset the map canvas extent since the extent may now be smaller
-  // We can't use a constructor since QgsRect normalizes the rectangle upon construction
+  // We can't use a constructor since QgsRectangle normalizes the rectangle upon construction
   mFullExtent.setMinimal();
 
   // iterate through the map layers and test each layers extent
@@ -715,7 +713,7 @@ void QgsMapRenderer::updateFullExtent()
 
       // Layer extents are stored in the coordinate system (CS) of the
       // layer. The extent must be projected to the canvas CS
-      QgsRect extent = layerExtentToOutputExtent( lyr, lyr->extent() );
+      QgsRectangle extent = layerExtentToOutputExtent( lyr, lyr->extent() );
 
       QgsDebugMsg( "Output extent: " + extent.toString() );
       mFullExtent.unionRect( extent );
@@ -730,20 +728,20 @@ void QgsMapRenderer::updateFullExtent()
     // rectangle a bit. If they are all at zero, do something a bit
     // more crude.
 
-    if ( mFullExtent.xMin() == 0.0 && mFullExtent.xMax() == 0.0 &&
-         mFullExtent.yMin() == 0.0 && mFullExtent.yMax() == 0.0 )
+    if ( mFullExtent.xMinimum() == 0.0 && mFullExtent.xMaximum() == 0.0 &&
+         mFullExtent.yMinimum() == 0.0 && mFullExtent.yMaximum() == 0.0 )
     {
       mFullExtent.set( -1.0, -1.0, 1.0, 1.0 );
     }
     else
     {
       const double padFactor = 1e-8;
-      double widthPad = mFullExtent.xMin() * padFactor;
-      double heightPad = mFullExtent.yMin() * padFactor;
-      double xmin = mFullExtent.xMin() - widthPad;
-      double xmax = mFullExtent.xMax() + widthPad;
-      double ymin = mFullExtent.yMin() - heightPad;
-      double ymax = mFullExtent.yMax() + heightPad;
+      double widthPad = mFullExtent.xMinimum() * padFactor;
+      double heightPad = mFullExtent.yMinimum() * padFactor;
+      double xmin = mFullExtent.xMinimum() - widthPad;
+      double xmax = mFullExtent.xMaximum() + widthPad;
+      double ymin = mFullExtent.yMinimum() - heightPad;
+      double ymax = mFullExtent.yMaximum() + heightPad;
       mFullExtent.set( xmin, ymin, xmax, ymax );
     }
   }
@@ -751,7 +749,7 @@ void QgsMapRenderer::updateFullExtent()
   QgsDebugMsg( "Full extent: " + mFullExtent.toString() );
 }
 
-QgsRect QgsMapRenderer::fullExtent()
+QgsRectangle QgsMapRenderer::fullExtent()
 {
   updateFullExtent();
   return mFullExtent;
@@ -836,7 +834,7 @@ bool QgsMapRenderer::readXML( QDomNode & theNode )
 
 
   // set extent
-  QgsRect aoi;
+  QgsRectangle aoi;
   QDomNode extentNode = theNode.namedItem( "extent" );
 
   QDomNode xminNode = extentNode.namedItem( "xmin" );
@@ -914,11 +912,11 @@ bool QgsMapRenderer::writeXML( QDomNode & theNode, QDomDocument & theDoc )
   QDomElement xMax = theDoc.createElement( "xmax" );
   QDomElement yMax = theDoc.createElement( "ymax" );
 
-  QgsRect r = extent();
-  QDomText xMinText = theDoc.createTextNode( QString::number( r.xMin(), 'f' ) );
-  QDomText yMinText = theDoc.createTextNode( QString::number( r.yMin(), 'f' ) );
-  QDomText xMaxText = theDoc.createTextNode( QString::number( r.xMax(), 'f' ) );
-  QDomText yMaxText = theDoc.createTextNode( QString::number( r.yMax(), 'f' ) );
+  QgsRectangle r = extent();
+  QDomText xMinText = theDoc.createTextNode( QString::number( r.xMinimum(), 'f' ) );
+  QDomText yMinText = theDoc.createTextNode( QString::number( r.yMinimum(), 'f' ) );
+  QDomText xMaxText = theDoc.createTextNode( QString::number( r.xMaximum(), 'f' ) );
+  QDomText yMaxText = theDoc.createTextNode( QString::number( r.yMaximum(), 'f' ) );
 
   xMin.appendChild( xMinText );
   yMin.appendChild( yMinText );

@@ -72,8 +72,8 @@ void QgsMapToolMoveFeature::canvasPressEvent( QMouseEvent * e )
   QgsPoint layerCoords = toLayerCoordinates(( QgsMapLayer* )vlayer, e->pos() );
   QSettings settings;
   double searchRadius = settings.value( "/qgis/digitizing/search_radius_vertex_edit", 10 ).toDouble();
-  QgsRect selectRect( layerCoords.x() - searchRadius, layerCoords.y() - searchRadius,
-                      layerCoords.x() + searchRadius, layerCoords.y() + searchRadius );
+  QgsRectangle selectRect( layerCoords.x() - searchRadius, layerCoords.y() - searchRadius,
+                           layerCoords.x() + searchRadius, layerCoords.y() + searchRadius );
 
   vlayer->select( QgsAttributeList(), selectRect, true );
 
@@ -109,7 +109,7 @@ void QgsMapToolMoveFeature::canvasPressEvent( QMouseEvent * e )
   mStartPointMapCoords = toMapCoordinates( e->pos() );
   mMovedFeature = cf.id(); //todo: take the closest feature, not the first one...
   mRubberBand = createRubberBand();
-  mRubberBand->setToGeometry( cf.geometry(), *vlayer );
+  mRubberBand->setToGeometry( cf.geometry(), vlayer );
   mRubberBand->setColor( Qt::red );
   mRubberBand->setWidth( 2 );
   mRubberBand->show();
@@ -150,4 +150,6 @@ void QgsMapToolMoveFeature::deactivate()
   //delete rubber band
   delete mRubberBand;
   mRubberBand = 0;
+
+  QgsMapTool::deactivate();
 }

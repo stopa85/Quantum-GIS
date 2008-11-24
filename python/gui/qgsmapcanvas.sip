@@ -77,12 +77,12 @@ class QgsMapCanvas : QGraphicsView
     double mapUnitsPerPixel() const;
 
     //! Returns the current zoom exent of the map canvas
-    QgsRect extent() const;
+    QgsRectangle extent() const;
     //! Returns the combined exent for all layers on the map canvas
-    QgsRect fullExtent() const;
+    QgsRectangle fullExtent() const;
 
     //! Set the extent of the map canvas
-    void setExtent(const QgsRect & r);
+    void setExtent(const QgsRectangle & r);
 
     //! Zoom to the full extent of all layers
     void zoomToFullExtent();
@@ -155,8 +155,14 @@ class QgsMapCanvas : QGraphicsView
     //! set wheel action and zoom factor (should be greater than 1)
     void setWheelAction(WheelAction action, double factor = 2);
 
-    //! Zooms in/out preserving
-    void zoom(bool zoomIn);
+    //! Zoom in with fixed factor
+    void zoomIn( );
+
+    //! Zoom out with fixed factor
+    void zoomOut( );
+    
+    //! Zoom with the factor supplied. Factor > 1 zooms in
+    void zoomByFactor( double scaleFactor );
 
     //! Zooms in/out with a given center
     void zoomWithCenter(int x, int y, bool zoomIn);

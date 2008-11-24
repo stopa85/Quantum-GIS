@@ -22,7 +22,7 @@
 #include "qgsvectorlayer.h"
 
 class QgsOverlayObject;
-class QgsRect;
+class QgsRectangle;
 class QgsRenderContext;
 
 /**Base class for vector layer overlays (e.g. Diagrams, labels, etc.). For each object, the position of the bounding box is stored in a QgsOberlayObject. The vector overlays are drawn on top of all layers*/
@@ -33,7 +33,7 @@ class CORE_EXPORT QgsVectorOverlay
         virtual ~QgsVectorOverlay();
 
         /**Create the overlay objects contained in a view extent. Subclasses need to implement this method and assign                   width/height information to the overlay ovbjects*/
-        virtual void createOverlayObjects(const QgsRect& viewExtent) = 0;
+        virtual void createOverlayObjects(const QgsRectangle& viewExtent) = 0;
 
         /**Remove the overlay objects and release their memory*/
         void removeOverlayObjects();

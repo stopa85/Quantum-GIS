@@ -147,6 +147,11 @@ void QgsPluginManager::getPythonPluginDescriptions()
     QString version     = mPythonUtils->getPluginMetadata( packageName, "version" );
 
     if ( pluginName == "???" || description == "???" || version == "???" ) continue;
+    
+    bool isCompatible = QgsPluginRegistry::instance()->isPythonPluginCompatible( packageName );
+    QString compatibleString; // empty by default
+    if (!isCompatible)
+      compatibleString = "  " + tr("[ incompatible ]");
 
     // filtering will be done on the display role so give it name and desription
     // user wont see this text since we are using a custome delegate
@@ -156,9 +161,11 @@ void QgsPluginManager::getPythonPluginDescriptions()
     mypDetailItem->setData( packageName, PLUGIN_BASE_NAME_ROLE ); //for matching in registry later
     mypDetailItem->setCheckable( false );
     mypDetailItem->setEditable( false );
+    mypDetailItem->setEnabled( isCompatible );
     // setData in the delegate with a variantised QgsDetailedItemData
     QgsDetailedItemData myData;
-    myData.setTitle( pluginName + " (" + version + ")" );
+    myData.setTitle( pluginName + " (" + version + ")" + compatibleString );
+    myData.setEnabled( isCompatible );
     myData.setDetail( description );
     //myData.setIcon(pixmap); //todo use a python logo here
     myData.setCheckable( true );
@@ -167,7 +174,7 @@ void QgsPluginManager::getPythonPluginDescriptions()
 
     // check to see if the plugin is loaded and set the checkbox accordingly
     QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
-    if ( pRegistry->isLoaded(packageName) && pRegistry->isPythonPlugin(packageName) )
+    if ( pRegistry->isLoaded( packageName ) && pRegistry->isPythonPlugin( packageName ) )
     {
       QgsDebugMsg( "Found plugin in the registry" );
       // set the checkbox
@@ -293,11 +300,11 @@ void QgsPluginManager::getPluginDescriptions()
       delete myLib;
       continue;
     }
-    
+
     QString pluginName = pName();
     QString pluginDesc = pDesc();
     QString pluginVersion = pVersion();
-    QString baseName = QFileInfo(lib).baseName();
+    QString baseName = QFileInfo( lib ).baseName();
 
     QString myLibraryName = pluginDir[i];
     // filtering will be done on the display role so give it name and desription
@@ -318,7 +325,7 @@ void QgsPluginManager::getPluginDescriptions()
     QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
 
     // get the library using the plugin description
-    if ( !pRegistry->isLoaded(baseName) )
+    if ( !pRegistry->isLoaded( baseName ) )
     {
       QgsDebugMsg( "Couldn't find plugin in the registry" );
     }
@@ -326,7 +333,7 @@ void QgsPluginManager::getPluginDescriptions()
     {
       QgsDebugMsg( "Found plugin in the registry" );
       // TODO: this check shouldn't be necessary, plugin base names must be unique
-      if ( pRegistry->library(baseName) == myLib->fileName() )
+      if ( pRegistry->library( baseName ) == myLib->fileName() )
       {
         // set the checkbox
         myData.setChecked( true );
@@ -363,12 +370,12 @@ void QgsPluginManager::unload()
       myIndex = mModelPlugins->index( row, 0 );
       // its off -- see if it is loaded and if so, unload it
       QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
-      
+
       // is loaded?
       QString baseName = mModelPlugins->data( myIndex, PLUGIN_BASE_NAME_ROLE ).toString();
       if ( ! pRegistry->isLoaded( baseName ) )
         continue;
-      
+
       if ( pRegistry->isPythonPlugin( baseName ) )
       {
         if ( mPythonUtils && mPythonUtils->isEnabled() )
@@ -471,18 +478,14 @@ void QgsPluginManager::on_vwPlugins_clicked( const QModelIndex &theIndex )
     // the index row in the underlying model so we need to jump through this
     // little hoop to get the correct item
     //
-    
-    QModelIndex realIndex = mModelProxy->mapToSource(theIndex);
-    QStandardItem* mypItem = mModelPlugins->itemFromIndex(realIndex);
-    QgsDetailedItemData myData = 
+
+    QModelIndex realIndex = mModelProxy->mapToSource( theIndex );
+    QStandardItem* mypItem = mModelPlugins->itemFromIndex( realIndex );
+    QgsDetailedItemData myData =
       qVariantValue<QgsDetailedItemData>( mypItem->data( PLUGIN_DATA_ROLE ) );
-    if ( myData.isChecked() )
+    if ( myData.isEnabled() )
     {
-      myData.setChecked( false );
-    }
-    else
-    {
-      myData.setChecked( true );
+      myData.setChecked( ! myData.isChecked() );
     }
     QVariant myVariant = qVariantFromValue( myData );
     mypItem->setData( myVariant, PLUGIN_DATA_ROLE );

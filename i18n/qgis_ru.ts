@@ -1305,6 +1305,20 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
         <source>Unable to save to file. Your project may be corrupted on disk. Try clearing some space on the volume and check file permissions before pressing save again.</source>
         <translation>Не удалось сохранить файл. Файл проекта на диске может быть испорчен. Попробуйте освободить дисковое пространство и проверить права доступа, прежде чем вы попытаетесь сохранить проект повторно.</translation>
     </message>
+    <message>
+        <source>Error Loading Plugin</source>
+        <translation>Ошибка загрузки модуля</translation>
+    </message>
+    <message>
+        <source>There was an error loading a plugin.The following diagnostic information may help the QGIS developers resolve the issue:
+%1.</source>
+        <translation>При загрузке модуля возникла ошибка. Нижеследующая информация может помочь разработчикам QGIS решить эту проблему:
+%1.</translation>
+    </message>
+    <message>
+        <source>Error when reading metadata of plugin </source>
+        <translation>Ошибка чтения метаданных модуля </translation>
+    </message>
 </context>
 <context>
     <name>QgisApp</name>
@@ -1370,7 +1384,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
         <source>Error Loading Plugin</source>
-        <translation>Ошибка загрузки модуля</translation>
+        <translation type="obsolete">Ошибка загрузки модуля</translation>
     </message>
     <message>
         <source>There was an error loading %1.</source>
@@ -2094,11 +2108,11 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
         <source>Python error</source>
-        <translation>Ошибка Python</translation>
+        <translation type="obsolete">Ошибка Python</translation>
     </message>
     <message>
         <source>Error when reading metadata of plugin </source>
-        <translation>Ошибка чтения метаданных модуля </translation>
+        <translation type="obsolete">Ошибка чтения метаданных модуля </translation>
     </message>
     <message>
         <source>Provider does not support deletion</source>
@@ -2373,7 +2387,7 @@ Errors:  %2
     <message>
         <source>There was an error loading a plugin.The following diagnostic information may help the QGIS developers resolve the issue:
 %1.</source>
-        <translation>При загрузке модуля возникла ошибка. Информация ниже может помочь разработчикам QGIS решить эту проблему:
+        <translation type="obsolete">При загрузке модуля возникла ошибка. Информация ниже может помочь разработчикам QGIS решить эту проблему:
 %1.</translation>
     </message>
     <message>
@@ -2882,6 +2896,14 @@ p, li { white-space: pre-wrap; }
         <source>Run action</source>
         <translation>Выполнить действие</translation>
     </message>
+    <message>
+        <source>Updating selection...</source>
+        <translation>Обновление выделения...</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Отменить</translation>
+    </message>
 </context>
 <context>
     <name>QgsAttributeTableBase</name>
@@ -2995,7 +3017,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">Найдено %d подходящих объектов.
-        
         </translation>
     </message>
     <message>
@@ -7458,7 +7479,6 @@ p, li { white-space: pre-wrap; }
         <source>Network timed out after %1 seconds of inactivity.
 This may be a problem in your network connection or at the WMS server.</source>
         <translation type="obsolete">Соединение сброшено после %1 секунд бездействия.Возможно существует проблема в подключении к сети или на WMS-сервере.
-        
         </translation>
     </message>
     <message>
@@ -7613,6 +7633,13 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Upper value</source>
         <translation>Верхнее значение</translation>
+    </message>
+</context>
+<context>
+    <name>QgsLabelDialog</name>
+    <message>
+        <source>Auto</source>
+        <translation>Авто</translation>
     </message>
 </context>
 <context>
@@ -7817,6 +7844,30 @@ p, li { white-space: pre-wrap; }
         <source>Multiline labels?</source>
         <translation>Разбивать подписи на строки?</translation>
     </message>
+    <message>
+        <source>General</source>
+        <translation>Общие</translation>
+    </message>
+    <message>
+        <source>Use scale dependent rendering</source>
+        <translation>Видимость в пределах масштаба</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation>Максимальный</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation>Минимальный</translation>
+    </message>
+    <message>
+        <source>Minimum scale at which this layer will be displayed. </source>
+        <translation>Минимальный масштаб, при котором виден данный слой. </translation>
+    </message>
+    <message>
+        <source>Maximum scale at which this layer will be displayed. </source>
+        <translation>Максимальный масштаб, при котором виден данный слой. </translation>
+    </message>
 </context>
 <context>
     <name>QgsLegend</name>
@@ -7903,6 +7954,14 @@ p, li { white-space: pre-wrap; }
         <source>This item contains multiple layers. Displaying multiple layers in the table is not supported.</source>
         <translation>Этот элемент содержит более одного слоя. Отображение нескольких слоёв в таблице не поддерживается.</translation>
     </message>
+    <message>
+        <source>More layers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This item contains more layer files. Displaying more layers in table is not supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsLegendLayerFile</name>
@@ -7982,6 +8041,50 @@ p, li { white-space: pre-wrap; }
         <source>The data points will be transformed from the layer coordinate reference system.</source>
         <translation>Данные в исходной системе координат слоя будут преобразованы.</translation>
     </message>
+    <message>
+        <source>Not a vector layer</source>
+        <translation type="unfinished">Слой не является векторным</translation>
+    </message>
+    <message>
+        <source>To open an attribute table, you must select a vector layer in the legend</source>
+        <translation type="unfinished">Для открытия таблицы атрибутов, следует выбрать в легенде векторный слой</translation>
+    </message>
+    <message>
+        <source>bad_alloc exception</source>
+        <translation type="unfinished">Исключение bad_alloc</translation>
+    </message>
+    <message>
+        <source>Filling the attribute table has been stopped because there was no more virtual memory left</source>
+        <translation type="unfinished">Заполнение таблицы атрибутов остановлено, поскольку закончилась виртуальная память</translation>
+    </message>
+    <message>
+        <source>Attribute table - </source>
+        <translation type="unfinished">Таблица атрибутов — </translation>
+    </message>
+    <message>
+        <source>Start editing failed</source>
+        <translation type="unfinished">Не удалось начать редактирование</translation>
+    </message>
+    <message>
+        <source>Provider cannot be opened for editing</source>
+        <translation type="unfinished">Источник не может быть открыт для редактирования</translation>
+    </message>
+    <message>
+        <source>Stop editing</source>
+        <translation type="unfinished">Прекратить редактирование</translation>
+    </message>
+    <message>
+        <source>Do you want to save the changes?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not commit changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Problems during roll back</source>
+        <translation type="unfinished">Ошибка в процессе отката</translation>
+    </message>
 </context>
 <context>
     <name>QgsMapCanvas</name>
@@ -8035,7 +8138,6 @@ p, li { white-space: pre-wrap; }
         <source>- %1 features found</source>
         <comment>Identify results window title</comment>
         <translation type="obsolete">— найдено %1 объектов
-        
         </translation>
     </message>
     <message>
@@ -8632,6 +8734,18 @@ Extended error information:
         <source>Cross</source>
         <translation>Перекрестие</translation>
     </message>
+    <message>
+        <source>Show all features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show selected features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show features in current canvas</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsOptionsBase</name>
@@ -8918,6 +9032,10 @@ Extended error information:
     <message>
         <source>Global default CRS displa&amp;yed below will be used</source>
         <translation>Использовать ниж&amp;еприведённую глобальную систему координат</translation>
+    </message>
+    <message>
+        <source>Attribute table behaviour</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9243,14 +9361,335 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>QgsPluginInstaller</name>
+    <message>
+        <source>Couldn&apos;t parse output from the repository</source>
+        <translation>Не удалось обработать ответ репозитория</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t open the system plugin directory</source>
+        <translation>Не удалось открыть системный каталог модулей</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t open the local plugin directory</source>
+        <translation>Не удалось открыть локальный каталог модулей</translation>
+    </message>
+    <message>
+        <source>Fetch Python Plugins...</source>
+        <translation>Получение модулей (Python)...</translation>
+    </message>
+    <message>
+        <source>Install more plugins from remote repositories</source>
+        <translation>Установка дополнительных модулей из удалённых репозиториев</translation>
+    </message>
+    <message>
+        <source>Looking for new plugins...</source>
+        <translation>Поиск новых модулей...</translation>
+    </message>
+    <message>
+        <source>There is a new plugin available</source>
+        <translation>Доступен новый модуль</translation>
+    </message>
+    <message>
+        <source>There is a plugin update available</source>
+        <translation>Доступна новая версия модуля</translation>
+    </message>
+    <message>
+        <source>QGIS Python Plugin Installer</source>
+        <translation>Установка модулей QGIS (Python)</translation>
+    </message>
+    <message>
+        <source>Error reading repository:</source>
+        <translation>Ошибка чтения из репозитория:</translation>
+    </message>
+    <message>
+        <source>Nothing to remove! Plugin directory doesn&apos;t exist:</source>
+        <translation>Удаление невозможно! Каталог модулей не существует:</translation>
+    </message>
+    <message>
+        <source>Failed to remove the directory:</source>
+        <translation>Не удалось удалить каталог:</translation>
+    </message>
+    <message>
+        <source>Check permissions or remove it manually</source>
+        <translation>Проверьте права доступа или удалите его вручную</translation>
+    </message>
+</context>
+<context>
     <name>QgsPluginInstallerDialog</name>
     <message>
         <source>QGIS Python Plugin Installer</source>
         <translation>Установка модулей QGIS (Python)</translation>
     </message>
     <message>
+        <source>Error reading repository:</source>
+        <translation>Ошибка чтения из репозитория:</translation>
+    </message>
+    <message>
+        <source>all repositories</source>
+        <translation>все репозитории</translation>
+    </message>
+    <message>
+        <source>connected</source>
+        <translation>подключен</translation>
+    </message>
+    <message>
+        <source>This repository is connected</source>
+        <translation>Репозиторий подключен</translation>
+    </message>
+    <message>
+        <source>unavailable</source>
+        <translation>недоступен</translation>
+    </message>
+    <message>
+        <source>This repository is enabled, but unavailable</source>
+        <translation>Репозиторий активен, но недоступен</translation>
+    </message>
+    <message>
+        <source>disabled</source>
+        <translation>выключен</translation>
+    </message>
+    <message>
+        <source>This repository is disabled</source>
+        <translation>Репозиторий выключен</translation>
+    </message>
+    <message>
+        <source>This repository is blocked due to incompatibility with your Quantum GIS version</source>
+        <translation>Репозиторий заблокирован по причине несовместимости с вашей версией Quantum GIS</translation>
+    </message>
+    <message>
+        <source>orphans</source>
+        <translation>неподдерживаемые</translation>
+    </message>
+    <message>
+        <source>any status</source>
+        <translation>все</translation>
+    </message>
+    <message>
+        <source>not installed</source>
+        <comment>plural</comment>
+        <translation>не установленные</translation>
+    </message>
+    <message>
+        <source>installed</source>
+        <comment>plural</comment>
+        <translation>установленные</translation>
+    </message>
+    <message>
+        <source>upgradeable and news</source>
+        <translation>обновляемые и новые</translation>
+    </message>
+    <message>
+        <source>This plugin is not installed</source>
+        <translation>Модуль не установлен</translation>
+    </message>
+    <message>
+        <source>This plugin is installed</source>
+        <translation>Модуль установлен</translation>
+    </message>
+    <message>
+        <source>This plugin is installed, but there is an updated version available</source>
+        <translation>Модуль установлен, но доступна более новая версия</translation>
+    </message>
+    <message>
+        <source>This plugin is installed, but I can&apos;t find it in any enabled repository</source>
+        <translation>Модуль установлен, но не найден в активных репозиториях</translation>
+    </message>
+    <message>
+        <source>This plugin is not installed and is seen for the first time</source>
+        <translation>Модуль не установлен и впервые зарегистрирован</translation>
+    </message>
+    <message>
+        <source>This plugin is installed and is newer than its version available in a repository</source>
+        <translation>Модуль установлен, и его версия выше доступной в репозитории</translation>
+    </message>
+    <message>
+        <source>not installed</source>
+        <comment>singular</comment>
+        <translation>не установлен</translation>
+    </message>
+    <message>
+        <source>installed</source>
+        <comment>singular</comment>
+        <translation>установлен</translation>
+    </message>
+    <message>
+        <source>upgradeable</source>
+        <comment>singular</comment>
+        <translation>обновляем</translation>
+    </message>
+    <message>
+        <source>new!</source>
+        <comment>singular</comment>
+        <translation>новый!</translation>
+    </message>
+    <message>
+        <source>invalid</source>
+        <comment>singular</comment>
+        <translation>недействительный</translation>
+    </message>
+    <message>
+        <source>installed version</source>
+        <translation>установленная версия</translation>
+    </message>
+    <message>
+        <source>available version</source>
+        <translation>доступная версия</translation>
+    </message>
+    <message>
+        <source>That&apos;s the newest available version</source>
+        <translation>Эта версия является самой последней</translation>
+    </message>
+    <message>
+        <source>There is no version available for download</source>
+        <translation>Доступных для загрузки версий не найдено</translation>
+    </message>
+    <message>
+        <source>only locally available</source>
+        <translation>доступен только локально</translation>
+    </message>
+    <message>
+        <source>Install plugin</source>
+        <translation>Установить модуль</translation>
+    </message>
+    <message>
+        <source>Reinstall plugin</source>
+        <translation>Переустановить модуль</translation>
+    </message>
+    <message>
+        <source>Upgrade plugin</source>
+        <translation>Обновить модуль</translation>
+    </message>
+    <message>
+        <source>Install/upgrade plugin</source>
+        <translation>Установить/обновить модуль</translation>
+    </message>
+    <message>
+        <source>Downgrade plugin</source>
+        <translation>Понизить версию</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to downgrade the plugin to the latest available version? The installed one is newer!</source>
+        <translation>Вы уверены, что хотите понизить версию модуля до последней доступной? Установленная версия выше!</translation>
+    </message>
+    <message>
+        <source>Plugin installation failed</source>
+        <translation>Установка модуля не выполнена</translation>
+    </message>
+    <message>
+        <source>Plugin has disappeared</source>
+        <translation>Модуль потерян</translation>
+    </message>
+    <message>
+        <source>The plugin seems to have been installed but I don&apos;t know where. Probably the plugin package contained a wrong named directory.
+Please search the list of installed plugins. I&apos;m nearly sure you&apos;ll find the plugin there, but I just can&apos;t determine which of them it is. It also means that I won&apos;t be able to determine if this plugin is installed and inform you about available updates. However the plugin may work. Please contact the plugin author and submit this issue.</source>
+        <translation>Модуль был установлен, но не был обнаружен после установки. Вероятно, архив модуля содержал каталог с неверным именем.
+Пожалуйста, просмотрите список установленных модулей. Скорее всего, модуль будет в этом списке, но Quantum GIS не сможет определить, который из них. Кроме того, это означает что будет невозможно определить состояние модуля и наличие обновлений. Тем не менее, модуль может работать. Пожалуйста, свяжитесь с его автором и сообщите об этой ошибке.</translation>
+    </message>
+    <message>
+        <source>Plugin installed successfully</source>
+        <translation>Модуль успешно установлен</translation>
+    </message>
+    <message>
+        <source>Python plugin installed.
+You have to enable it in the Plugin Manager.</source>
+        <translation>Модуль Python установлен.
+Вы можете включить его в менеджере модулей.</translation>
+    </message>
+    <message>
+        <source>Python plugin reinstalled.
+You have to restart Quantum GIS to reload it.</source>
+        <translation>Модуль Python переустановлен.
+Для его перезагрузки следует перезапустить Quantum GIS.</translation>
+    </message>
+    <message>
+        <source>Plugin uninstall failed</source>
+        <translation>Удаление модуля не выполнено</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to uninstall the following plugin?</source>
+        <translation>Вы уверены, что хотите удалить этот модуль?</translation>
+    </message>
+    <message>
+        <source>Warning: this plugin isn&apos;t available in any accessible repository!</source>
+        <translation>Внимание: этот модуль не доступен ни в одном активном репозитории!</translation>
+    </message>
+    <message>
+        <source>Plugin uninstalled successfully</source>
+        <translation>Модуль успешно удалён</translation>
+    </message>
+    <message>
+        <source>You are going to add some plugin repositories neither authorized nor supported by the Quantum GIS team, however provided by folks associated with us. Plugin authors generally make efforts to make their works useful and safe, but we can&apos;t assume any responsibility for them. FEEL WARNED!</source>
+        <translation>ВНИМАНИЕ! Вы собираетесь добавить один или несколько репозиториев, которые не поддерживаются командой Quantum GIS. Авторы модулей, как правило, стараются сделать свои работы полезными и безопасными, но мы не можем нести за них никакую ответственность!</translation>
+    </message>
+    <message>
+        <source>Unable to add another repository with the same URL!</source>
+        <translation>Невозможно добавить другой репозиторий с тем же URL!</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove the following repository?</source>
+        <translation>Вы уверены, что хотите удалить следующий репозиторий?</translation>
+    </message>
+    <message>
+        <source>This plugin is incompatible with your Quantum GIS version and probably won&apos;t work.</source>
+        <translation>Модуль несовместим с вашей версией Quantum GIS и может работать неправильно.</translation>
+    </message>
+    <message>
+        <source>The required Python module is not installed.
+For more information, please visit its homepage.</source>
+        <translation>Требуемая библиотека Python не установлена.
+Обратитесь к домашней странице модуля за дополнительной информацией.</translation>
+    </message>
+    <message>
+        <source>This plugin seems to be broken.
+It has been installed but can&apos;t be loaded.
+Here is the error message:</source>
+        <translation>Модуль неисправен.
+Установка прошла успешно, но он не может быть загружен.
+Сообщение об ошибке:</translation>
+    </message>
+    <message>
+        <source>Note that it&apos;s an uninstallable core plugin</source>
+        <translation>Обратите внимание, что модуль является базовым и не может быть удалён</translation>
+    </message>
+    <message>
+        <source>This plugin is broken</source>
+        <translation>Модуль неисправен</translation>
+    </message>
+    <message>
+        <source>This plugin requires a newer version of Quantum GIS</source>
+        <translation>Модуль требует более позднюю версию Quantum GIS</translation>
+    </message>
+    <message>
+        <source>This plugin requires a missing module</source>
+        <translation>Требуются отстутствующие в системе библиотеки</translation>
+    </message>
+    <message>
+        <source>Plugin reinstalled successfully</source>
+        <translation>Модуль успешно переустановлен</translation>
+    </message>
+    <message>
+        <source>The plugin is designed for a newer version of Quantum GIS. The minimum required version is:</source>
+        <translation>Модуль написан для более новой версии Quantum GIS. Минимальная требуемая версия:</translation>
+    </message>
+    <message>
+        <source>The plugin depends on some components missing on your system. You need to install the following Python module in order to enable it:</source>
+        <translation>Для работы модуля требуются компоненты, которые не найдены в вашей системе. Чтобы включить его, требуется установить следующие библиотеки:</translation>
+    </message>
+    <message>
+        <source>The plugin is broken. Python said:</source>
+        <translation>Модуль неисправен. Сообщение Python:</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerDialogBase</name>
+    <message>
+        <source>QGIS Python Plugin Installer</source>
+        <translation>Установка модулей QGIS (Python)</translation>
+    </message>
+    <message>
         <source>QGIS Plugin Installer</source>
-        <translation>Установка модулей QGIS</translation>
+        <translation type="obsolete">Установка модулей QGIS</translation>
     </message>
     <message>
         <source>Plugins</source>
@@ -9388,6 +9827,41 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerFetchingDialog</name>
     <message>
+        <source>Success</source>
+        <translation>Успешное завершение</translation>
+    </message>
+    <message>
+        <source>Resolving host name...</source>
+        <translation>Поиск узла...</translation>
+    </message>
+    <message>
+        <source>Connecting...</source>
+        <translation>Соединение...</translation>
+    </message>
+    <message>
+        <source>Host connected. Sending request...</source>
+        <translation>Соединение установлено. Отправка запроса...</translation>
+    </message>
+    <message>
+        <source>Downloading data...</source>
+        <translation>Загрузка данных...</translation>
+    </message>
+    <message>
+        <source>Idle</source>
+        <translation>Бездействие</translation>
+    </message>
+    <message>
+        <source>Closing connection...</source>
+        <translation>Закрытие соединения...</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Ошибка</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerFetchingDialogBase</name>
+    <message>
         <source>Fetching repositories</source>
         <translation>Получение списка репозиториев</translation>
     </message>
@@ -9411,6 +9885,49 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerInstallingDialog</name>
     <message>
+        <source>Installing...</source>
+        <translation>Установка...</translation>
+    </message>
+    <message>
+        <source>Resolving host name...</source>
+        <translation>Поиск узла...</translation>
+    </message>
+    <message>
+        <source>Connecting...</source>
+        <translation>Соединение...</translation>
+    </message>
+    <message>
+        <source>Host connected. Sending request...</source>
+        <translation>Соединение установлено. Отправка запроса...</translation>
+    </message>
+    <message>
+        <source>Downloading data...</source>
+        <translation>Загрузка данных...</translation>
+    </message>
+    <message>
+        <source>Idle</source>
+        <translation>Бездействие</translation>
+    </message>
+    <message>
+        <source>Closing connection...</source>
+        <translation>Закрытие соединения...</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Ошибка</translation>
+    </message>
+    <message>
+        <source>Failed to unzip the plugin package. Probably it&apos;s broken or missing from the repository. You may also want to make sure that you have write permission to the plugin directory:</source>
+        <translation>Не удалось распаковать архив модуля. Возможно, файл повреждён или отсутствует в репозитории. Данная ошибка может возникать по причине отсутствия прав на запись в каталог модулей:</translation>
+    </message>
+    <message>
+        <source>Aborted by user</source>
+        <translation>Отменено пользователем</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerInstallingDialogBase</name>
+    <message>
         <source>QGIS Python Plugin Installer</source>
         <translation>Установка модулей QGIS (Python)</translation>
     </message>
@@ -9426,6 +9943,13 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerPluginErrorDialog</name>
     <message>
+        <source>no error message received</source>
+        <translation>ссобщений об ошибках не зафиксировано</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerPluginErrorDialogBase</name>
+    <message>
         <source>Error loading plugin</source>
         <translation>Ошибка загрузки модуля</translation>
     </message>
@@ -9439,7 +9963,7 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>QgsPluginInstallerRepositoryDetailsDialog</name>
+    <name>QgsPluginInstallerRepositoryDetailsDialogBase</name>
     <message>
         <source>Repository details</source>
         <translation>Данные репозитория</translation>
@@ -9468,10 +9992,6 @@ p, li { white-space: pre-wrap; }
         <source>Enabled</source>
         <translation>Активен</translation>
     </message>
-    <message>
-        <source>[place for a warning message]</source>
-        <translation></translation>
-    </message>
 </context>
 <context>
     <name>QgsPluginManager</name>
@@ -9490,6 +10010,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>&amp;Clear All</source>
         <translation>&amp;Отключить все</translation>
+    </message>
+    <message>
+        <source>[ incompatible ]</source>
+        <translation>[ несовместимый ]</translation>
     </message>
 </context>
 <context>
@@ -10535,8 +11059,11 @@ Because of this the projection selector will not work...</source>
     <message>
         <source>The color map for Band %n failed to load</source>
         <translation type="obsolete">Не удалось загрузить цветовую карту для канала %n
-        
         </translation>
+    </message>
+    <message>
+        <source>Building internal pyramid overviews is not supported on raster layers with JPEG compression.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10958,10 +11485,11 @@ Because of this the projection selector will not work...</source>
         <translation>Палитра</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Verdana&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
 </context>
@@ -11167,7 +11695,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">Найдено %d подходящих объектов.
-        
         </translation>
     </message>
     <message>
@@ -11228,7 +11755,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Coordinate Reference System (%1 available)</source>
         <translation type="obsolete">Система координат (доступно %1)
-        
         </translation>
     </message>
     <message>

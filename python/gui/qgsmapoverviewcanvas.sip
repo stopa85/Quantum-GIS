@@ -11,7 +11,7 @@ class QgsMapOverviewCanvas : QWidget
     ~QgsMapOverviewCanvas();
   
     //! used for overview canvas to reflect changed extent in main map canvas
-    void reflectChangedExtent();
+    void drawExtentRect();
 
     //! renders overview and updates panning widget
     void refresh();
@@ -26,7 +26,7 @@ class QgsMapOverviewCanvas : QWidget
     
     void enableAntiAliasing(bool flag);
     
-    void updateFullExtent(const QgsRect& rect);
+    void updateFullExtent(const QgsRectangle& rect);
     
   public slots:
     

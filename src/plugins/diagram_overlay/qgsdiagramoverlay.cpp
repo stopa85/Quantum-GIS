@@ -48,7 +48,7 @@ void QgsDiagramOverlay::setDiagramRenderer(QgsDiagramRenderer* r)
   mDiagramRenderer = r;
 }
 
-void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
+void QgsDiagramOverlay::createOverlayObjects(const QgsRectangle& viewExtent)
 {
   //memory cleanup
   for(QMap<int, QgsOverlayObject*>::iterator it = mOverlayObjects.begin(); it != mOverlayObjects.end(); ++it)
@@ -64,7 +64,6 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
       if(theProvider)
 	{
 	  //set spatial filter on data provider
-      theProvider->begin();
 	  theProvider->select(mAttributes, viewExtent);
 
 	  QgsFeature currentFeature;
@@ -104,7 +103,6 @@ void QgsDiagramOverlay::drawOverlayObjects(QgsRenderContext& context) const
       if(theProvider)
 	{
 	  //set spatial filter on data provider
-      theProvider->begin();
       theProvider->select(mAttributes, context.extent());
 
 	  QgsFeature currentFeature;

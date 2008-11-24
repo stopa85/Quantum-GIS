@@ -62,7 +62,7 @@
 #include "qgsmaptopixel.h"
 #include "qgspoint.h"
 #include "qgsproviderregistry.h"
-#include "qgsrect.h"
+#include "qgsrectangle.h"
 #include "qgsrendercontext.h"
 #include "qgssinglesymbolrenderer.h"
 #include "qgscoordinatereferencesystem.h"
@@ -287,7 +287,10 @@ void QgsVectorLayer::drawLabels( QgsRenderContext& rendererContext )
 {
   QgsDebugMsg( "Starting draw of labels" );
 
-  if ( mRenderer && mLabelOn )
+  if ( mRenderer && mLabelOn &&
+       (!label()->scaleBasedVisibility() ||
+        (label()->minScale()<=rendererContext.rendererScale() &&
+                              rendererContext.rendererScale()<=label()->maxScale())) )
   {
     QgsAttributeList attributes = mRenderer->classificationAttributes();
 
@@ -310,7 +313,7 @@ void QgsVectorLayer::drawLabels( QgsRenderContext& rendererContext )
         if ( mRenderer->willRenderFeature( &fet ) )
         {
           bool sel = mSelectedFeatureIds.contains( fet.id() );
-          mLabel->renderLabel( rendererContext.painter(), rendererContext.extent(), rendererContext.coordinateTransform(), &(rendererContext.mapToPixel()), fet, sel, 0, rendererContext.scaleFactor(), rendererContext.rasterScaleFactor());
+          mLabel->renderLabel( rendererContext.painter(), rendererContext.extent(), rendererContext.coordinateTransform(), &( rendererContext.mapToPixel() ), fet, sel, 0, rendererContext.scaleFactor(), rendererContext.rasterScaleFactor() );
         }
         featureCount++;
       }
@@ -818,7 +821,7 @@ void QgsVectorLayer::select( int number, bool emitSignal )
   }
 }
 
-void QgsVectorLayer::select( QgsRect & rect, bool lock )
+void QgsVectorLayer::select( QgsRectangle & rect, bool lock )
 {
   // normalize the rectangle
   rect.normalize();
@@ -847,7 +850,7 @@ void QgsVectorLayer::invertSelection()
 
   removeSelection( FALSE ); // don't emit signal
 
-  select( QgsAttributeList(), QgsRect(), false );
+  select( QgsAttributeList(), QgsRectangle(), false );
 
   QgsFeature fet;
   while ( nextFeature( fet ) )
@@ -968,17 +971,17 @@ QGis::WkbType QgsVectorLayer::wkbType() const
   return ( QGis::WkbType )( mWkbType );
 }
 
-QgsRect QgsVectorLayer::boundingBoxOfSelected()
+QgsRectangle QgsVectorLayer::boundingBoxOfSelected()
 {
   if ( mSelectedFeatureIds.size() == 0 )//no selected features
   {
-    return QgsRect( 0, 0, 0, 0 );
+    return QgsRectangle( 0, 0, 0, 0 );
   }
 
-  QgsRect r, retval;
+  QgsRectangle r, retval;
 
 
-  select( QgsAttributeList(), QgsRect(), true );
+  select( QgsAttributeList(), QgsRectangle(), true );
 
   retval.setMinimal();
 
@@ -1001,20 +1004,20 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
     // rectangle a bit. If they are all at zero, do something a bit
     // more crude.
 
-    if ( retval.xMin() == 0.0 && retval.xMax() == 0.0 &&
-         retval.yMin() == 0.0 && retval.yMax() == 0.0 )
+    if ( retval.xMinimum() == 0.0 && retval.xMaximum() == 0.0 &&
+         retval.yMinimum() == 0.0 && retval.yMaximum() == 0.0 )
     {
       retval.set( -1.0, -1.0, 1.0, 1.0 );
     }
     else
     {
       const double padFactor = 1e-8;
-      double widthPad = retval.xMin() * padFactor;
-      double heightPad = retval.yMin() * padFactor;
-      double xmin = retval.xMin() - widthPad;
-      double xmax = retval.xMax() + widthPad;
-      double ymin = retval.yMin() - heightPad;
-      double ymax = retval.yMax() + heightPad;
+      double widthPad = retval.xMinimum() * padFactor;
+      double heightPad = retval.yMinimum() * padFactor;
+      double xmin = retval.xMinimum() - widthPad;
+      double xmax = retval.xMaximum() + widthPad;
+      double ymin = retval.yMinimum() - heightPad;
+      double ymax = retval.yMaximum() + heightPad;
       retval.set( xmin, ymin, xmax, ymax );
     }
   }
@@ -1058,35 +1061,35 @@ void QgsVectorLayer::updateExtents()
     // but only when there are some features already
     if ( mDataProvider->featureCount() != 0 )
     {
-      QgsRect r = mDataProvider->extent();
+      QgsRectangle r = mDataProvider->extent();
       mLayerExtent.combineExtentWith( &r );
     }
 
     for ( QgsFeatureList::iterator it = mAddedFeatures.begin(); it != mAddedFeatures.end(); it++ )
     {
-      QgsRect r = it->geometry()->boundingBox();
+      QgsRectangle r = it->geometry()->boundingBox();
       mLayerExtent.combineExtentWith( &r );
     }
   }
   else
   {
-    select( QgsAttributeList(), QgsRect(), true );
+    select( QgsAttributeList(), QgsRectangle(), true );
 
     QgsFeature fet;
     while ( nextFeature( fet ) )
     {
       if ( fet.geometry() )
       {
-        QgsRect bb = fet.geometry()->boundingBox();
+        QgsRectangle bb = fet.geometry()->boundingBox();
         mLayerExtent.combineExtentWith( &bb );
       }
     }
   }
 
-  if ( mLayerExtent.xMin() > mLayerExtent.xMax() && mLayerExtent.yMin() > mLayerExtent.yMax() )
+  if ( mLayerExtent.xMinimum() > mLayerExtent.xMaximum() && mLayerExtent.yMinimum() > mLayerExtent.yMaximum() )
   {
     // special case when there are no features in provider nor any added
-    mLayerExtent = QgsRect(); // use rectangle with zero coordinates
+    mLayerExtent = QgsRectangle(); // use rectangle with zero coordinates
   }
 
   // Send this (hopefully) up the chain to the map canvas
@@ -1137,7 +1140,7 @@ void QgsVectorLayer::updateFeatureGeometry( QgsFeature &f )
 }
 
 
-void QgsVectorLayer::select( QgsAttributeList attributes, QgsRect rect, bool fetchGeometries, bool useIntersect )
+void QgsVectorLayer::select( QgsAttributeList attributes, QgsRectangle rect, bool fetchGeometries, bool useIntersect )
 {
   if ( !mDataProvider )
     return;
@@ -1302,13 +1305,13 @@ bool QgsVectorLayer::nextFeature( QgsFeature &f )
   return false;
 }
 
-int QgsVectorLayer::featureAtId( int featureId, QgsFeature& f, bool fetchGeometries, bool fetchAttributes )
+bool QgsVectorLayer::featureAtId( int featureId, QgsFeature& f, bool fetchGeometries, bool fetchAttributes )
 {
   if ( !mDataProvider )
-    return 1;
+    return false;
 
   if ( mDeletedFeatureIds.contains( featureId ) )
-    return 2;
+    return false;
 
   if ( fetchGeometries && mChangedGeometries.contains( featureId ) )
   {
@@ -1360,7 +1363,7 @@ int QgsVectorLayer::featureAtId( int featureId, QgsFeature& f, bool fetchGeometr
       if ( fetchAttributes )
         f.setAttributeMap( iter->attributeMap() );
 
-      return 0;
+      return true;
     }
   }
 
@@ -1370,17 +1373,17 @@ int QgsVectorLayer::featureAtId( int featureId, QgsFeature& f, bool fetchGeometr
     if ( mDataProvider->featureAtId( featureId, f, fetchGeometries, mDataProvider->attributeIndexes() ) )
     {
       updateFeatureAttributes( f );
-      return 0;
+      return true;
     }
   }
   else
   {
     if ( mDataProvider->featureAtId( featureId, f, fetchGeometries, QgsAttributeList() ) )
     {
-      return 0;
+      return true;
     }
   }
-  return 3;
+  return false;
 }
 
 bool QgsVectorLayer::addFeature( QgsFeature& f, bool alsoUpdateExtent )
@@ -1545,7 +1548,7 @@ int QgsVectorLayer::addRing( const QList<QgsPoint>& ring )
 {
   int addRingReturnCode = 5; //default: return code for 'ring not inserted'
   double xMin, yMin, xMax, yMax;
-  QgsRect bBox;
+  QgsRectangle bBox;
 
   if ( boundingBoxFromPointList( ring, xMin, yMin, xMax, yMax ) == 0 )
   {
@@ -1660,7 +1663,7 @@ int QgsVectorLayer::splitFeatures( const QList<QgsPoint>& splitLine, bool topolo
 {
   QgsFeatureList newFeatures; //store all the newly created features
   double xMin, yMin, xMax, yMax;
-  QgsRect bBox; //bounding box of the split line
+  QgsRectangle bBox; //bounding box of the split line
   int returnCode = 0;
   int splitFunctionReturn; //return code of QgsGeometry::splitGeometry
   int numberOfSplitedFeatures = 0;
@@ -1689,13 +1692,13 @@ int QgsVectorLayer::splitFeatures( const QList<QgsPoint>& splitLine, bool topolo
       //if the bbox is a line, try to make a square out of it
       if ( bBox.width() == 0.0 && bBox.height() > 0 )
       {
-        bBox.setXMinimum( bBox.xMin() - bBox.height() / 2 );
-        bBox.setXMaximum( bBox.xMax() + bBox.height() / 2 );
+        bBox.setXMinimum( bBox.xMinimum() - bBox.height() / 2 );
+        bBox.setXMaximum( bBox.xMaximum() + bBox.height() / 2 );
       }
       else if ( bBox.height() == 0.0 && bBox.width() > 0 )
       {
-        bBox.setYMinimum( bBox.yMin() - bBox.width() / 2 );
-        bBox.setYMaximum( bBox.yMax() + bBox.width() / 2 );
+        bBox.setYMinimum( bBox.yMinimum() - bBox.width() / 2 );
+        bBox.setYMaximum( bBox.yMaximum() + bBox.width() / 2 );
       }
       else
       {
@@ -1774,7 +1777,7 @@ int QgsVectorLayer::removePolygonIntersections( QgsGeometry* geom )
   }
 
   //get bounding box of geom
-  QgsRect geomBBox = geom->boundingBox();
+  QgsRectangle geomBBox = geom->boundingBox();
 
   //get list of features that intersect this bounding box
   select( QgsAttributeList(), geomBBox, true, true );
@@ -1968,8 +1971,6 @@ bool QgsVectorLayer::hasLabelsEnabled( void )
   return mLabelOn;
 }
 
-
-
 bool QgsVectorLayer::startEditing()
 {
   if ( !mDataProvider )
@@ -2057,6 +2058,12 @@ bool QgsVectorLayer::readXml( QDomNode & layer_node )
     QDomElement e = displayFieldNode.toElement();
     setDisplayField( e.text() );
   }
+
+  // use scale dependent visibility flag
+  QDomElement e = layer_node.toElement();
+  label()->setScaleBasedVisibility( e.attribute( "scaleBasedLabelVisibilityFlag", "0") == "1" );
+  label()->setMinScale( e.attribute( "minLabelScale", "1" ).toFloat() );
+  label()->setMaxScale( e.attribute( "maxLabelScale", "100000000" ).toFloat() );
 
   QDomNode editTypesNode = layer_node.namedItem( "edittypes" );
   if ( !editTypesNode.isNull() )
@@ -2156,16 +2163,16 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
       connect( mDataProvider, SIGNAL( fullExtentCalculated() ), this, SLOT( updateExtents() ) );
 
       // get the extent
-      QgsRect mbr = mDataProvider->extent();
+      QgsRectangle mbr = mDataProvider->extent();
 
       // show the extent
       QString s = mbr.toString();
       QgsDebugMsg( "Extent of layer: " +  s );
       // store the extent
-      mLayerExtent.setXMaximum( mbr.xMax() );
-      mLayerExtent.setXMinimum( mbr.xMin() );
-      mLayerExtent.setYMaximum( mbr.yMax() );
-      mLayerExtent.setYMinimum( mbr.yMin() );
+      mLayerExtent.setXMaximum( mbr.xMaximum() );
+      mLayerExtent.setXMinimum( mbr.xMinimum() );
+      mLayerExtent.setYMaximum( mbr.yMaximum() );
+      mLayerExtent.setYMinimum( mbr.yMinimum() );
 
       // get and store the feature type
       mWkbType = mDataProvider->geometryType();
@@ -2225,7 +2232,7 @@ bool QgsVectorLayer::writeXml( QDomNode & layer_node,
 
   if ( mapLayerNode.isNull() || ( "maplayer" != mapLayerNode.nodeName() ) )
   {
-    qDebug( "QgsVectorLayer::writeXML() can't find <maplayer>" );
+    QgsDebugMsg( "can't find <maplayer>" );
     return false;
   }
 
@@ -2233,6 +2240,11 @@ bool QgsVectorLayer::writeXml( QDomNode & layer_node,
 
   // set the geometry type
   mapLayerNode.setAttribute( "geometry", QGis::qgisVectorGeometryType[type()] );
+
+  // use scale dependent visibility flag
+  mapLayerNode.setAttribute( "scaleBasedLabelVisibilityFlag", label()->scaleBasedVisibility() ? 1 : 0 );
+  mapLayerNode.setAttribute( "minLabelScale", label()->minScale() );
+  mapLayerNode.setAttribute( "maxLabelScale", label()->maxScale() );
 
   // add provider node
 
@@ -2354,54 +2366,7 @@ bool QgsVectorLayer::writeXml( QDomNode & layer_node,
       layer_node.appendChild( dField );
     }
 
-    std::stringstream labelXML;
-
-    myLabel->writeXML( labelXML );
-
-    QDomDocument labelDom;
-
-    std::string rawXML;
-    std::string temp_str;
-    QString     errorMsg;
-    int         errorLine;
-    int         errorColumn;
-
-    // start with bogus XML header
-    rawXML  = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
-
-    temp_str = labelXML.str();
-
-    rawXML   += temp_str;
-
-#ifdef QGISDEBUG
-    std::cout << rawXML << std::endl << std::flush; // OK
-
-#endif
-    const char * s = rawXML.c_str(); // debugger probe
-    // Use the const char * form of the xml to make non-stl qt happy
-    if ( ! labelDom.setContent( QString::fromUtf8( s ), &errorMsg, &errorLine, &errorColumn ) )
-    {
-      qDebug(( "XML import error at line %d column %d " + errorMsg ).toLocal8Bit().data(), errorLine, errorColumn );
-
-      return false;
-    }
-
-    // lastChild() because the first two nodes are the <xml> and
-    // <!DOCTYPE> nodes; the label node follows that, and is (hopefully)
-    // the last node.
-    QDomNode labelDomNode = document.importNode( labelDom.lastChild(), true );
-
-    if ( ! labelDomNode.isNull() )
-    {
-      layer_node.appendChild( labelDomNode );
-    }
-    else
-    {
-      qDebug( "not able to import label Dom node" );
-
-      // XXX return false?
-    }
-
+    myLabel->writeXML( layer_node, document );
   }
 
   return true;
@@ -3127,8 +3092,8 @@ int QgsVectorLayer::snapWithContext( const QgsPoint& startPoint, double snapping
   }
 
   QList<QgsFeature> featureList;
-  QgsRect searchRect( startPoint.x() - snappingTolerance, startPoint.y() - snappingTolerance,
-                      startPoint.x() + snappingTolerance, startPoint.y() + snappingTolerance );
+  QgsRectangle searchRect( startPoint.x() - snappingTolerance, startPoint.y() - snappingTolerance,
+                           startPoint.x() + snappingTolerance, startPoint.y() + snappingTolerance );
   double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
 
   select( QgsAttributeList(), searchRect, true, true );

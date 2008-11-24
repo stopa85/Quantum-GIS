@@ -328,7 +328,7 @@
     <name>CoordinateCaptureGui</name>
     <message>
         <source>Welcome to your automatically generated plugin!</source>
-        <translation>Bienvenue dans votre plugin généré automatiquement !</translation>
+        <translation>Bienvenue dans votre extension générée automatiquement !</translation>
     </message>
     <message>
         <source>This is just a starting point. You now need to modify the code to make it do something useful....read on for a more information to get yourself started.</source>
@@ -348,19 +348,19 @@
     </message>
     <message>
         <source>QgsPlugin is an ABC that defines required behaviour your plugin must provide. See below for more details.</source>
-        <translation>QgsPlugin est un squelette qui définit les fonctionnalités que votre plugin devrait posséder. Voir plus bas pour les détails.</translation>
+        <translation>QgsPlugin est un squelette qui définit les fonctionnalités que votre extension devrait posséder. Voir plus bas pour les détails.</translation>
     </message>
     <message>
         <source>What are all the files in my generated plugin directory for?</source>
-        <translation>Quelle est le but de tous les fichiers générés dans le répertoire de mon plugin ?</translation>
+        <translation>Quelle est le but de tous les fichiers générés dans le répertoire de mon extension ?</translation>
     </message>
     <message>
         <source>This is the generated CMake file that builds the plugin. You should add you application specific dependencies and source files to this file.</source>
-        <translation>Ceci est un fichier généré par CMake qui crée votre plugin. Vous devriez ajouter les fichiers sources et les dépendances spécifiques à l&apos;application dans ce fichier.</translation>
+        <translation>Ceci est un fichier généré par CMake qui crée votre extension. Vous devriez ajouter les fichiers sources et les dépendances spécifiques à l&apos;application dans ce fichier.</translation>
     </message>
     <message>
         <source>This is the class that provides the &apos;glue&apos; between your custom application logic and the QGIS application. You will see that a number of methods are already implemented for you - including some examples of how to add a raster or vector layer to the main application map canvas. This class is a concrete instance of the QgisPlugin interface which defines required behaviour for a plugin. In particular, a plugin has a number of static methods and members so that the QgsPluginManager and plugin loader logic can identify each plugin, create an appropriate menu entry for it etc. Note there is nothing stopping you creating multiple toolbar icons and menu entries for a single plugin. By default though a single menu entry and toolbar button is created and its pre-configured to call the run() method in this class when selected. This default implementation provided for you by the plugin builder is well documented, so please refer to the code for further advice.</source>
-        <translation>Cette classe fourni la &quot;liaison&quot; entre la logique de votre propre application et celle de QGIS. Vous verreze qu&apos;un certain nombre de méthodes ont déjà été implémentées pour vous - avec quelques exemples montrant comment ajouter des couches vectorielles ou matricielles à la zone de visualisation de l&apos;application principale. Cette classe est une instanciation concrète de l&apos;interface de QgsPlugin qui définit le comportement d&apos;un plugin. En particulier, un plugin possède des membres et des méthodes statiques qui servent à l&apos;identification de chaque plugin par QgsPluginManager et le chargeur de plugins, l&apos;ajout d&apos;une entrée dans le menu, etc. Rien ne vous empêche de créer plusieurs outils ou entrée de menu pour un simple plugin. Par défaut, une seule entrée dans le menu et un seul outils sont créés et sont préconfigurés pour appeler la méthode run() lorsqu&apos;ils sont sélectionnées. Cette implémentation par défaut fournie par le constructeur de plugins est bien documentée. Merci de vous réferrer au code source pour plus de détails.</translation>
+        <translation>Cette classe fourni la &quot;liaison&quot; entre la logique de votre propre application et celle de QGIS. Vous verrez qu&apos;un certain nombre de méthodes ont déjà été implémentées pour vous - avec quelques exemples montrant comment ajouter des couches vectorielles ou matricielles à la zone de visualisation de l&apos;application principale. Cette classe est une instanciation concrète de l&apos;interface de QgsPlugin qui définit le comportement d&apos;une extension. En particulier, un plugin possède des membres et des méthodes statiques qui servent à l&apos;identification de chaque plugin par QgsPluginManager et le chargeur de plugins, l&apos;ajout d&apos;une entrée dans le menu, etc. Rien ne vous empêche de créer plusieurs outils ou entrée de menu pour une simple extension. Par défaut, une seule entrée dans le menu et un seul outils sont créés et sont préconfigurés pour appeler la méthode run() lorsqu&apos;ils sont sélectionnées. Cette implémentation par défaut fournie par le constructeur d&apos;extensions est bien documentée. Merci de vous réferrer au code source pour plus de détails.</translation>
     </message>
     <message>
         <source>This is a Qt designer &apos;ui&apos; file. It defines the look of the default plugin dialog without implementing any application logic. You can modify this form to suite your needs or completely remove it if your plugin does not need to display a user form (e.g. for custom MapTools).</source>
@@ -396,7 +396,7 @@
     </message>
     <message>
         <source>QGIS is distributed under the Gnu Public License. If you create a useful plugin please consider contributing it back to the community.</source>
-        <translation>QGIS est distribué sous les termes de la license publique GNU (GPL). Si vous deéveloppez un plugin intéressant, il serait souhaitable de le mettre à disposition de la communauté.  </translation>
+        <translation>QGIS est distribué sous les termes de la licence publique GNU (GPL). Si vous développez un plugin intéressant, il serait souhaitable de le mettre à disposition de la communauté.  </translation>
     </message>
     <message>
         <source>Have fun and thank you for choosing QGIS.</source>
@@ -407,11 +407,11 @@
     <name>CoordinateCaptureGuiBase</name>
     <message>
         <source>QGIS Plugin Template</source>
-        <translation>Modèle pour plugin QGIS</translation>
+        <translation>Modèle pour extension QGIS</translation>
     </message>
     <message>
         <source>Plugin Template</source>
-        <translation>Modèle pour plugin</translation>
+        <translation>Modèle pour extension</translation>
     </message>
 </context>
 <context>
@@ -562,7 +562,7 @@
     </message>
     <message>
         <source>Input OGR layer name is missing!</source>
-        <translation>Le nom de la couche OGR saisis est manquant</translation>
+        <translation>Le nom de la couche OGR saisis est manquant !</translation>
     </message>
     <message>
         <source>Target OGR format not selected!</source>
@@ -620,7 +620,7 @@
     <name>Gui</name>
     <message>
         <source>Welcome to your automatically generated plugin!</source>
-        <translation>Bienvenue dans votre plugin généré automatiquement !</translation>
+        <translation>Bienvenue dans votre extension générée automatiquement !</translation>
     </message>
     <message>
         <source>This is just a starting point. You now need to modify the code to make it do something useful....read on for a more information to get yourself started.</source>
@@ -726,7 +726,7 @@
     </message>
     <message>
         <source>Enter X and Y coordinates which correspond with the selected point on the image. Alternatively, click the button with icon of a pencil and then click a corresponding point on map canvas of QGIS to fill in coordinates of that point.</source>
-        <translation>Saisissez une coordonnée X et Y qui corresponde au point sélectionné sur l&apos;image. Alternativement, cliquez sur l&apos;icône représentant un crayon et cliquez le point correspondant sur la carte afin que QGIS calcule la coordonée de ce point.</translation>
+        <translation>Saisissez une coordonnée X et Y qui corresponde au point sélectionné sur l&apos;image. Alternativement, cliquez sur l&apos;icône représentant un crayon et cliquez le point correspondant sur la carte afin que QGIS calcule la coordonnée de ce point.</translation>
     </message>
     <message>
         <source> from map canvas</source>
@@ -881,7 +881,7 @@
     <message>
         <source>No Data Provider Plugins</source>
         <comment>No QGIS data provider plugins found in:</comment>
-        <translation>Aucun plugin de fournisseur de données</translation>
+        <translation>Aucune extension fournisseuse de données</translation>
     </message>
     <message>
         <source>No vector layers can be loaded. Check your QGIS installation</source>
@@ -889,7 +889,7 @@
     </message>
     <message>
         <source>No data provider plugins are available. No vector layers can be loaded</source>
-        <translation>Aucun plugin de fournisseur de données disponible. Aucune couche vecteur ne peut être chargée</translation>
+        <translation>Aucunes extensions fournisseuses de données disponibles. Aucune couche vecteur ne peut être chargée</translation>
     </message>
     <message>
         <source>QGis files (*.qgs)</source>
@@ -917,7 +917,7 @@
     </message>
     <message>
         <source>Unable to save to file </source>
-        <translation>Inpossible de sauvegarder le fichier</translation>
+        <translation>Impossible de sauvegarder le fichier</translation>
     </message>
     <message>
         <source>Regular expressions on numeric values don&apos;t make sense. Use comparison insted.</source>
@@ -1033,7 +1033,7 @@
     </message>
     <message>
         <source>Release selected</source>
-        <translation>Release sélectionnée</translation>
+        <translation>Relâcher la sélection</translation>
     </message>
     <message>
         <source>Delete selected / select next</source>
@@ -1085,7 +1085,7 @@
     </message>
     <message>
         <source>Couldn&apos;t open the data source: </source>
-        <translation>Impossbile d&apos;ouvrir la source de données: </translation>
+        <translation>Echec de l&apos;ouverture de la source de données : </translation>
     </message>
     <message>
         <source>Parse error at line </source>
@@ -1857,6 +1857,20 @@ Le support Python va être désactivé.</translation>
         <source>Unable to save to file. Your project may be corrupted on disk. Try clearing some space on the volume and check file permissions before pressing save again.</source>
         <translation>Impossible d&apos;enregistrer le fichier. Votre projet est peut être corrompu sur votre disque. Essayez de libérer de l&apos;espace de stockage et vérifiez les permissions en écriture avant d&apos;essayez d&apos;enregistrer de nouveau.</translation>
     </message>
+    <message>
+        <source>Error Loading Plugin</source>
+        <translation>Erreur de chargement de Plugin</translation>
+    </message>
+    <message>
+        <source>There was an error loading a plugin.The following diagnostic information may help the QGIS developers resolve the issue:
+%1.</source>
+        <translation>Il y a eu une eurreur lors du chargement du plugin. Les informations suivantes pourront aider les développeurs de QGIS à résoudre ce problème
+%1</translation>
+    </message>
+    <message>
+        <source>Error when reading metadata of plugin </source>
+        <translation>Erreur lors de la lecture des métadonnées du plugin </translation>
+    </message>
 </context>
 <context>
     <name>QgisApp</name>
@@ -1986,7 +2000,7 @@ Le support Python va être désactivé.</translation>
     </message>
     <message>
         <source>Connection refused - server may be down</source>
-        <translation>Connection refusée - le serveur est peut-être indisponible</translation>
+        <translation>Connexion refusée - le serveur est peut-être indisponible</translation>
     </message>
     <message>
         <source>QGIS server was not found</source>
@@ -2010,7 +2024,7 @@ Le support Python va être désactivé.</translation>
     </message>
     <message>
         <source>Error Loading Plugin</source>
-        <translation>Erreur de chargement de Plugin</translation>
+        <translation type="obsolete">Erreur de chargement de Plugin</translation>
     </message>
     <message>
         <source>There was an error loading %1.</source>
@@ -2106,7 +2120,7 @@ Le support Python va être désactivé.</translation>
     </message>
     <message>
         <source>Toggle map rendering</source>
-        <translation>Rendu de carte </translation>
+        <translation>Activer le rendu de carte </translation>
     </message>
     <message>
         <source>This icon shows whether on the fly projection is enabled or not. Click the icon to bring up the project properties dialog to alter this behaviour.</source>
@@ -3018,11 +3032,11 @@ Compilé avec Qt </translation>
     </message>
     <message>
         <source>Python error</source>
-        <translation>Erreur Python</translation>
+        <translation type="obsolete">Erreur Python</translation>
     </message>
     <message>
         <source>Error when reading metadata of plugin </source>
-        <translation>Erreur lors de la lecture des métadonnées du plugin </translation>
+        <translation type="obsolete">Erreur lors de la lecture des métadonnées du plugin </translation>
     </message>
     <message>
         <source>Provider does not support deletion</source>
@@ -3130,7 +3144,7 @@ Compilé avec Qt </translation>
     </message>
     <message>
         <source>&lt;p&gt;Even though QGIS developers try to maintain backwards compatibility, some of the information from the old project file might be lost.</source>
-        <translation>&lt;p&gt;Malgré le soin que les développeurs de QGIS même à conserver une compatibilité descendante, certaines informations de l&apos;ancien fichier de projet peuvent être perdue.</translation>
+        <translation>&lt;p&gt;Malgré le soin que les développeurs de QGIS mettent à conserver une compatibilité descendante, certaines informations de l&apos;ancien fichier de projet peuvent être perdues.</translation>
     </message>
     <message>
         <source> To improve the quality of QGIS, we appreciate if you file a bug report at %3.</source>
@@ -3138,7 +3152,7 @@ Compilé avec Qt </translation>
     </message>
     <message>
         <source> Be sure to include the old project file, and state the version of QGIS you used to discover the error.</source>
-        <translation> Prenez garde d&apos;inclure le fichier de projet de l&apos;ancienne version, et de mentionner la version de QGIS qui a provoqué l&apos;erreur.</translation>
+        <translation> Prenez garde d&apos;inclure le fichier de projet de l&apos;ancienne version et de mentionner la version de QGIS qui a provoqué l&apos;erreur.</translation>
     </message>
     <message>
         <source>&lt;p&gt;To remove this warning when opening an older project file, uncheck the box &apos;%5&apos; in the %4 menu.</source>
@@ -3399,7 +3413,7 @@ Veuillez contacter les développeurs.
     </message>
     <message>
         <source>Manage Plugins...</source>
-        <translation>Gestionnaire de Plugin...</translation>
+        <translation>Gestionnaire d&apos;extension...</translation>
     </message>
     <message>
         <source>Toggle Full Screen Mode</source>
@@ -3484,7 +3498,7 @@ Veuillez contacter les développeurs.
     </message>
     <message>
         <source>Symbol previews when defining vector classes</source>
-        <translation>Aperçu du symoble lors de la définition des classes vectorielles</translation>
+        <translation>Aperçu du symbole lors de la définition des classes vectorielles</translation>
     </message>
     <message>
         <source>Separation of python support into its own library</source>
@@ -3551,7 +3565,7 @@ Erreurs : %2
     <message>
         <source>There was an error loading a plugin.The following diagnostic information may help the QGIS developers resolve the issue:
 %1.</source>
-        <translation>Il y a eu une eurreur lors du chargement du plugin. Les informations suivantes pourront aider les développeurs de QGIS à résoudre ce problème
+        <translation type="obsolete">Il y a eu une eurreur lors du chargement du plugin. Les informations suivantes pourront aider les développeurs de QGIS à résoudre ce problème
 %1</translation>
     </message>
     <message>
@@ -3895,7 +3909,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsAttributeDialog</name>
     <message>
         <source> (int)</source>
-        <translation type="unfinished">Sélectionnez un fichier</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source> (dbl)</source>
@@ -3950,6 +3964,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Run action</source>
         <translation>Exécuter l&apos;action</translation>
+    </message>
+    <message>
+        <source>Updating selection...</source>
+        <translation>Mise à jour de la sélection...</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Arrêter</translation>
     </message>
 </context>
 <context>
@@ -4123,7 +4145,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Found %d matching features.</source>
-        <translation type="obsolete">%d entités correspondantes ont été trouvées
+        <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -4188,7 +4211,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Ctrl+Z</source>
-        <translation type="unfinished">Ctrl+Z</translation>
+        <translation>Ctrl+Z</translation>
     </message>
     <message>
         <source>Cu&amp;t</source>
@@ -4507,7 +4530,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Move selected items to bottom</source>
-        <translation>Déplacez les objets séléctionnés en-dessous</translation>
+        <translation>Déplacez les objets sélectionnés en-dessous</translation>
     </message>
     <message>
         <source>QGIS</source>
@@ -8545,7 +8568,7 @@ at line </source>
     </message>
     <message>
         <source>) not found.</source>
-        <translation>) n&apos;as pas été trouvé.</translation>
+        <translation>) n&apos;a pas été trouvé.</translation>
     </message>
     <message>
         <source>Cannot open module file (</source>
@@ -8621,7 +8644,7 @@ at line </source>
     </message>
     <message>
         <source>&lt;B&gt;Module crashed or killed&lt;/B&gt;</source>
-        <translation>&lt;b&gt;Le module écrasé ou tué&lt;/b&gt;</translation>
+        <translation>&lt;b&gt;Le module a été écrasé ou tué&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Not available, description not found (</source>
@@ -9905,6 +9928,7 @@ p, li { white-space: pre-wrap; }
         <source>Network timed out after %1 seconds of inactivity.
 This may be a problem in your network connection or at the WMS server.</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -10075,6 +10099,13 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Upper value</source>
         <translation>Valeur haute</translation>
+    </message>
+</context>
+<context>
+    <name>QgsLabelDialog</name>
+    <message>
+        <source>Auto</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10379,6 +10410,30 @@ p, li { white-space: pre-wrap; }
         <source>Multiline labels?</source>
         <translation>Etiquettes multi-lignes?</translation>
     </message>
+    <message>
+        <source>General</source>
+        <translation>Général</translation>
+    </message>
+    <message>
+        <source>Use scale dependent rendering</source>
+        <translation>Utiliser le Rendu dépendant de la mise à l&apos;échelle</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Minimum scale at which this layer will be displayed. </source>
+        <translation> Mise à l&apos;échelle minimum à laquelle cette couche sera affichée.</translation>
+    </message>
+    <message>
+        <source>Maximum scale at which this layer will be displayed. </source>
+        <translation>Mise à l&apos;échelle maximum à laquelle cette couche sera affiché.</translation>
+    </message>
 </context>
 <context>
     <name>QgsLayerProjectionSelector</name>
@@ -10525,11 +10580,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>More layers</source>
-        <translation type="obsolete">Plus de couches</translation>
+        <translation type="unfinished">Plus de couches</translation>
     </message>
     <message>
         <source>This item contains more layer files. Displaying more layers in table is not supported.</source>
-        <translation type="obsolete">Cet élément contient d&apos;autres fichiers. Afficher d&apos;autres couches n&apos;est pas pris en charge.</translation>
+        <translation type="unfinished">Cet élément contient d&apos;autres fichiers. Afficher d&apos;autres couches n&apos;est pas pris en charge.</translation>
     </message>
     <message>
         <source>Multiple layers</source>
@@ -10544,7 +10599,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsLegendLayerFile</name>
     <message>
         <source>Attribute table - </source>
-        <translation type="obsolete">Table d&apos;attributs - </translation>
+        <translation type="unfinished">Table d&apos;attributs - </translation>
     </message>
     <message>
         <source>Save layer as...</source>
@@ -10552,19 +10607,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Start editing failed</source>
-        <translation type="obsolete">Commencer l&apos;édition échouée</translation>
+        <translation type="unfinished">Commencer l&apos;édition échouée</translation>
     </message>
     <message>
         <source>Provider cannot be opened for editing</source>
-        <translation type="obsolete">Le fournisseur de données ne peut être ouvert pour l&apos;édition</translation>
+        <translation type="unfinished">Le fournisseur de données ne peut être ouvert pour l&apos;édition</translation>
     </message>
     <message>
         <source>Stop editing</source>
-        <translation type="obsolete">Arrêter l&apos;édition</translation>
+        <translation type="unfinished">Arrêter l&apos;édition</translation>
     </message>
     <message>
         <source>Do you want to save the changes?</source>
-        <translation type="obsolete">Voulez-vous sauvegarder les modifications ?</translation>
+        <translation type="unfinished">Voulez-vous sauvegarder les modifications ?</translation>
     </message>
     <message>
         <source>&amp;Yes</source>
@@ -10580,19 +10635,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Could not commit changes</source>
-        <translation type="obsolete">N&apos;a pas pu valider les changements</translation>
+        <translation type="unfinished">N&apos;a pas pu valider les changements</translation>
     </message>
     <message>
         <source>Problems during roll back</source>
-        <translation type="obsolete">Problèmes pendant le retour en arrière</translation>
+        <translation type="unfinished">Problèmes pendant le retour en arrière</translation>
     </message>
     <message>
         <source>Not a vector layer</source>
-        <translation type="obsolete">Pas de couche vectorielle</translation>
+        <translation type="unfinished">Pas de couche vectorielle</translation>
     </message>
     <message>
         <source>To open an attribute table, you must select a vector layer in the legend</source>
-        <translation type="obsolete">Pour ouvrir une table attributaire, vous devez sélectionner une couche vectorielle dans la légende</translation>
+        <translation type="unfinished">Pour ouvrir une table attributaire, vous devez sélectionner une couche vectorielle dans la légende</translation>
     </message>
     <message>
         <source>Saving done</source>
@@ -10652,7 +10707,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Filling the attribute table has been stopped because there was no more virtual memory left</source>
-        <translation type="obsolete">Le remplissage de la table attributaire a été interrompu parce que la mémoire virtuelle a été épuisée</translation>
+        <translation type="unfinished">Le remplissage de la table attributaire a été interrompu parce que la mémoire virtuelle a été épuisée</translation>
     </message>
     <message>
         <source>Layer attribute table contains unsupported datatype(s)</source>
@@ -10665,6 +10720,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>The data points will be transformed from the layer coordinate reference system.</source>
         <translation>Les points seront transformés dans le système de coordonnée de la couche.</translation>
+    </message>
+    <message>
+        <source>bad_alloc exception</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10793,6 +10852,7 @@ p, li { white-space: pre-wrap; }
         <source>- %1 features found</source>
         <comment>Identify results window title</comment>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -11587,15 +11647,15 @@ Information supplémentaire sur l&apos;erreur :</translation>
     </message>
     <message>
         <source>Show all features</source>
-        <translation type="obsolete">Montrer toutes les entités</translation>
+        <translation type="unfinished">Montrer toutes les entités</translation>
     </message>
     <message>
         <source>Show selected features</source>
-        <translation type="obsolete">Montrer les entités sélectionnées</translation>
+        <translation type="unfinished">Montrer les entités sélectionnées</translation>
     </message>
     <message>
         <source>Show features in current canvas</source>
-        <translation type="obsolete">Montrer les entités dans le caneva actuel</translation>
+        <translation type="unfinished">Montrer les entités dans le caneva actuel</translation>
     </message>
 </context>
 <context>
@@ -12096,7 +12156,7 @@ Par défaut QGIS utilise la valeur 5. Augmentez la valeur si vous avez des erreu
     </message>
     <message>
         <source>Attribute table behaviour</source>
-        <translation type="obsolete">Comportement de la table d&apos;attribut</translation>
+        <translation type="unfinished">Comportement de la table d&apos;attribut</translation>
     </message>
     <message>
         <source>CRS</source>
@@ -12470,14 +12530,335 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>QgsPluginInstaller</name>
+    <message>
+        <source>Couldn&apos;t parse output from the repository</source>
+        <translation>Ehec de l&apos;analyse de la sortie depuis le répertoire</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t open the system plugin directory</source>
+        <translation>Echec de l&apos;ouverture du répertoire d&apos;extension système</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t open the local plugin directory</source>
+        <translation>Echec de l&apos;ouverture du répertoire local d&apos;extension</translation>
+    </message>
+    <message>
+        <source>Fetch Python Plugins...</source>
+        <translation>Récupération des extensions python...</translation>
+    </message>
+    <message>
+        <source>Install more plugins from remote repositories</source>
+        <translation>Installer plus d&apos;extensions depuis un repertoire distant</translation>
+    </message>
+    <message>
+        <source>Looking for new plugins...</source>
+        <translation>Recherche de nouvelles extensions...</translation>
+    </message>
+    <message>
+        <source>There is a new plugin available</source>
+        <translation>Il y a une nouvelle extension disponible</translation>
+    </message>
+    <message>
+        <source>There is a plugin update available</source>
+        <translation>Il y a une mise à jour d&apos;extension disponible</translation>
+    </message>
+    <message>
+        <source>QGIS Python Plugin Installer</source>
+        <translation>Installateur de plugin python pour QGIS</translation>
+    </message>
+    <message>
+        <source>Error reading repository:</source>
+        <translation>Erreur de lecture du répertoire :</translation>
+    </message>
+    <message>
+        <source>Nothing to remove! Plugin directory doesn&apos;t exist:</source>
+        <translation>Rien à supprimer ! Lerépertoire de plugin n&apos;existe pas :</translation>
+    </message>
+    <message>
+        <source>Failed to remove the directory:</source>
+        <translation>Echec de la suppresion du répertoire :</translation>
+    </message>
+    <message>
+        <source>Check permissions or remove it manually</source>
+        <translation>Vérifiez les permissions ou effacez les manuellement</translation>
+    </message>
+</context>
+<context>
     <name>QgsPluginInstallerDialog</name>
     <message>
         <source>QGIS Python Plugin Installer</source>
         <translation>Installateur de plugin python pour QGIS</translation>
     </message>
     <message>
+        <source>Error reading repository:</source>
+        <translation type="unfinished">Erreur de lecture du dépôt :</translation>
+    </message>
+    <message>
+        <source>all repositories</source>
+        <translation>Tout les dépôts</translation>
+    </message>
+    <message>
+        <source>connected</source>
+        <translation>connecté</translation>
+    </message>
+    <message>
+        <source>This repository is connected</source>
+        <translation>Ce dépôt est connecté</translation>
+    </message>
+    <message>
+        <source>unavailable</source>
+        <translation>Indisponible</translation>
+    </message>
+    <message>
+        <source>This repository is enabled, but unavailable</source>
+        <translation>Ce dépôt est activé mais n&apos;est pas disponible</translation>
+    </message>
+    <message>
+        <source>disabled</source>
+        <translation>désactivé</translation>
+    </message>
+    <message>
+        <source>This repository is disabled</source>
+        <translation>Ce dépôt est désactivé</translation>
+    </message>
+    <message>
+        <source>This repository is blocked due to incompatibility with your Quantum GIS version</source>
+        <translation>Ce dépôt est bloqué du fait d&apos;une incompatibilité...</translation>
+    </message>
+    <message>
+        <source>orphans</source>
+        <translation>orphelins</translation>
+    </message>
+    <message>
+        <source>any status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>not installed</source>
+        <comment>plural</comment>
+        <translation>non installé</translation>
+    </message>
+    <message>
+        <source>installed</source>
+        <comment>plural</comment>
+        <translation>installé</translation>
+    </message>
+    <message>
+        <source>upgradeable and news</source>
+        <translation>mise à jour et nouvelles</translation>
+    </message>
+    <message>
+        <source>This plugin is not installed</source>
+        <translation>Cette extension n&apos;est pas installée</translation>
+    </message>
+    <message>
+        <source>This plugin is installed</source>
+        <translation>Cette extension est installée</translation>
+    </message>
+    <message>
+        <source>This plugin is installed, but there is an updated version available</source>
+        <translation>Cette extension est installée, mais une mise à jour est disponible</translation>
+    </message>
+    <message>
+        <source>This plugin is installed, but I can&apos;t find it in any enabled repository</source>
+        <translation>Cette extension est installée, mais impossible de le trouver dans les dépôts activés</translation>
+    </message>
+    <message>
+        <source>This plugin is not installed and is seen for the first time</source>
+        <translation>Cette extension n&apos;est pas installée et est vue pour la première fois</translation>
+    </message>
+    <message>
+        <source>This plugin is installed and is newer than its version available in a repository</source>
+        <translation>Cette extension est installée et est plus récente que celle disponible dans le dépôt</translation>
+    </message>
+    <message>
+        <source>not installed</source>
+        <comment>singular</comment>
+        <translation>non installée</translation>
+    </message>
+    <message>
+        <source>installed</source>
+        <comment>singular</comment>
+        <translation>installée</translation>
+    </message>
+    <message>
+        <source>upgradeable</source>
+        <comment>singular</comment>
+        <translation>mise à jour</translation>
+    </message>
+    <message>
+        <source>new!</source>
+        <comment>singular</comment>
+        <translation>nouveau !</translation>
+    </message>
+    <message>
+        <source>invalid</source>
+        <comment>singular</comment>
+        <translation>invalide</translation>
+    </message>
+    <message>
+        <source>installed version</source>
+        <translation>version installée</translation>
+    </message>
+    <message>
+        <source>available version</source>
+        <translation>version disponible</translation>
+    </message>
+    <message>
+        <source>That&apos;s the newest available version</source>
+        <translation>Il s&apos;agit de la version la plus récente</translation>
+    </message>
+    <message>
+        <source>There is no version available for download</source>
+        <translation>Il n&apos;y a pas de version disponible pour le téléchargement</translation>
+    </message>
+    <message>
+        <source>only locally available</source>
+        <translation>disponible uniquement localement</translation>
+    </message>
+    <message>
+        <source>Install plugin</source>
+        <translation>Installer l&apos;extension</translation>
+    </message>
+    <message>
+        <source>Reinstall plugin</source>
+        <translation>Ré-installer l&apos;extension</translation>
+    </message>
+    <message>
+        <source>Upgrade plugin</source>
+        <translation>Mise à jour de l&apos;extension</translation>
+    </message>
+    <message>
+        <source>Install/upgrade plugin</source>
+        <translation>Installer/Mettre à jour le plugin</translation>
+    </message>
+    <message>
+        <source>Downgrade plugin</source>
+        <translation>Rétrograder la version</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to downgrade the plugin to the latest available version? The installed one is newer!</source>
+        <translation>Êtes-vous sûr de vouloir remettre la dernière version disponible ? La version installée est plus récente !</translation>
+    </message>
+    <message>
+        <source>Plugin installation failed</source>
+        <translation>Echec de l&apos;installation</translation>
+    </message>
+    <message>
+        <source>Plugin has disappeared</source>
+        <translation>Disparition de l&apos;extension</translation>
+    </message>
+    <message>
+        <source>The plugin seems to have been installed but I don&apos;t know where. Probably the plugin package contained a wrong named directory.
+Please search the list of installed plugins. I&apos;m nearly sure you&apos;ll find the plugin there, but I just can&apos;t determine which of them it is. It also means that I won&apos;t be able to determine if this plugin is installed and inform you about available updates. However the plugin may work. Please contact the plugin author and submit this issue.</source>
+        <translation>L&apos;extension semble havoir été installé mais je ne sais pas où. Il est probable que l&apos;extension devait contenir un répertoire mal nommé.
+Veulliez chercher dans la liste des extensions installées. Vous ne pourrez bénéficier des notifications de mise à jours. Raportez ce problème à l&apos;auteur de l&apos;extension.</translation>
+    </message>
+    <message>
+        <source>Plugin installed successfully</source>
+        <translation>Extension installée avec succès</translation>
+    </message>
+    <message>
+        <source>Python plugin installed.
+You have to enable it in the Plugin Manager.</source>
+        <translation>Extension python installée.
+Vous devez l&apos;activer dans le Gestionnaire d&apos;Extension.</translation>
+    </message>
+    <message>
+        <source>Python plugin reinstalled.
+You have to restart Quantum GIS to reload it.</source>
+        <translation>Extension python ré-installée.
+Vous devez relancer Quantum GIS pour la charger de nouveau.</translation>
+    </message>
+    <message>
+        <source>Plugin uninstall failed</source>
+        <translation>Echec de la désinstallation</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to uninstall the following plugin?</source>
+        <translation>Etes-vous sûr de vouloir désinstaller l&apos;extension suivante ?</translation>
+    </message>
+    <message>
+        <source>Warning: this plugin isn&apos;t available in any accessible repository!</source>
+        <translation>Avertissement : cet extension n&apos;est pas  disponible dans aucun des dépôts accessibles !</translation>
+    </message>
+    <message>
+        <source>Plugin uninstalled successfully</source>
+        <translation>Extension désinstallée avec succès</translation>
+    </message>
+    <message>
+        <source>You are going to add some plugin repositories neither authorized nor supported by the Quantum GIS team, however provided by folks associated with us. Plugin authors generally make efforts to make their works useful and safe, but we can&apos;t assume any responsibility for them. FEEL WARNED!</source>
+        <translation>Vous allez ajouter des dépôts d&apos;extension qui ne sont ni contrôlés ni supportés par l&apos;équipe de QGIS. Les auteurs font de leur mieux pour fournir des extensions stables et utiles, mais nous ne pouvons donner aucunes garanties. A vos risques et périls !</translation>
+    </message>
+    <message>
+        <source>Unable to add another repository with the same URL!</source>
+        <translation>Impossible d&apos;ajouter un autre dépôt avec la même adresse ! </translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove the following repository?</source>
+        <translation>Êtes-vous sûr de vouloir désinstaller le dépot ?</translation>
+    </message>
+    <message>
+        <source>This plugin is incompatible with your Quantum GIS version and probably won&apos;t work.</source>
+        <translation>Cette extension n&apos;est pas compatible avec votre version de Quantum GIS et ne fonctionnera certainement pas.</translation>
+    </message>
+    <message>
+        <source>The required Python module is not installed.
+For more information, please visit its homepage.</source>
+        <translation>Le module python requis n&apos;est pas installé.
+Pour plus d&apos;information, visitez son site.</translation>
+    </message>
+    <message>
+        <source>This plugin seems to be broken.
+It has been installed but can&apos;t be loaded.
+Here is the error message:</source>
+        <translation>Cette extension semble corrompue.
+Elle a pu être installée mais ne peut être chargée.
+Voici le message d&apos;erreur :</translation>
+    </message>
+    <message>
+        <source>Note that it&apos;s an uninstallable core plugin</source>
+        <translation>Veuillez remarquer que c&apos;es une extension système non-installable</translation>
+    </message>
+    <message>
+        <source>This plugin is broken</source>
+        <translation>Cette extension est corrompue</translation>
+    </message>
+    <message>
+        <source>This plugin requires a newer version of Quantum GIS</source>
+        <translation>Cette extension requiert une version plus récente de Quantum GIS</translation>
+    </message>
+    <message>
+        <source>This plugin requires a missing module</source>
+        <translation>Cette extension requiert un module manquant</translation>
+    </message>
+    <message>
+        <source>Plugin reinstalled successfully</source>
+        <translation>Extension ré-installée avec succès</translation>
+    </message>
+    <message>
+        <source>The plugin is designed for a newer version of Quantum GIS. The minimum required version is:</source>
+        <translation>Cette extension requiert une version plus récente de Quantum GIS. La version minimale requise est : </translation>
+    </message>
+    <message>
+        <source>The plugin depends on some components missing on your system. You need to install the following Python module in order to enable it:</source>
+        <translation>Cette extension dépend de composants manquants à votre système. Vous devez installer les modules python suivant pour l&apos;utiliser :</translation>
+    </message>
+    <message>
+        <source>The plugin is broken. Python said:</source>
+        <translation>Cette extension est corrompue. Python dit :</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerDialogBase</name>
+    <message>
+        <source>QGIS Python Plugin Installer</source>
+        <translation>Installateur d&apos;extension python pour QGIS</translation>
+    </message>
+    <message>
         <source>QGIS Plugin Installer</source>
-        <translation>Installateur de plugin QGIS</translation>
+        <translation type="obsolete">Installateur de plugin QGIS</translation>
     </message>
     <message>
         <source>Plugins</source>
@@ -12485,7 +12866,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>List of available and installed plugins</source>
-        <translation>Liste des plugins disponibles et installés</translation>
+        <translation>Liste des extensions disponibles et installés</translation>
     </message>
     <message>
         <source>Filter:</source>
@@ -12493,11 +12874,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Display only plugins containing this word in their metadata</source>
-        <translation>Afficher seulement les plugins contenant ce mot dans leur description</translation>
+        <translation>Afficher seulement les extensions contenant ce mot dans leur description</translation>
     </message>
     <message>
         <source>Display only plugins from given repository</source>
-        <translation>Afficher seulement les plugins d&apos;un dépôt donné</translation>
+        <translation>Afficher seulement les extensions d&apos;un dépôt donné</translation>
     </message>
     <message>
         <source>all repositories</source>
@@ -12505,7 +12886,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Display only plugins with matching status</source>
-        <translation>Afficher seulement les plugins avec le statut suivant</translation>
+        <translation>Afficher seulement les extensions avec le statut suivant</translation>
     </message>
     <message>
         <source>Status</source>
@@ -12533,19 +12914,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Install, reinstall or upgrade the selected plugin</source>
-        <translation>Installer, réinstaller ou mettre à jour le plugin sélectionné</translation>
+        <translation>Installer, réinstaller ou mettre à jour l&apos;extension sélectionnée</translation>
     </message>
     <message>
         <source>Install/upgrade plugin</source>
-        <translation>Installer/Mettre à jour le plugin</translation>
+        <translation>Installer/Mettre à jour l&apos;extension</translation>
     </message>
     <message>
         <source>Uninstall the selected plugin</source>
-        <translation>Désinstaller le plugin sélectionné</translation>
+        <translation>Désinstaller l&apos;extension sélectionné</translation>
     </message>
     <message>
         <source>Uninstall plugin</source>
-        <translation>Désinstaller le plugin</translation>
+        <translation>Désinstaller l&apos;extension</translation>
     </message>
     <message>
         <source>Repositories</source>
@@ -12553,7 +12934,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>List of plugin repositories</source>
-        <translation>Listes des dépôts de plugin</translation>
+        <translation>Listes des dépôts d&apos;extension</translation>
     </message>
     <message>
         <source>URL</source>
@@ -12569,15 +12950,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Add third party plugin repositories to the list</source>
-        <translation>Ajouter un dépôts-tiers de plugin à la liste</translation>
+        <translation>Ajouter un dépôts-tiers d&apos;extension à la liste</translation>
     </message>
     <message>
         <source>Add 3rd party repositories</source>
-        <translation>Ajouter un dépôts-tiers de plugin à la liste</translation>
+        <translation>Ajouter un dépôts-tiers d&apos;extension à la liste</translation>
     </message>
     <message>
         <source>Add a new plugin repository</source>
-        <translation>Ajouter un nouveau dépôts de pluguin</translation>
+        <translation>Ajouter un nouveau dépôts dextension</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -12601,7 +12982,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>The plugins will be installed to ~/.qgis/python/plugins</source>
-        <translation>Le plugin va être installé dans ~/.qgis/python/plugins</translation>
+        <translation>L&apos;extension va être installée dans ~/.qgis/python/plugins</translation>
     </message>
     <message>
         <source>Close the Installer window</source>
@@ -12615,8 +12996,43 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerFetchingDialog</name>
     <message>
+        <source>Success</source>
+        <translation>Succès</translation>
+    </message>
+    <message>
+        <source>Resolving host name...</source>
+        <translation>Résolution du nom d&apos;hôte...</translation>
+    </message>
+    <message>
+        <source>Connecting...</source>
+        <translation> Connection...</translation>
+    </message>
+    <message>
+        <source>Host connected. Sending request...</source>
+        <translation>Hôte connecté. Envoi de requête...</translation>
+    </message>
+    <message>
+        <source>Downloading data...</source>
+        <translation>Chargement des données...</translation>
+    </message>
+    <message>
+        <source>Idle</source>
+        <translation>En attente</translation>
+    </message>
+    <message>
+        <source>Closing connection...</source>
+        <translation>Fermeture de la connection...</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Erreur</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerFetchingDialogBase</name>
+    <message>
         <source>Fetching repositories</source>
-        <translation>Recheche de dépôts</translation>
+        <translation>Recherche de dépôts</translation>
     </message>
     <message>
         <source>Overall progress:</source>
@@ -12638,6 +13054,49 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerInstallingDialog</name>
     <message>
+        <source>Installing...</source>
+        <translation>Installation...</translation>
+    </message>
+    <message>
+        <source>Resolving host name...</source>
+        <translation>Résolution du nom d&apos;hôte...</translation>
+    </message>
+    <message>
+        <source>Connecting...</source>
+        <translation> Connexion...</translation>
+    </message>
+    <message>
+        <source>Host connected. Sending request...</source>
+        <translation>Hôte connecté. Envoi de requête...</translation>
+    </message>
+    <message>
+        <source>Downloading data...</source>
+        <translation>Chargement des données...</translation>
+    </message>
+    <message>
+        <source>Idle</source>
+        <translation>En attente</translation>
+    </message>
+    <message>
+        <source>Closing connection...</source>
+        <translation>Fermeture de la connexion...</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Erreur</translation>
+    </message>
+    <message>
+        <source>Failed to unzip the plugin package. Probably it&apos;s broken or missing from the repository. You may also want to make sure that you have write permission to the plugin directory:</source>
+        <translation>Echec de la décompression de l&apos;extension. Soit elle est corrompue, soit elle est manquante sur le dépôt. Vous pouvez vérifier si vous avez les droits d&apos;accès en écriture pour le répertoire des dépôts :</translation>
+    </message>
+    <message>
+        <source>Aborted by user</source>
+        <translation>Annulé par l&apos;utilisateur</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerInstallingDialogBase</name>
+    <message>
         <source>QGIS Python Plugin Installer</source>
         <translation>Installateur de plugin python pour QGIS</translation>
     </message>
@@ -12647,26 +13106,33 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Connecting...</source>
-        <translation> Connection...</translation>
+        <translation> Connexion...</translation>
     </message>
 </context>
 <context>
     <name>QgsPluginInstallerPluginErrorDialog</name>
+    <message>
+        <source>no error message received</source>
+        <translation>Pas de message d&apos;erreur reçu</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerPluginErrorDialogBase</name>
     <message>
         <source>Error loading plugin</source>
         <translation>Erreur de chargement de Plugin</translation>
     </message>
     <message>
         <source>The plugin seems to be invalid or have unfulfilled dependencies. It has been installed, but can&apos;t be loaded. If you really need this plugin, you can contact its author or &lt;a href=&quot;http://lists.osgeo.org/mailman/listinfo/qgis-user&quot;&gt;QGIS users group&lt;/a&gt; and try to solve the problem. If not, you can just uninstall it. Here is the error message below:</source>
-        <translation>Ce plugin semble avoir des dépendances non-définies. Il a été installé mais ne peut être chargé. Si vous avez réellement besoin de ce plugin, vous pouvez contacter son auteur ou &lt;a href=&quot;http://lists.osgeo.org/mailman/listinfo/qgis-user&quot;&gt;la liste d&apos;utilisateurs de QGIS&lt;/a&gt; et essayez de résoudre le problème. Si non, désintallez le. Voici le message d&apos;erreur :</translation>
+        <translation>Cette extension semble avoir des dépendances non-définies. Il a été installé mais ne peut être chargé. Si vous avez réellement besoin de ce plugin, vous pouvez contacter son auteur ou &lt;a href=&quot;http://lists.osgeo.org/mailman/listinfo/qgis-user&quot;&gt;la liste d&apos;utilisateurs de QGIS&lt;/a&gt; et essayez de résoudre le problème. Si non, désintallez la. Voici le message d&apos;erreur :</translation>
     </message>
     <message>
         <source>Do you want to uninstall this plugin now? If you&apos;re unsure, probably you would like to do this.</source>
-        <translation>Voulez-vous désintaller ce plugin maintenant ?</translation>
+        <translation>Voulez-vous désintaller cette extension maintenant ?</translation>
     </message>
 </context>
 <context>
-    <name>QgsPluginInstallerRepositoryDetailsDialog</name>
+    <name>QgsPluginInstallerRepositoryDetailsDialogBase</name>
     <message>
         <source>Repository details</source>
         <translation>Détail du dépôt</translation>
@@ -12697,7 +13163,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>[place for a warning message]</source>
-        <translation>[Emplacement pour un message d&apos;erreur]</translation>
+        <translation type="obsolete">[Emplacement pour un message d&apos;erreur]</translation>
     </message>
 </context>
 <context>
@@ -12712,7 +13178,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>No QGIS plugins found in </source>
-        <translation>Aucun plugin QGIS trouvé dans</translation>
+        <translation>Aucune extension QGIS trouvée dans</translation>
     </message>
     <message>
         <source>Name</source>
@@ -12737,6 +13203,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>&amp;Clear All</source>
         <translation>&amp;Effacer tout</translation>
+    </message>
+    <message>
+        <source>[ incompatible ]</source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -14112,8 +14582,13 @@ De ce fait le sélecteur de projection ne fonctionnera pas...</translation>
     </message>
     <message>
         <source>The color map for Band %n failed to load</source>
-        <translation type="obsolete">Les palettes de couleurs pour les bandes %n n&apos;ont pas être chargées
+        <translation type="obsolete">
+        
         </translation>
+    </message>
+    <message>
+        <source>Building internal pyramid overviews is not supported on raster layers with JPEG compression.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14284,7 +14759,7 @@ De ce fait le sélecteur de projection ne fonctionnera pas...</translation>
     </message>
     <message>
         <source>Minimum scale at which this layer will be displayed. </source>
-        <translation>Echelle minimum à laquelle cette couche sera affichée.</translation>
+        <translation> Mise à l&apos;échelle minimum à laquelle cette couche sera affichée.</translation>
     </message>
     <message>
         <source>Spatial Reference System</source>
@@ -14761,15 +15236,16 @@ De ce fait le sélecteur de projection ne fonctionnera pas...</translation>
         <translation></translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Verdana&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Build pyramids internally if possible</source>
         <translation>Construire les pyramides de manière interne si possible</translation>
+    </message>
+    <message>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15031,7 +15507,8 @@ p, li { white-space: pre-wrap; }
     <name>QgsSearchQueryBuilder</name>
     <message>
         <source>Found %d matching features.</source>
-        <translation type="obsolete">%d entités correspondantes ont été trouvées      
+        <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -15107,7 +15584,8 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Coordinate Reference System (%1 available)</source>
-        <translation type="obsolete">Systèmes de coordonnées de référence (%1 disponibles)
+        <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -15310,7 +15788,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Diagonal X</source>
-        <translation type="unfinished"></translation>
+        <translation>Diagonale X</translation>
     </message>
     <message>
         <source>Dense1</source>
@@ -16094,7 +16572,7 @@ Les classes existantes doivent-elles être effacées avant la classification ?</
     </message>
     <message>
         <source>SUCCESS: %1 attributes added.</source>
-        <translation>SUCCES : %1 attributs ajoutés</translation>
+        <translation>SUCCES : %1 attributs ajoutés.</translation>
     </message>
     <message>
         <source>ERROR: %1 new attributes not added</source>
@@ -16102,15 +16580,15 @@ Les classes existantes doivent-elles être effacées avant la classification ?</
     </message>
     <message>
         <source>SUCCESS: %1 attributes deleted.</source>
-        <translation>SUCCES : %1 attributs effacés</translation>
+        <translation>SUCCES : %1 attributs effacés.</translation>
     </message>
     <message>
         <source>ERROR: %1 attributes not deleted.</source>
-        <translation>ERREUR : %1 attributs non effacés</translation>
+        <translation>ERREUR : %1 attributs non effacés.</translation>
     </message>
     <message>
         <source>SUCCESS: attribute %1 was added.</source>
-        <translation>SUCCES : attribut %1 a été ajouté </translation>
+        <translation>SUCCES : attribut %1 a été ajouté .</translation>
     </message>
     <message>
         <source>ERROR: attribute %1 not added</source>
@@ -16118,35 +16596,35 @@ Les classes existantes doivent-elles être effacées avant la classification ?</
     </message>
     <message>
         <source>SUCCESS: %1 attribute values changed.</source>
-        <translation>SUCCES : %1 valeurs d&apos;attribut modifiés</translation>
+        <translation>SUCCES : %1 valeurs d&apos;attribut modifiés.</translation>
     </message>
     <message>
         <source>ERROR: %1 attribute value changes not applied.</source>
-        <translation>ERREUR : %1 changement des vlaeus d&apos;attribut non-appliqués</translation>
+        <translation>ERREUR : %1 changement des vlaeus d&apos;attribut non-appliqués.</translation>
     </message>
     <message>
         <source>SUCCESS: %1 features added.</source>
-        <translation>SUCCES : %1 entités ajoutées</translation>
+        <translation>SUCCES : %1 entités ajoutées.</translation>
     </message>
     <message>
         <source>ERROR: %1 features not added.</source>
-        <translation>ERREUR :  %1 entités non-ajoutées</translation>
+        <translation>ERREUR :  %1 entités non-ajoutées.</translation>
     </message>
     <message>
         <source>SUCCESS: %1 geometries were changed.</source>
-        <translation>SUCCES : %1 géométries modifiées</translation>
+        <translation>SUCCES : %1 géométries modifiées.</translation>
     </message>
     <message>
         <source>ERROR: %1 geometries not changed.</source>
-        <translation>ERREUR : %1 géométries non-modifiées</translation>
+        <translation>ERREUR : %1 géométries non-modifiées.</translation>
     </message>
     <message>
         <source>SUCCESS: %1 features deleted.</source>
-        <translation>SUCCES : %1 entités s</translation>
+        <translation>SUCCES : %1 entités.</translation>
     </message>
     <message>
         <source>ERROR: %1 features not deleted.</source>
-        <translation>ERREUR : %1 entités non-effacées</translation>
+        <translation>ERREUR : %1 entités non-effacées.</translation>
     </message>
     <message>
         <source>No renderer object</source>
@@ -16632,7 +17110,7 @@ Les classes existantes doivent-elles être effacées avant la classification ?</
     </message>
     <message>
         <source>Confirm Delete</source>
-        <translation>Confirmer l&apos;effacement</translation>
+        <translation>Confirmez l&apos;effacement</translation>
     </message>
     <message>
         <source>Yes</source>
@@ -17372,7 +17850,7 @@ Dévelopé par Paolo L. Scala, Barbara Rita Barricelli, Marco PadulaCNR, Milan U
     </message>
     <message>
         <source>Replace this with a short description of what the plugin does</source>
-        <translation>Remplacez ceci par une description courte de ce plugin </translation>
+        <translation>Remplacez ceci par une description courte de cette extension</translation>
     </message>
 </context>
 </TS>

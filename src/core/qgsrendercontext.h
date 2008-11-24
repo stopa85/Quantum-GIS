@@ -20,7 +20,7 @@
 
 #include "qgscoordinatetransform.h"
 #include "qgsmaptopixel.h"
-#include "qgsrect.h"
+#include "qgsrectangle.h"
 
 class QPainter;
 
@@ -42,7 +42,7 @@ class CORE_EXPORT QgsRenderContext
 
     const QgsCoordinateTransform* coordinateTransform() const {return mCoordTransform;}
 
-    const QgsRect& extent() const {return mExtent;}
+    const QgsRectangle& extent() const {return mExtent;}
 
     const QgsMapToPixel& mapToPixel() const {return mMapToPixel;}
 
@@ -56,20 +56,20 @@ class CORE_EXPORT QgsRenderContext
 
     bool drawEditingInformation() const {return mDrawEditingInformation;}
 
-    double scaleDenominator() const {return mScaleDenominator;}
+    double rendererScale() const {return mRendererScale;}
 
     //setters
 
     /**Sets coordinate transformation. QgsRenderContext takes ownership and deletes if necessary*/
     void setCoordinateTransform( QgsCoordinateTransform* t );
     void setMapToPixel( const QgsMapToPixel& mtp ) {mMapToPixel = mtp;}
-    void setExtent( const QgsRect& extent ) {mExtent = extent;}
+    void setExtent( const QgsRectangle& extent ) {mExtent = extent;}
     void setDrawEditingInformation( bool b ) {mDrawEditingInformation = b;}
     void setRenderingStopped( bool stopped ) {mRenderingStopped = stopped;}
     void setScaleFactor( double factor ) {mScaleFactor = factor;}
     void setRasterScaleFactor( double factor ) {mRasterScaleFactor = factor;}
+    void setRendererScale( double scale ) {mRendererScale = scale;}
     void setPainter( QPainter* p ) {mPainter = p;}
-    void setScaleDenominator(double denom){mScaleDenominator = denom;}
 
   private:
 
@@ -82,7 +82,7 @@ class CORE_EXPORT QgsRenderContext
     /**True if vertex markers for editing should be drawn*/
     bool mDrawEditingInformation;
 
-    QgsRect mExtent;
+    QgsRectangle mExtent;
 
     /**If true then no rendered vector elements should be cached as image*/
     bool mForceVectorOutput;
@@ -98,8 +98,8 @@ class CORE_EXPORT QgsRenderContext
     /**Factor to scale rasters*/
     double mRasterScaleFactor;
 
-    /**Map scale*/
-    double mScaleDenominator;
+    /** renderer scale */
+    double mRendererScale;
 };
 
 #endif

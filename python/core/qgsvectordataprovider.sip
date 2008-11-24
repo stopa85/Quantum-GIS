@@ -52,7 +52,7 @@ class QgsVectorDataProvider : QgsDataProvider
        *                     false if a test based on bounding box is sufficient
        */
       virtual void select(QList<int> fetchAttributes = QList<int>(),
-                          QgsRect rect = QgsRect(),
+                          QgsRectangle rect = QgsRectangle(),
                           bool fetchGeometry = true,
                           bool useIntersect = false) = 0;
 
@@ -112,7 +112,7 @@ class QgsVectorDataProvider : QgsDataProvider
       virtual QString dataComment() const;
       
       /** Restart reading features from previous select operation */
-      virtual void begin() = 0;
+      virtual void rewind() = 0;
 
       /**
        * Returns the minimum value of an attributs
@@ -141,7 +141,7 @@ class QgsVectorDataProvider : QgsDataProvider
        *
        * Default implementation simply iterates the features 
        */
-      virtual void uniqueValues(int index, QList<QVariant> &uniqueValues);
+      virtual void uniqueValues(int index, QList<QVariant> &uniqueValues /Out/);
 
       /**
        * Adds a list of features

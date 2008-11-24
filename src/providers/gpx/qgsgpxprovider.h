@@ -59,7 +59,7 @@ class QgsGPXProvider : public QgsVectorDataProvider
      *                     false if a test based on bounding box is sufficient
      */
     virtual void select( QgsAttributeList fetchAttributes = QgsAttributeList(),
-                         QgsRect rect = QgsRect(),
+                         QgsRectangle rect = QgsRectangle(),
                          bool fetchGeometry = true,
                          bool useIntersect = false );
 
@@ -93,7 +93,7 @@ class QgsGPXProvider : public QgsVectorDataProvider
     virtual const QgsFieldMap & fields() const;
 
     /** Restart reading features from previous select operation */
-    virtual void begin();
+    virtual void rewind();
 
     /**
      * Adds a list of features
@@ -127,7 +127,7 @@ class QgsGPXProvider : public QgsVectorDataProvider
 
     /** Return the extent for this data layer
      */
-    virtual QgsRect extent();
+    virtual QgsRectangle extent();
 
     /**Returns true if this is a valid delimited file
      */
@@ -175,7 +175,7 @@ class QgsGPXProvider : public QgsVectorDataProvider
                  };
     static const char* attr[];
     //! Current selection rectangle
-    QgsRect *mSelectionRectangle;
+    QgsRectangle *mSelectionRectangle;
     bool mValid;
     long mNumberFeatures;
 

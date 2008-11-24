@@ -28,7 +28,7 @@ class QgsDiagramOverlay: public QgsVectorOverlay
  public:
   QgsDiagramOverlay(QgsVectorLayer* vl);
   ~QgsDiagramOverlay();
-  void createOverlayObjects(const QgsRect& viewExtent);
+  void createOverlayObjects(const QgsRectangle& viewExtent);
   void drawOverlayObjects(QgsRenderContext& context) const;
 
   //setters and getters

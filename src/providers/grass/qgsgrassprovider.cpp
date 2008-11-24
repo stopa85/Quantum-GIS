@@ -44,6 +44,7 @@ extern "C"
 #include <grass/gis.h>
 #include <grass/dbmi.h>
 #include <grass/Vect.h>
+#include <grass/version.h>
 }
 
 #ifdef _MSC_VER
@@ -423,7 +424,7 @@ void QgsGrassProvider::resetSelection( bool sel )
 }
 
 void QgsGrassProvider::select( QgsAttributeList fetchAttributes,
-                               QgsRect rect,
+                               QgsRectangle rect,
                                bool fetchGeometry,
                                bool useIntersect )
 {
@@ -461,8 +462,8 @@ void QgsGrassProvider::select( QgsAttributeList fetchAttributes,
   if ( !useIntersect )
   { // select by bounding boxes only
     BOUND_BOX box;
-    box.N = rect.yMax(); box.S = rect.yMin();
-    box.E = rect.xMax(); box.W = rect.xMin();
+    box.N = rect.yMaximum(); box.S = rect.yMinimum();
+    box.E = rect.xMaximum(); box.W = rect.xMinimum();
     box.T = PORT_DOUBLE_MAX; box.B = -PORT_DOUBLE_MAX;
     if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY )
     {
@@ -480,11 +481,11 @@ void QgsGrassProvider::select( QgsAttributeList fetchAttributes,
 
     Polygon = Vect_new_line_struct();
 
-    Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0 );
-    Vect_append_point( Polygon, rect.xMax(), rect.yMin(), 0 );
-    Vect_append_point( Polygon, rect.xMax(), rect.yMax(), 0 );
-    Vect_append_point( Polygon, rect.xMin(), rect.yMax(), 0 );
-    Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0 );
+    Vect_append_point( Polygon, rect.xMinimum(), rect.yMinimum(), 0 );
+    Vect_append_point( Polygon, rect.xMaximum(), rect.yMinimum(), 0 );
+    Vect_append_point( Polygon, rect.xMaximum(), rect.yMaximum(), 0 );
+    Vect_append_point( Polygon, rect.xMinimum(), rect.yMaximum(), 0 );
+    Vect_append_point( Polygon, rect.xMinimum(), rect.yMinimum(), 0 );
 
     if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY )
     {
@@ -512,12 +513,12 @@ void QgsGrassProvider::select( QgsAttributeList fetchAttributes,
 
 
 
-QgsRect QgsGrassProvider::extent()
+QgsRectangle QgsGrassProvider::extent()
 {
   BOUND_BOX box;
   Vect_get_map_box( mMap, &box );
 
-  return QgsRect( box.W, box.S, box.E, box.N );
+  return QgsRectangle( box.W, box.S, box.E, box.N );
 }
 
 /**
@@ -557,7 +558,7 @@ int QgsGrassProvider::keyField()
   return mLayers[mLayerId].keyColumn;
 }
 
-void QgsGrassProvider::begin()
+void QgsGrassProvider::rewind()
 {
   if ( isEdited() || isFrozen() || !mValid )
     return;
@@ -1040,7 +1041,12 @@ int QgsGrassProvider::openMap( QString gisdbase, QString location, QString mapse
   if ( level == 1 )
   {
     QgsGrass::resetError();
-    Vect_build( map.map, stderr );
+#if defined(GRASS_VERSION_MAJOR) && defined(GRASS_VERSION_MINOR) && \
+    ( ( GRASS_VERSION_MAJOR == 6 && GRASS_VERSION_MINOR >= 4 ) || GRASS_VERSION_MAJOR > 6 )
+    Vect_build( map.map );
+#else
+    Vect_build( map.map, stderr ); 
+#endif
 
     if ( QgsGrass::getError() == QgsGrass::FATAL )
     {
@@ -1519,8 +1525,14 @@ bool QgsGrassProvider::closeEdit( bool newMap )
   // TODO: Is it necessary for build/close ?
   G__setenv(( char * ) "MAPSET", map->mapset.toAscii().data() );
 
+#if defined(GRASS_VERSION_MAJOR) && defined(GRASS_VERSION_MINOR) && \
+    ( ( GRASS_VERSION_MAJOR == 6 && GRASS_VERSION_MINOR >= 4 ) || GRASS_VERSION_MAJOR > 6 )
+  Vect_build_partial( map->map, GV_BUILD_NONE );
+  Vect_build( map->map ); 
+#else 
   Vect_build_partial( map->map, GV_BUILD_NONE, NULL );
   Vect_build( map->map, stderr );
+#endif
 
   // If a new map was created close the map and return
   if ( newMap )

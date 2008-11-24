@@ -1,5 +1,4 @@
 <!DOCTYPE TS><TS>
-<defaultcodec></defaultcodec>
 <context>
     <name>@default</name>
     <message>
@@ -2462,6 +2461,20 @@ Python support will be disabled.</source>
         <source>Unable to save to file. Your project may be corrupted on disk. Try clearing some space on the volume and check file permissions before pressing save again.</source>
         <translation>Kunde inte spara till fil. Ditt projekt kan vara felaktigt sparat. Försök frigöra disk-utrymme och kontrollera filrättigheter innan du försöker igen.</translation>
     </message>
+    <message>
+        <source>Error Loading Plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There was an error loading a plugin.The following diagnostic information may help the QGIS developers resolve the issue:
+%1.</source>
+        <translation type="unfinished">Det uppstod ett fel när insticksprogram skulle laddas. Informationen nedan kan hjälpa QGIS-utvecklarna att rätta till felet:
+%1</translation>
+    </message>
+    <message>
+        <source>Error when reading metadata of plugin </source>
+        <translation type="unfinished">Fel vid läsning av metadata för plugin </translation>
+    </message>
 </context>
 <context>
     <name>QgisApp</name>
@@ -2695,7 +2708,7 @@ Python support will be disabled.</source>
     </message>
     <message>
         <source>Error Loading Plugin</source>
-        <translation>Fel vid läsning av insticksprogram</translation>
+        <translation type="obsolete">Fel vid läsning av insticksprogram</translation>
     </message>
     <message>
         <source>There was an error loading %1.</source>
@@ -3857,11 +3870,11 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>Python error</source>
-        <translation>Pythonfel</translation>
+        <translation type="obsolete">Pythonfel</translation>
     </message>
     <message>
         <source>Error when reading metadata of plugin </source>
-        <translation>Fel vid läsning av metadata för plugin </translation>
+        <translation type="obsolete">Fel vid läsning av metadata för plugin </translation>
     </message>
     <message>
         <source>Provider does not support deletion</source>
@@ -4395,7 +4408,7 @@ Fel:  %2
     <message>
         <source>There was an error loading a plugin.The following diagnostic information may help the QGIS developers resolve the issue:
 %1.</source>
-        <translation>Det uppstod ett fel när insticksprogram skulle laddas. Informationen nedan kan hjälpa QGIS-utvecklarna att rätta till felet:
+        <translation type="obsolete">Det uppstod ett fel när insticksprogram skulle laddas. Informationen nedan kan hjälpa QGIS-utvecklarna att rätta till felet:
 %1</translation>
     </message>
     <message>
@@ -5610,6 +5623,14 @@ p, li { white-space: pre-wrap; }
         <source>Run action</source>
         <translation>Kör kommando</translation>
     </message>
+    <message>
+        <source>Updating selection...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="unfinished">Avbryt</translation>
+    </message>
 </context>
 <context>
     <name>QgsAttributeTableBase</name>
@@ -5787,6 +5808,8 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">Hittade %d matchande objekt.
+        
+        
         </translation>
     </message>
     <message>
@@ -12591,6 +12614,8 @@ p, li { white-space: pre-wrap; }
 This may be a problem in your network connection or at the WMS server.</source>
         <translation type="obsolete">Nätverket fick timeout efter %1 sekunders vila.
 Detta kan vara ett problem med din nätverksanslutning eller WMS-servern.
+        
+        
         </translation>
     </message>
     <message>
@@ -12805,6 +12830,13 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Upper value</source>
         <translation>Högsta värde</translation>
+    </message>
+</context>
+<context>
+    <name>QgsLabelDialog</name>
+    <message>
+        <source>Auto</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13149,6 +13181,30 @@ p, li { white-space: pre-wrap; }
         <source>Y Coordinate</source>
         <translation>Y-koordinat</translation>
     </message>
+    <message>
+        <source>General</source>
+        <translation type="unfinished">Allmänt</translation>
+    </message>
+    <message>
+        <source>Use scale dependent rendering</source>
+        <translation type="unfinished">Använd skalberoende rendering</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished">Maximum</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished">Minimum</translation>
+    </message>
+    <message>
+        <source>Minimum scale at which this layer will be displayed. </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum scale at which this layer will be displayed. </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsLayerProjectionSelector</name>
@@ -13369,11 +13425,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>More layers</source>
-        <translation type="obsolete">Fler lager</translation>
+        <translation type="unfinished">Fler lager</translation>
     </message>
     <message>
         <source>This item contains more layer files. Displaying more layers in table is not supported.</source>
-        <translation type="obsolete">Detta objekt innehåller flera lagerfiler. Stödjer ej att visa flera lager i tabell.</translation>
+        <translation type="unfinished">Detta objekt innehåller flera lagerfiler. Stödjer ej att visa flera lager i tabell.</translation>
     </message>
     <message>
         <source>Multiple layers</source>
@@ -13388,7 +13444,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsLegendLayerFile</name>
     <message>
         <source>Attribute table - </source>
-        <translation type="obsolete">Attributtabell - </translation>
+        <translation type="unfinished">Attributtabell - </translation>
     </message>
     <message>
         <source>Save layer as...</source>
@@ -13396,19 +13452,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Start editing failed</source>
-        <translation type="obsolete">Misslyckades att påbörja redigering</translation>
+        <translation type="unfinished">Misslyckades att påbörja redigering</translation>
     </message>
     <message>
         <source>Provider cannot be opened for editing</source>
-        <translation type="obsolete">Källan kan inte öppnas för redigering</translation>
+        <translation type="unfinished">Källan kan inte öppnas för redigering</translation>
     </message>
     <message>
         <source>Stop editing</source>
-        <translation type="obsolete">Sluta redigera</translation>
+        <translation type="unfinished">Sluta redigera</translation>
     </message>
     <message>
         <source>Do you want to save the changes?</source>
-        <translation type="obsolete">Vill du spara ändringarna?</translation>
+        <translation type="unfinished">Vill du spara ändringarna?</translation>
     </message>
     <message>
         <source>&amp;Yes</source>
@@ -13424,19 +13480,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Could not commit changes</source>
-        <translation type="obsolete">Kunde inte föra in förändringar</translation>
+        <translation type="unfinished">Kunde inte föra in förändringar</translation>
     </message>
     <message>
         <source>Problems during roll back</source>
-        <translation type="obsolete">Problem vid återgång</translation>
+        <translation type="unfinished">Problem vid återgång</translation>
     </message>
     <message>
         <source>Not a vector layer</source>
-        <translation type="obsolete">Inte ett vektorlager</translation>
+        <translation type="unfinished">Inte ett vektorlager</translation>
     </message>
     <message>
         <source>To open an attribute table, you must select a vector layer in the legend</source>
-        <translation type="obsolete">Du måste markera ett vektorlager i teckenförklaringen för att öppna en attributtabell</translation>
+        <translation type="unfinished">Du måste markera ett vektorlager i teckenförklaringen för att öppna en attributtabell</translation>
     </message>
     <message>
         <source>Saving done</source>
@@ -13496,11 +13552,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>bad_alloc exception</source>
-        <translation type="obsolete">bad_alloc fel</translation>
+        <translation type="unfinished">bad_alloc fel</translation>
     </message>
     <message>
         <source>Filling the attribute table has been stopped because there was no more virtual memory left</source>
-        <translation type="obsolete">Slut på virtuellt minne, så ifyllning av attributtabellen har stoppats</translation>
+        <translation type="unfinished">Slut på virtuellt minne, så ifyllning av attributtabellen har stoppats</translation>
     </message>
     <message>
         <source>Layer attribute table contains unsupported datatype(s)</source>
@@ -13677,6 +13733,8 @@ p, li { white-space: pre-wrap; }
         <source>- %1 features found</source>
         <comment>Identify results window title</comment>
         <translation type="obsolete">- %1 objekt hittade
+        
+        
         </translation>
     </message>
     <message>
@@ -14546,6 +14604,18 @@ Detaljerad felinformation:</translation>
         <source>Cross</source>
         <translation>Kors</translation>
     </message>
+    <message>
+        <source>Show all features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show selected features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show features in current canvas</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsOptionsBase</name>
@@ -15189,6 +15259,10 @@ p, li { white-space: pre-wrap; }
         <source>Password</source>
         <translation>Lösenord</translation>
     </message>
+    <message>
+        <source>Attribute table behaviour</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsPasteTransformationsBase</name>
@@ -15609,14 +15683,329 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>QgsPluginInstaller</name>
+    <message>
+        <source>Couldn&apos;t parse output from the repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t open the system plugin directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t open the local plugin directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fetch Python Plugins...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Install more plugins from remote repositories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Looking for new plugins...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is a new plugin available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is a plugin update available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS Python Plugin Installer</source>
+        <translation type="unfinished">QGIS Installerare för Python-insticksprogram</translation>
+    </message>
+    <message>
+        <source>Error reading repository:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nothing to remove! Plugin directory doesn&apos;t exist:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to remove the directory:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check permissions or remove it manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QgsPluginInstallerDialog</name>
+    <message>
+        <source>QGIS Python Plugin Installer</source>
+        <translation type="unfinished">QGIS Installerare för Python-insticksprogram</translation>
+    </message>
+    <message>
+        <source>Error reading repository:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>all repositories</source>
+        <translation type="unfinished">alla centralkataloger</translation>
+    </message>
+    <message>
+        <source>connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This repository is connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This repository is enabled, but unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This repository is disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This repository is blocked due to incompatibility with your Quantum GIS version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>orphans</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>any status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>not installed</source>
+        <comment>plural</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>installed</source>
+        <comment>plural</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>upgradeable and news</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is installed, but there is an updated version available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is installed, but I can&apos;t find it in any enabled repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is not installed and is seen for the first time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is installed and is newer than its version available in a repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>not installed</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>installed</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>upgradeable</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new!</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>invalid</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>installed version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>available version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>That&apos;s the newest available version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is no version available for download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>only locally available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Install plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reinstall plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Upgrade plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Install/upgrade plugin</source>
+        <translation type="unfinished">Installera/uppgradera insticksprogram</translation>
+    </message>
+    <message>
+        <source>Downgrade plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to downgrade the plugin to the latest available version? The installed one is newer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plugin installation failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plugin has disappeared</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The plugin seems to have been installed but I don&apos;t know where. Probably the plugin package contained a wrong named directory.
+Please search the list of installed plugins. I&apos;m nearly sure you&apos;ll find the plugin there, but I just can&apos;t determine which of them it is. It also means that I won&apos;t be able to determine if this plugin is installed and inform you about available updates. However the plugin may work. Please contact the plugin author and submit this issue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plugin installed successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python plugin installed.
+You have to enable it in the Plugin Manager.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python plugin reinstalled.
+You have to restart Quantum GIS to reload it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plugin uninstall failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to uninstall the following plugin?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning: this plugin isn&apos;t available in any accessible repository!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plugin uninstalled successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You are going to add some plugin repositories neither authorized nor supported by the Quantum GIS team, however provided by folks associated with us. Plugin authors generally make efforts to make their works useful and safe, but we can&apos;t assume any responsibility for them. FEEL WARNED!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to add another repository with the same URL!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove the following repository?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is incompatible with your Quantum GIS version and probably won&apos;t work.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The required Python module is not installed.
+For more information, please visit its homepage.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin seems to be broken.
+It has been installed but can&apos;t be loaded.
+Here is the error message:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note that it&apos;s an uninstallable core plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin is broken</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin requires a newer version of Quantum GIS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This plugin requires a missing module</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plugin reinstalled successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The plugin is designed for a newer version of Quantum GIS. The minimum required version is:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The plugin depends on some components missing on your system. You need to install the following Python module in order to enable it:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The plugin is broken. Python said:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerDialogBase</name>
     <message>
         <source>QGIS Python Plugin Installer</source>
         <translation>QGIS Installerare för Python-insticksprogram</translation>
     </message>
     <message>
         <source>QGIS Plugin Installer</source>
-        <translation>QGIS Installerare för insticksprogram</translation>
+        <translation type="obsolete">QGIS Installerare för insticksprogram</translation>
     </message>
     <message>
         <source>Plugins</source>
@@ -15754,6 +16143,41 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerFetchingDialog</name>
     <message>
+        <source>Success</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resolving host name...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connecting...</source>
+        <translation type="unfinished">Kopplar upp...</translation>
+    </message>
+    <message>
+        <source>Host connected. Sending request...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Downloading data...</source>
+        <translation type="unfinished">Hämtar data...</translation>
+    </message>
+    <message>
+        <source>Idle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Closing connection...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation type="unfinished">Fel</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerFetchingDialogBase</name>
+    <message>
         <source>Fetching repositories</source>
         <translation>Hämta centralkataloger</translation>
     </message>
@@ -15777,6 +16201,49 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerInstallingDialog</name>
     <message>
+        <source>Installing...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resolving host name...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connecting...</source>
+        <translation type="unfinished">Kopplar upp...</translation>
+    </message>
+    <message>
+        <source>Host connected. Sending request...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Downloading data...</source>
+        <translation type="unfinished">Hämtar data...</translation>
+    </message>
+    <message>
+        <source>Idle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Closing connection...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation type="unfinished">Fel</translation>
+    </message>
+    <message>
+        <source>Failed to unzip the plugin package. Probably it&apos;s broken or missing from the repository. You may also want to make sure that you have write permission to the plugin directory:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aborted by user</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerInstallingDialogBase</name>
+    <message>
         <source>QGIS Python Plugin Installer</source>
         <translation>QGIS Installerare för Python-insticksprogram</translation>
     </message>
@@ -15792,6 +16259,13 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPluginInstallerPluginErrorDialog</name>
     <message>
+        <source>no error message received</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerPluginErrorDialogBase</name>
+    <message>
         <source>Error loading plugin</source>
         <translation>Fle vid inläsning av insticksprogram</translation>
     </message>
@@ -15805,7 +16279,7 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>QgsPluginInstallerRepositoryDetailsDialog</name>
+    <name>QgsPluginInstallerRepositoryDetailsDialogBase</name>
     <message>
         <source>Repository details</source>
         <translation>Centralkatalogens detaljer</translation>
@@ -15836,7 +16310,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>[place for a warning message]</source>
-        <translation>[plats för varningstext</translation>
+        <translation type="obsolete">[plats för varningstext</translation>
     </message>
 </context>
 <context>
@@ -15876,6 +16350,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>&amp;Clear All</source>
         <translation>Radera allla</translation>
+    </message>
+    <message>
+        <source>[ incompatible ]</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17361,6 +17839,8 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>The color map for Band %n failed to load</source>
         <translation type="obsolete">Färgkartan för band %n kunde inte läsas in
+        
+        
         </translation>
     </message>
     <message>
@@ -17382,6 +17862,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Unknown style format: </source>
         <translation>Okänt stilformat: </translation>
+    </message>
+    <message>
+        <source>Building internal pyramid overviews is not supported on raster layers with JPEG compression.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18284,7 +18768,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Verdana&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Verdana&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
@@ -18336,6 +18820,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Save Style ...</source>
         <translation>Spara stil...</translation>
+    </message>
+    <message>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -18571,6 +19063,8 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">Hittade %d matchande objekt.
+        
+        
         </translation>
     </message>
     <message>
@@ -18639,6 +19133,8 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Coordinate Reference System (%1 available)</source>
         <translation type="obsolete">Koordinatreferenssystem (%1 tillgängliga)
+        
+        
         </translation>
     </message>
     <message>
