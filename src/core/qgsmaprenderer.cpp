@@ -368,7 +368,7 @@ void QgsMapRenderer::render( QPainter* painter )
             {
                 if((*overlayIt)->displayFlag())
                 {
-                    (*overlayIt)->createOverlayObjects(mRenderContext.extent());
+                    (*overlayIt)->createOverlayObjects(mRenderContext);
                     allOverlayList.push_back(*overlayIt);
                 }
             }

@@ -33,7 +33,7 @@ class CORE_EXPORT QgsVectorOverlay
         virtual ~QgsVectorOverlay();
 
         /**Create the overlay objects contained in a view extent. Subclasses need to implement this method and assign                   width/height information to the overlay ovbjects*/
-        virtual void createOverlayObjects(const QgsRectangle& viewExtent) = 0;
+        virtual void createOverlayObjects(const QgsRenderContext& renderContext) = 0;
 
         /**Remove the overlay objects and release their memory*/
         void removeOverlayObjects();

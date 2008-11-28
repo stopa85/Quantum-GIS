@@ -99,7 +99,9 @@ void QgsPALObjectPositionManager::findObjectPositions(const QgsRenderContext& re
   QgsRectangle viewExtent = renderContext.extent();
   double bbox[4]; bbox[0] = viewExtent.xMinimum(); bbox[1] = viewExtent.yMinimum(); bbox[2] = viewExtent.xMaximum(); bbox[3] = viewExtent.yMaximum();
   pal::PalStat* stat = 0;
+  qWarning("**********************************starting calculation of overlay positions*****************************");
   std::list<pal::Label*>* resultLabelList = mPositionEngine.labeller(renderContext.rendererScale(), bbox, &stat, true);
+  qWarning("**********************************calculation of overlay positions finished*****************************");
   delete stat;
 
   //and read the positions back to the overlay objects
@@ -119,13 +121,9 @@ void QgsPALObjectPositionManager::findObjectPositions(const QgsRenderContext& re
       continue;
     }
 
-      //print out coordinates of position
-      qWarning("x, y:");
       //QGIS takes the coordinates of the middle points
       double x = ((*labelIt)->getX(0) + (*labelIt)->getX(1) + (*labelIt)->getX(2) + (*labelIt)->getX(3)) / 4;
       double y = ((*labelIt)->getY(0) + (*labelIt)->getY(1) + (*labelIt)->getY(2) + (*labelIt)->getY(3)) / 4;
-      //qWarning(QString::number(x).toLocal8Bit().data());
-      //qWarning(QString::number(y).toLocal8Bit().data());
       currentOverlayObject->addPosition(QgsPoint(x, y));
     }
 }
