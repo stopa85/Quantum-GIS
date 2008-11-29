@@ -47,7 +47,7 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   static QString attributeNameFromIndex(int index, const QgsVectorLayer* vl);
 
 protected:
-  int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const;
+  int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f, const QgsRenderContext& renderContext) const;
   
  private:
   /**Does the classification and manages the diagram generation*/

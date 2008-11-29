@@ -27,7 +27,7 @@ QgsPieDiagramFactory::~QgsPieDiagramFactory()
   
 }
 
-QImage* QgsPieDiagramFactory::createDiagram(int size, const QgsFeature& f) const
+QImage* QgsPieDiagramFactory::createDiagram(int size, const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
   QgsAttributeMap dataValues = f.attributeMap();
   
@@ -109,7 +109,7 @@ QImage* QgsPieDiagramFactory::createDiagram(int size, const QgsFeature& f) const
   return diagramImage;
 }
 
-int QgsPieDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const
+int QgsPieDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const
 {
   width = size + 2 * mMaximumPenWidth + 2 * mMaximumGap;
   height = size + 2 * mMaximumPenWidth + 2 * mMaximumGap;

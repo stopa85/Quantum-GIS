@@ -80,7 +80,7 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRenderContext& renderConte
       while(theProvider->nextFeature(currentFeature))
       {
          //todo: insert more objects for multipart features
-       if(mDiagramRenderer->getDiagramDimensions(width, height, currentFeature) != 0)
+       if(mDiagramRenderer->getDiagramDimensions(width, height, currentFeature, renderContext) != 0)
         {
 		  //error
         }
@@ -111,7 +111,7 @@ void QgsDiagramOverlay::drawOverlayObjects(QgsRenderContext& context) const
       while(theProvider->nextFeature(currentFeature))
         {
 	      //request diagram from renderer
-	      currentDiagramImage = mDiagramRenderer->renderDiagram(currentFeature);
+          currentDiagramImage = mDiagramRenderer->renderDiagram(currentFeature, context);
 	      if(!currentDiagramImage)
 		{
 		  qWarning("diagram image is 0");
@@ -145,9 +145,9 @@ void QgsDiagramOverlay::drawOverlayObjects(QgsRenderContext& context) const
     }
 }
 
-int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const
+int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
-  return mDiagramRenderer->getDiagramDimensions(width, height, f);
+  return mDiagramRenderer->getDiagramDimensions(width, height, f, renderContext);
 }
 
 bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)

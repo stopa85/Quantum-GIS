@@ -29,7 +29,7 @@ QgsSVGDiagramFactory::~QgsSVGDiagramFactory()
   
 }
 
-QImage* QgsSVGDiagramFactory::createDiagram(int size, const QgsFeature& f) const
+QImage* QgsSVGDiagramFactory::createDiagram(int size, const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
   //check default size
   QSize defaultSize = mRenderer.defaultSize();
@@ -63,7 +63,7 @@ QImage* QgsSVGDiagramFactory::createDiagram(int size, const QgsFeature& f) const
   return diagramImage;
 }
 
-int QgsSVGDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const
+int QgsSVGDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const
 {
   return 1; //soon...
 }

@@ -29,7 +29,7 @@ QgsBarDiagramFactory::~QgsBarDiagramFactory()
 
 }
 
-QImage* QgsBarDiagramFactory::createDiagram(int size, const QgsFeature& f) const
+QImage* QgsBarDiagramFactory::createDiagram(int size, const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
   QgsAttributeMap dataValues = f.attributeMap();
 
@@ -84,7 +84,7 @@ QImage* QgsBarDiagramFactory::createDiagram(int size, const QgsFeature& f) const
   return diagramImage;
 }
 
-int QgsBarDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const
+int QgsBarDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const
 {
   height = getHeightBarChart(size, f.attributeMap()) + 2 * mMaximumPenWidth;
   width = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth;

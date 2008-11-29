@@ -24,6 +24,7 @@
 
 class QgsDiagramFactory;
 class QgsFeature;
+class QgsRenderContext;
 class QDomDocument;
 class QDomNode;
 class QImage;
@@ -31,12 +32,12 @@ class QImage;
 //structure that describes a renderer entry
 struct QgsDiagramItem
 {
+
   QVariant value;
   int size;
 };
 
-/**An interface class for diagram renderer. The main method is 'renderDiagram', which returns the diagram image for a GIS feature. The renderer has a set of classification attributes and a reference to a diagram factory object, which is responsible for creating the specific diagram type.
-Subclasses need to implement the method calculate diagram size.*/
+
 class QgsDiagramRenderer
 {
  public:
@@ -46,20 +47,21 @@ class QgsDiagramRenderer
     {
       DISCRETE, //lower item is used if item falls between lower and upper item
       LINEAR, //linear interpolation between items containing the value
-      ATTRIBUTE, //only attribute values are considered
+      ATTRIBUTE, //size contained in attribute value
       CONSTANT //constant value is used (the size of the first item)
     };
 
   QgsDiagramRenderer(const QList<int>& classificationAttributes);
   virtual ~QgsDiagramRenderer();
   /**Returns a diagram image for a feature.*/
-  virtual QImage* renderDiagram(const QgsFeature& f) const;
+  virtual QImage* renderDiagram(const QgsFeature& f, const QgsRenderContext& renderContext) const;
   /**Returns only the size of the diagram.
-     @param width the width of the diagram
-     @param height the height of the diagram
+     @param width the width of the diagram in pixels
+     @param height the height of the diagram in pixels
      @param f feature that is associated with the diagram
+     @param context contains information about mm scale factor and dpi
      @return 0 in case of success*/
-  virtual int getDiagramDimensions(int& width, int& height, const QgsFeature& f) const;
+  virtual int getDiagramDimensions(int& width, int& height, const QgsFeature& f, const QgsRenderContext& renderContext) const;
   //setters and getters
   QgsDiagramFactory* factory() const {return mFactory;}
   /**Set a (properly configured) factory class. Takes ownership of the factory object*/
@@ -72,7 +74,7 @@ class QgsDiagramRenderer
   virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
   /**Creates pairs of strings / images for use in the legend
    @return 0 in case of success*/
-  virtual int createLegendContent(QMap<QString, QImage*> items) const;
+  virtual int createLegendContent(const QgsRenderContext& renderContext, QMap<QString, QImage*> items) const;
   /**Sets the items for interpolation. The values of the items must be in ascending order*/
   void setDiagramItems(const QList<QgsDiagramItem>& items) {mItems = items;}
   /**Returns the interpolation items*/

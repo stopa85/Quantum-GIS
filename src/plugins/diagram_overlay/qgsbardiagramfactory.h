@@ -28,14 +28,18 @@ class QgsBarDiagramFactory: public QgsWKNDiagramFactory
   ~QgsBarDiagramFactory();
 
   /**Creates a diagram for a feature and a given size (that is usually determined by QgsDiagramRenderer. The calling method takes ownership of the generated image*/
-  QImage* createDiagram(int size, const QgsFeature& f) const;
+  QImage* createDiagram(int size, const QgsFeature& f, const QgsRenderContext& renderContext) const;
 
   /**Creates items to show in the legend*/
-  int createLegendContent(int size, QString value, QMap<QString, QImage*>& items) const{return 1;} //soon
+  int createLegendContent(int size, const QgsRenderContext& renderContext, QString value, QMap<QString, QImage*>& items) const{return 1;} //soon
 
-  /**Gets the diagram width and height for a given size. Considers different width, height values and the maximum width of the drawing pen.
-   */
-  int getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const;
+  /**Gets the width and height (in pixels) of the diagram image. Considers different width, height values, the maximum width of the drawing pen and the conversion from mm size to pixels according to render context.
+  @param size diagram size calculated by diagram renderer (in mm)
+  @param f reference to the feature associated with the diagram
+  @param the render context (contains mm scale factor and raster scale factor)
+  @param width out: the width of the diagram image in pixels
+  @param height out: the height of the diagram image in pixels*/
+  int getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const;
 
    /**Returns the property described by the size (e.g. diameter or height). This can be important to
    know if e.g. size has to be calculated proportional to pie area*/

@@ -13,11 +13,11 @@ QgsDiagramRenderer::~QgsDiagramRenderer()
   delete mFactory;
 }
 
-QgsDiagramRenderer::QgsDiagramRenderer()
+QgsDiagramRenderer::QgsDiagramRenderer(): mScaleFactor(1.0)
 {
 }
 
-QImage* QgsDiagramRenderer::renderDiagram(const QgsFeature& f) const
+QImage* QgsDiagramRenderer::renderDiagram(const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
   if(!mFactory)
     {
@@ -36,10 +36,10 @@ QImage* QgsDiagramRenderer::renderDiagram(const QgsFeature& f) const
       return 0;
     }
 
-    return mFactory->createDiagram(size, f);
+    return mFactory->createDiagram(size, f, renderContext);
 }
 
-int QgsDiagramRenderer::getDiagramDimensions(int& width, int& height, const QgsFeature& f) const
+int QgsDiagramRenderer::getDiagramDimensions(int& width, int& height, const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
   //first find out classification value
   if(!mFactory || mItems.size() < 1)
@@ -53,7 +53,7 @@ int QgsDiagramRenderer::getDiagramDimensions(int& width, int& height, const QgsF
       return 2;
     }
  
-  if(mFactory->getDiagramDimensions(size, f, width, height) != 0)
+  if(mFactory->getDiagramDimensions(size, f, renderContext, width, height) != 0)
     {
       return 3;
     }
@@ -189,7 +189,7 @@ bool QgsDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) con
   return true;
 }
 
-int QgsDiagramRenderer::createLegendContent(QMap<QString, QImage*> items) const
+int QgsDiagramRenderer::createLegendContent(const QgsRenderContext& renderContext, QMap<QString, QImage*> items) const
 {
   if(!mFactory || mItems.size() < 1)
     {
@@ -201,7 +201,7 @@ int QgsDiagramRenderer::createLegendContent(QMap<QString, QImage*> items) const
   QString value = mItems.at(element).value.toString();
   int size = mItems.at(element).size;
 
-  if(mFactory->createLegendContent(size, value, items) != 0)
+  if(mFactory->createLegendContent(size, renderContext, value, items) != 0)
     {
       return 2;
     }
