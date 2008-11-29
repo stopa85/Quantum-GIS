@@ -46,6 +46,9 @@ class QgsDiagramFactory
     MM,
     MapUnits
   };
+
+  QgsDiagramFactory();
+  virtual ~QgsDiagramFactory();
   
   /**Creates the diagram image for a feature in order to be placed on the map
   @param size diagram size (may be height, diameter, squaresize depending on diagram type
@@ -69,9 +72,12 @@ class QgsDiagramFactory
   @param height out: the height of the diagram image in pixels*/
   virtual int getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const = 0;
   virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const = 0;
-  virtual ~QgsDiagramFactory(){}
+
+  /**Calculates the size multiplicator. Considers the size unit as well as the render context parameters*/
+  double diagramSizeScaleFactor(const QgsRenderContext& context) const;
+
   /**Default is one dimensional scaling*/
-  virtual QgsDiagramFactory::SizeType sizeType() const {return QgsDiagramFactory::HEIGHT;}
+  virtual QgsDiagramFactory::SizeType sizeType() const;
 
   void setSizeUnit(SizeUnit u){mSizeUnit = u;}
 

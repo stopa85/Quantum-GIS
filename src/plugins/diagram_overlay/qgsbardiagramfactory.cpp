@@ -16,10 +16,11 @@
  ***************************************************************************/
 
 #include "qgsbardiagramfactory.h"
+#include "qgsrendercontext.h"
 #include <limits>
 #include <QPainter>
 
-QgsBarDiagramFactory::QgsBarDiagramFactory(): QgsWKNDiagramFactory(), mBarWidth(20)
+QgsBarDiagramFactory::QgsBarDiagramFactory(): QgsWKNDiagramFactory(), mBarWidth(5)
 {
 
 }
@@ -32,26 +33,28 @@ QgsBarDiagramFactory::~QgsBarDiagramFactory()
 QImage* QgsBarDiagramFactory::createDiagram(int size, const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
   QgsAttributeMap dataValues = f.attributeMap();
+  double sizeScaleFactor = diagramSizeScaleFactor(renderContext);
 
   //for barcharts, the specified height is valid for the classification attribute
   //the heights of the other bars are calculated with the same height/value ratio
   //the bar widths are fixed (20 at the moment)
   //int diagramWidth = barWidth * mAttributes.size();
 
-  int h = getHeightBarChart(size, dataValues) + 2 * mMaximumPenWidth;
-  int w = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth;
+  int h = renderContext.rasterScaleFactor() * (getMaximumHeight(size, dataValues) * sizeScaleFactor + 2 * mMaximumPenWidth);
+  int w = renderContext.rasterScaleFactor() * (mBarWidth * sizeScaleFactor * mCategories.size() + 2 * mMaximumPenWidth);
+
   //consider the gaps todo: take this information from method getDiagramDimensions()
   QList<QgsDiagramCategory>::const_iterator c_it = mCategories.constBegin();
   for(; c_it != mCategories.constEnd(); ++c_it)
     {
-      w += (2 * c_it->gap());
+      w += (2 * c_it->gap() * renderContext.rasterScaleFactor());
     }
     
   QImage* diagramImage = new QImage(QSize(w, h), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(0); //transparent background
 
   //calculate value/pixel ratio
-  double pixelValueRatio = pixelValueRatioBarChart(size, dataValues);
+  double sizeValueRatio = sizeValueRatioBarChart(size, dataValues);
 
   //draw the bars itself
   double currentValue;
@@ -73,11 +76,11 @@ QImage* QgsBarDiagramFactory::createDiagram(int size, const QgsFeature& f, const
 	  currentWidth += category_it->gap(); //first gap
 	  p.setPen(category_it->pen());
 	  currentValue = att_it->toDouble();
-	  currentBarHeight = (int)(currentValue * pixelValueRatio);
+          currentBarHeight = (int)(currentValue * sizeValueRatio * sizeScaleFactor * renderContext.rasterScaleFactor());
 	  p.setBrush(category_it->brush());
-	  p.drawRect(QRect(currentWidth, h - currentBarHeight + mMaximumPenWidth, mBarWidth, currentBarHeight));
-	  currentWidth += category_it->gap(); //second gap
-	  currentWidth += mBarWidth; //go for the next bar...
+          p.drawRect(QRect(currentWidth, h - currentBarHeight + mMaximumPenWidth, mBarWidth * sizeScaleFactor *renderContext.rasterScaleFactor(), currentBarHeight));
+          currentWidth += category_it->gap() * renderContext.rasterScaleFactor(); //second gap
+          currentWidth += mBarWidth * sizeScaleFactor *renderContext.rasterScaleFactor(); //go for the next bar...
 	}
     }
 
@@ -86,8 +89,10 @@ QImage* QgsBarDiagramFactory::createDiagram(int size, const QgsFeature& f, const
 
 int QgsBarDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const
 {
-  height = getHeightBarChart(size, f.attributeMap()) + 2 * mMaximumPenWidth;
-  width = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth;
+   double sizeScaleFactor = diagramSizeScaleFactor(context);
+
+  height = context.rasterScaleFactor() * (getMaximumHeight(size, f.attributeMap()) * sizeScaleFactor + 2 * mMaximumPenWidth);
+  width = context.rasterScaleFactor() * (mBarWidth * sizeScaleFactor * mCategories.size() + 2 * mMaximumPenWidth);
   //consider the gaps
   QList<QgsDiagramCategory>::const_iterator c_it = mCategories.constBegin();
   for(; c_it != mCategories.constEnd(); ++c_it)
@@ -97,10 +102,10 @@ int QgsBarDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, co
   return 0;
 }
 
-int QgsBarDiagramFactory::getHeightBarChart(int size, const QgsAttributeMap& featureAttributes) const
+int QgsBarDiagramFactory::getMaximumHeight(int size, const QgsAttributeMap& featureAttributes) const
 {
   //calculate value/pixel ratio
-      double pixelValueRatio = pixelValueRatioBarChart(size, featureAttributes); 
+      double pixelValueRatio = sizeValueRatioBarChart(size, featureAttributes);
 
       //find maximum attribute value
       double maximumAttValue = -std::numeric_limits<double>::max();
@@ -127,7 +132,7 @@ int QgsBarDiagramFactory::getHeightBarChart(int size, const QgsAttributeMap& fea
       return height;
 }
 
-double QgsBarDiagramFactory::pixelValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const
+double QgsBarDiagramFactory::sizeValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const
 {
  //find value for scaling attribute
   QList<int>::const_iterator scaling_it = mScalingAttributes.constBegin();

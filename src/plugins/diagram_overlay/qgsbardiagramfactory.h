@@ -47,18 +47,18 @@ class QgsBarDiagramFactory: public QgsWKNDiagramFactory
 
  private: 
 
-  /**width of one bar (default 20 pixel)*/
+  /**width of one bar (default 5 mm)*/
   int mBarWidth;
   
 
   /**Calculates the maximum height of the bar chart (based on size for the 
    scaling attribute)*/
-  int getHeightBarChart(int size, const QgsAttributeMap& featureAttributes) const;
+  int getMaximumHeight(int size, const QgsAttributeMap& featureAttributes) const;
 
-  /**Calculates the value to pixel ratio for the bar chart (based on the size \
+  /**Calculates the value to size unit ratio for the bar chart (based on the size \
    of the scaling attribute)
   @return the ratio or -1 in case of error*/
-  double pixelValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const;
+  double sizeValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const;
 };
 
 #endif

@@ -16,6 +16,7 @@
  ***************************************************************************/
 
 #include "qgspiediagramfactory.h"
+#include "qgsrendercontext.h"
 
 QgsPieDiagramFactory::QgsPieDiagramFactory(): QgsWKNDiagramFactory()
 {
@@ -30,9 +31,11 @@ QgsPieDiagramFactory::~QgsPieDiagramFactory()
 QImage* QgsPieDiagramFactory::createDiagram(int size, const QgsFeature& f, const QgsRenderContext& renderContext) const
 {
   QgsAttributeMap dataValues = f.attributeMap();
+  double sizeScaleFactor = diagramSizeScaleFactor(renderContext);
   
   //create transparent QImage
-  QImage* diagramImage = new QImage(QSize(size + 2 * mMaximumPenWidth + 2 * mMaximumGap, size + 2 * mMaximumPenWidth + 2 * mMaximumGap), QImage::Format_ARGB32_Premultiplied);
+    int imageSideLength = size * sizeScaleFactor * renderContext.rasterScaleFactor() + 2 * mMaximumPenWidth + 2 * mMaximumGap;
+  QImage* diagramImage = new QImage(QSize(imageSideLength, imageSideLength), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(qRgba(0, 0, 0, 0)); //transparent background
   QPainter p;
   p.begin(diagramImage);
@@ -87,21 +90,7 @@ QImage* QgsPieDiagramFactory::createDiagram(int size, const QgsFeature& f, const
 	  gapOffsetsForPieSlice(currentGap, totalAngle + currentAngle/2, xGapOffset, yGapOffset);
 	}
 
-      //debug: print out all the parameters for debugging purposes
-#if 0
-      qWarning("x:");
-      qWarning(QString::number(mMaximumPenWidth + mMaximumGap + xGapOffset).toLocal8Bit().data());
-      qWarning("y:");
-      qWarning(QString::number(mMaximumPenWidth + mMaximumGap - yGapOffset).toLocal8Bit().data());
-      qWarning("size: ");
-      qWarning(QString::number(size).toLocal8Bit().data());
-      qWarning("totalAngle: ");
-      qWarning(QString::number(totalAngle).toLocal8Bit().data());
-      qWarning("currentAngle: ");
-      qWarning(QString::number(currentAngle).toLocal8Bit().data());
-#endif //0
-
-        p.drawPie(mMaximumPenWidth + mMaximumGap + xGapOffset, mMaximumPenWidth + mMaximumGap - yGapOffset, size, size, totalAngle, currentAngle);
+        p.drawPie(mMaximumPenWidth * renderContext.rasterScaleFactor() + mMaximumGap + xGapOffset, mMaximumPenWidth * renderContext.rasterScaleFactor() + mMaximumGap - yGapOffset, sizeScaleFactor * renderContext.rasterScaleFactor() * size, sizeScaleFactor * renderContext.rasterScaleFactor() * size, totalAngle, currentAngle);
       totalAngle += currentAngle;
     }
   p.end();
@@ -111,9 +100,10 @@ QImage* QgsPieDiagramFactory::createDiagram(int size, const QgsFeature& f, const
 
 int QgsPieDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const
 {
-  width = size + 2 * mMaximumPenWidth + 2 * mMaximumGap;
-  height = size + 2 * mMaximumPenWidth + 2 * mMaximumGap;
-  return 0;
+    double squareSide = size * diagramSizeScaleFactor(context) * context.rasterScaleFactor() + 2 * mMaximumPenWidth + 2 * mMaximumGap;
+    width = squareSide;
+    height = squareSide;
+    return 0;
 }
 
 int QgsPieDiagramFactory::gapOffsetsForPieSlice(int gap, int angle, int& xOffset, int& yOffset) const

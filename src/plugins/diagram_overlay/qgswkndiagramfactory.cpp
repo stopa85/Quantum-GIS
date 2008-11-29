@@ -26,7 +26,7 @@
 #include <QPainter>
 #include <cmath>
 
-QgsWKNDiagramFactory::QgsWKNDiagramFactory(): mMaximumPenWidth(0),mMaximumGap(0)
+QgsWKNDiagramFactory::QgsWKNDiagramFactory(): QgsDiagramFactory(), mMaximumPenWidth(0),mMaximumGap(0)
 {
   
 }

@@ -16,6 +16,7 @@
  ***************************************************************************/
 
 #include "qgssvgdiagramfactory.h"
+#include "qgsrendercontext.h"
 #include <QImage>
 #include <QPainter>
 
@@ -39,11 +40,11 @@ QImage* QgsSVGDiagramFactory::createDiagram(int size, const QgsFeature& f, const
   //size parameter applies to maximum of width, height
   if(defaultSize.width() >= defaultSize.height())
     {
-      scaleFactor = ((double)size) / defaultSize.width();
+      scaleFactor = ((double)size * diagramSizeScaleFactor(renderContext) * renderContext.rasterScaleFactor()) / defaultSize.width();
     }
   else
     {
-      scaleFactor = ((double)size) / defaultSize.height();
+      scaleFactor = ((double)size * diagramSizeScaleFactor(renderContext) * renderContext.rasterScaleFactor()) / defaultSize.height();
     }
 
   imageWidth = (int)(defaultSize.width() * scaleFactor);

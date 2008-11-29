@@ -106,7 +106,9 @@ void QgsDiagramOverlay::drawOverlayObjects(QgsRenderContext& context) const
       theProvider->select(mAttributes, context.extent());
 
 	  QgsFeature currentFeature;
-	  QImage* currentDiagramImage = 0;
+          QImage* currentDiagramImage = 0;
+
+          QPainter* painter = context.painter();
 
       while(theProvider->nextFeature(currentFeature))
         {
@@ -132,9 +134,13 @@ void QgsDiagramOverlay::drawOverlayObjects(QgsRenderContext& context) const
                 context.mapToPixel().transform(&overlayPosition);
                 int shiftX = currentDiagramImage->width()/2;
                 int shiftY = currentDiagramImage->height()/2;
-                if(context.painter())
+
+                if(painter)
                 {
-                context.painter()->drawImage((int)overlayPosition.x()-shiftX, (int)overlayPosition.y()-shiftY, *currentDiagramImage);
+                 painter->save();
+                 painter->scale( 1.0 / context.rasterScaleFactor(), 1.0 / context.rasterScaleFactor() );
+                 painter->drawImage((int)(overlayPosition.x() * context.rasterScaleFactor())-shiftX, (int)(overlayPosition.y() * context.rasterScaleFactor())-shiftY, *currentDiagramImage);
+                painter->restore();
                 }
             }
           }
