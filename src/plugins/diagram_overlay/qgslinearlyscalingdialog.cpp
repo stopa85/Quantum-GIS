@@ -25,6 +25,8 @@ QgsLinearlyScalingDialog::QgsLinearlyScalingDialog(QgsVectorLayer* vl): QgsDiagr
 {
   setupUi(this);
   QObject::connect(mFindMaximumValueButton, SIGNAL(clicked()), this, SLOT(insertMaximumAttributeValue()));
+  mSizeUnitComboBox->addItem(tr("Millimeter"));
+  mSizeUnitComboBox->addItem(tr("Map units"));
 }
 
 QgsLinearlyScalingDialog::~QgsLinearlyScalingDialog()
@@ -117,5 +119,17 @@ void QgsLinearlyScalingDialog::insertMaximumAttributeValue()
 	{
       mValueLineEdit->setText(provider->maximumValue(mClassificationField).toString());
 	}
+    }
+}
+
+QgsDiagramFactory::SizeUnit QgsLinearlyScalingDialog::sizeUnit() const
+{
+    if(mSizeUnitComboBox->currentText() == tr("Map units"))
+    {
+        return QgsDiagramFactory::MapUnits;
+    }
+    else
+    {
+        return QgsDiagramFactory::MM;
     }
 }

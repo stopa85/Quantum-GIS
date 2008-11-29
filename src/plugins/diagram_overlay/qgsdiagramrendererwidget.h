@@ -19,6 +19,7 @@
 #define QGSDIAGRAMRENDERERWIDGET_H
 
 #include <QWidget>
+#include "qgsdiagramfactory.h"
 typedef QList<int> QgsAttributeList;
 
 class QgsDiagramRenderer;
@@ -41,6 +42,8 @@ class QgsDiagramRendererWidget: public QWidget
   virtual void applySettings(const QgsDiagramRenderer* renderer) = 0;
   /**Possibility to adapt the dialog to a new field*/
   virtual void changeClassificationField(int newField){}
+
+  virtual QgsDiagramFactory::SizeUnit sizeUnit() const {return QgsDiagramFactory::MM;}
   
  private:
   QgsDiagramRendererWidget();

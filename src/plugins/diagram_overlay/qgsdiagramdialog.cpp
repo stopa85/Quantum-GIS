@@ -179,6 +179,11 @@ void QgsDiagramDialog::apply() const
       return;
     }
 
+  if(renderer->factory())
+  {
+      renderer->factory()->setSizeUnit(rendererWidget->sizeUnit());
+  }
+
   //create QgsDiagramOverlay and add the renderer to it
     
     //the overlay may need a different attribute list than the renderer

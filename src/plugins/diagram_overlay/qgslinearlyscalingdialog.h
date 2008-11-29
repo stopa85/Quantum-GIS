@@ -36,6 +36,8 @@ class QgsLinearlyScalingDialog: public QgsDiagramRendererWidget, private Ui::Qgs
   void changeClassificationField(int newField){mClassificationField = newField;}
   void setWellKnownName(const QString& wkn);
 
+  QgsDiagramFactory::SizeUnit sizeUnit() const;
+
  private:
   QString mClassificationAttribute;
   QString mWellKnownName;
