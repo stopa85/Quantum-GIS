@@ -233,6 +233,9 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     //! Displays a warning because of possible min/max size in WMS
     void showWMSPrintingWarning();
 
+    //! Changes elements that are not suitable for this project
+    void cleanupAfterTemplateRead();
+
      //! Writes state under DOM element
     void writeXML(QDomNode& parentNode, QDomDocument& doc);
     //! Pointer to composer view

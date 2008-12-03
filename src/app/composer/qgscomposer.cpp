@@ -858,6 +858,9 @@ void QgsComposer::loadFromTemplate(void)
   }
 
   readXML(templateDocument);
+
+  //clean up after template read (e.g. legend and map extent)
+  cleanupAfterTemplateRead();
 }
 
 void QgsComposer::moveItemContent()
@@ -1295,5 +1298,25 @@ void QgsComposer::showWMSPrintingWarning()
     m->setCheckBoxVisible( true );
     m->setCheckBoxQSettingsLabel( myQSettingsLabel );
     m->exec();
+  }
+}
+
+void QgsComposer::cleanupAfterTemplateRead()
+{
+  QMap<QgsComposerItem*, QWidget*>::const_iterator itemIt = mItemWidgetMap.constBegin();
+  for ( ; itemIt != mItemWidgetMap.constEnd(); ++itemIt )
+  {
+    QgsComposerLegend* legendItem = dynamic_cast<QgsComposerLegend*>(itemIt.key());
+    if(legendItem)
+    {
+      legendItem->updateLegend();
+      continue;
+    }
+
+    QgsComposerMap* mapItem = dynamic_cast<QgsComposerMap*>(itemIt.key());
+    if(mapItem)
+    {
+      //todo: add some logic to get better extent
+    }
   }
 }
