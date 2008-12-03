@@ -72,12 +72,20 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
   QString myIconPath = QgsApplication::activeThemePath();
 
   // Actions defined in qgscomposerbase.ui:
+  //mActionSaveAsTemplate
+  //mActionLoadFromTemplate
   // mActionAddNewMap
   // mActionAddNewLegend
   // mActionAddNewLabel
   // mActionAddNewScalebar
   // mActionAddImage
   // mActionSelectMoveItem
+
+  connect(mActionSaveAsTemplate, SIGNAL(triggered()), this, SLOT(saveAsTemplate()));
+
+  //QAction* loadFromTemplateAction = toolBar->addAction(tr("Load from template"));
+  connect(mActionLoadFromTemplate, SIGNAL(triggered()), this, SLOT(loadFromTemplate()));
+  //toolBar->addAction(loadFromTemplateAction);
 
   QAction* moveItemContentAction = new QAction( QIcon( QPixmap( myIconPath + "mActionMoveItemContent.png" ) ),
       tr( "Move Content" ), 0 );
@@ -310,6 +318,8 @@ void QgsComposer::setupTheme()
 {
   //now set all the icons - getThemeIcon will fall back to default theme if its
   //missing from active theme
+  mActionLoadFromTemplate->setIcon(QgisApp::getThemeIcon("/mActionFileOpen.png"));
+  mActionSaveAsTemplate->setIcon(QgisApp::getThemeIcon("/mActionFileSaveAs.png"));
   mActionExportAsImage->setIcon( QgisApp::getThemeIcon( "/mActionExportMapServer.png" ) );
   mActionExportAsSVG->setIcon( QgisApp::getThemeIcon( "/mActionSaveAsSVG.png" ) );
   mActionPrint->setIcon( QgisApp::getThemeIcon( "/mActionFilePrint.png" ) );
@@ -806,6 +816,50 @@ void QgsComposer::on_mActionAddImage_activated( void )
   }
 }
 
+void QgsComposer::saveAsTemplate(void)
+{
+  //show file dialog
+  QString saveFileName = QFileDialog::getSaveFileName( 0, tr("save template"), QString(), "*.qpt");
+  if(saveFileName.isEmpty())
+  {
+    return;
+  }
+
+  QFile templateFile(saveFileName);
+  if(!templateFile.open(QIODevice::ReadWrite))
+  {
+      return;
+  }
+
+  QDomDocument saveDocument;
+  writeXML(saveDocument, saveDocument);
+
+  if(templateFile.write (saveDocument.toByteArray()) == -1)
+  {
+    QMessageBox::warning(0, tr("Save error"), tr("Error, could not save file"));
+  }
+}
+
+void QgsComposer::loadFromTemplate(void)
+{
+  QString openFileString = QFileDialog::getOpenFileName(0, tr("Load template"), QString(), "*.qpt");
+  QFile templateFile(openFileString);
+  if(!templateFile.open(QIODevice::ReadOnly))
+  {
+      QMessageBox::warning(0, tr("Read error"), tr("Error, could not read file"));
+      return;
+  }
+
+  QDomDocument templateDocument;
+  if(!templateDocument.setContent(&templateFile, false))
+  {
+    QMessageBox::warning(0, tr("Read error"), tr("Content of template file is not valid"));
+    return;
+  }
+
+  readXML(templateDocument);
+}
+
 void QgsComposer::moveItemContent()
 {
   if ( mView )
@@ -956,6 +1010,7 @@ void QgsComposer::on_closePButton_clicked()
 
 void  QgsComposer::writeXML( QDomDocument& doc )
 {
+
   QDomNodeList nl = doc.elementsByTagName( "qgis" );
   if ( nl.count() < 1 )
   {
@@ -967,8 +1022,13 @@ void  QgsComposer::writeXML( QDomDocument& doc )
     return;
   }
 
+  writeXML(qgisElem, doc);
+}
+
+void QgsComposer::writeXML(QDomNode& parentNode, QDomDocument& doc)
+{
   QDomElement composerElem = doc.createElement( "Composer" );
-  qgisElem.appendChild( composerElem );
+  parentNode.appendChild( composerElem );
 
   //store composer items:
   QMap<QgsComposerItem*, QWidget*>::const_iterator itemIt = mItemWidgetMap.constBegin();
@@ -984,9 +1044,6 @@ void  QgsComposer::writeXML( QDomDocument& doc )
   {
     mComposition->writeXML( composerElem, doc );
   }
-
-
-  return;
 }
 
 void QgsComposer::readXML( const QDomDocument& doc )

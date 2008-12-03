@@ -229,6 +229,8 @@
    <attribute name="toolBarBreak" >
     <bool>false</bool>
    </attribute>
+   <addaction name="mActionLoadFromTemplate" />
+   <addaction name="mActionSaveAsTemplate" />
    <addaction name="mActionExportAsImage" />
    <addaction name="mActionExportAsSVG" />
    <addaction name="mActionPrint" />
@@ -365,6 +367,22 @@
    </property>
    <property name="text" >
     <string>Add Image</string>
+   </property>
+  </action>
+  <action name="mActionLoadFromTemplate" >
+   <property name="icon" >
+    <iconset>../../images/themes/default/mActionFileOpen.png</iconset>
+   </property>
+   <property name="text" >
+    <string>loadFromTemplate</string>
+   </property>
+  </action>
+  <action name="mActionSaveAsTemplate" >
+   <property name="icon" >
+    <iconset>../../images/themes/default/mActionFileSaveAs.png</iconset>
+   </property>
+   <property name="text" >
+    <string>saveAsTemplate</string>
    </property>
   </action>
  </widget>

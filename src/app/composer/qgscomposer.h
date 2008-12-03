@@ -129,6 +129,11 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     //! Add new picture
     void on_mActionAddImage_activated( void );
 
+    //! Save composer as template
+    void saveAsTemplate(void);
+
+    void loadFromTemplate(void);
+
     //! Set tool to move item content
     void moveItemContent();
 
@@ -228,6 +233,8 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     //! Displays a warning because of possible min/max size in WMS
     void showWMSPrintingWarning();
 
+     //! Writes state under DOM element
+    void writeXML(QDomNode& parentNode, QDomDocument& doc);
     //! Pointer to composer view
     QgsComposerView *mView;
 
