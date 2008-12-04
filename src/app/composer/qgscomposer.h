@@ -133,9 +133,9 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     void on_mActionAddImage_activated( void );
 
     //! Save composer as template
-    void saveAsTemplate(void);
+    void on_mActionSaveAsTemplate_activated(void);
 
-    void loadFromTemplate(void);
+    void on_mActionLoadFromTemplate_activated(void);
 
     //! Set tool to move item content
     void on_mActionMoveItemContent_activated(void);
@@ -156,25 +156,25 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     void on_mActionMoveItemsToTop_activated(void);
 
     //!Move selected items to bottom
-    void on_mActionMoveItemsToBottom(void);
+    void on_mActionMoveItemsToBottom_activated(void);
 
     //!Align selected composer items left
-    void alignSelectedItemsLeft();
+    void on_mActionAlignLeft_activated(void);
 
     //!Align selected composere items horizontally centered
-    void alignSelectedItemsHCenter();
+    void on_mActionAlignHCenter_activated(void);
 
     //!Align selected composer items right
-    void alignSelectedItemsRight();
+    void on_mActionAlignRight_activated(void);
 
     //!Align selected composer items to top
-    void alignSelectedItemsTop();
+    void on_mActionAlignTop_activated(void);
 
     //!Align selected composer items vertically centered
-    void alignSelectedItemsVCenter();
+    void on_mActionAlignVCenter_activated(void);
 
     //!Align selected composer items to bottom
-    void alignSelectedItemsBottom();
+    void on_mActionAlignBottom_activated(void);
 
     //! Save window state
     void saveWindowState();

@@ -70,8 +70,6 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
   setupUi( this );
   setupTheme();
 
-  QString myIconPath = QgsApplication::activeThemePath();
-
   QToolButton* orderingToolButton = new QToolButton(this);
   orderingToolButton->setPopupMode(QToolButton::InstantPopup);
   orderingToolButton->setAutoRaise(true);
@@ -89,43 +87,13 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
   alignToolButton->setAutoRaise(true);
   alignToolButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
-  //align left
-  QAction* alignLeftAction = new QAction(QIcon( QPixmap( myIconPath + "mActionAlignLeft.png")), tr("Align left"), this);
-  QObject::connect(alignLeftAction, SIGNAL(triggered()), this, SLOT(alignSelectedItemsLeft()));
-  alignLeftAction->setToolTip(tr("Align selected items left"));
-
-  //align hcenter
-  QAction* alignHCenterAction = new QAction(QIcon( QPixmap( myIconPath + "mActionAlignHCenter.png")), tr("Align center horizontal"), this);
-  QObject::connect(alignHCenterAction, SIGNAL(triggered()), this, SLOT(alignSelectedItemsHCenter()));
-  alignHCenterAction->setToolTip( tr("Align center horizontal"));
-
-  //align right
-  QAction* alignRightAction = new QAction(QIcon( QPixmap( myIconPath + "mActionAlignRight.png")), tr("Align right"), this);
-  QObject::connect(alignRightAction, SIGNAL(triggered()), this, SLOT(alignSelectedItemsRight()));
-  alignRightAction->setToolTip( tr("Align selected items right"));
-
-  //align top
-  QAction* alignTopAction = new QAction(QIcon( QPixmap( myIconPath + "mActionAlignTop.png")), tr("Align top"), this);
-  QObject::connect(alignTopAction, SIGNAL(triggered()), this, SLOT(alignSelectedItemsTop()));
-  alignTopAction->setToolTip( tr("Align selected items to top"));
-  
-  //align vcenter
-  QAction* alignVCenterAction = new QAction(QIcon( QPixmap( myIconPath + "mActionAlignVCenter.png")), tr("Align center vertical"), this);
-  QObject::connect(alignVCenterAction, SIGNAL(triggered()), this, SLOT(alignSelectedItemsVCenter()));
-  alignVCenterAction->setToolTip(tr("Align center vertical"));
-
-  //align bottom
-  QAction* alignBottomAction = new QAction(QIcon( QPixmap( myIconPath + "mActionAlignBottom.png")), tr("Align bottom"), this);
-  QObject::connect(alignBottomAction, SIGNAL(triggered()), this, SLOT(alignSelectedItemsBottom()));
-  alignBottomAction->setToolTip( tr("Align selected items bottom"));
-
-  alignToolButton->addAction(alignLeftAction);
-  alignToolButton->addAction(alignHCenterAction);
-  alignToolButton->addAction(alignRightAction);
-  alignToolButton->addAction(alignTopAction);
-  alignToolButton->addAction(alignVCenterAction);
-  alignToolButton->addAction(alignBottomAction);
-  alignToolButton->setDefaultAction(alignLeftAction);
+  alignToolButton->addAction(mActionAlignLeft);
+  alignToolButton->addAction(mActionAlignHCenter);
+  alignToolButton->addAction(mActionAlignRight);
+  alignToolButton->addAction(mActionAlignTop);
+  alignToolButton->addAction(mActionAlignVCenter);
+  alignToolButton->addAction(mActionAlignBottom);
+  alignToolButton->setDefaultAction(mActionAlignLeft);
   toolBar->addWidget(alignToolButton);
 
   QActionGroup* toggleActionGroup = new QActionGroup( this );
@@ -289,6 +257,12 @@ void QgsComposer::setupTheme()
   mActionLowerItems->setIcon( QgisApp::getThemeIcon("/mActionLowerItems.png"));
   mActionMoveItemsToTop->setIcon( QgisApp::getThemeIcon("/mActionMoveItemsToTop.png"));
   mActionMoveItemsToBottom->setIcon( QgisApp::getThemeIcon("/mActionMoveItemsToBottom.png"));
+  mActionAlignLeft->setIcon(QgisApp::getThemeIcon("/mActionAlignLeft.png"));
+  mActionAlignHCenter->setIcon(QgisApp::getThemeIcon("/mActionAlignHCenter.png"));
+  mActionAlignRight->setIcon(QgisApp::getThemeIcon("/mActionAlignRight.png"));
+  mActionAlignTop->setIcon(QgisApp::getThemeIcon("/mActionAlignTop.png"));
+  mActionAlignVCenter->setIcon(QgisApp::getThemeIcon("/mActionAlignVCenter.png"));
+  mActionAlignBottom->setIcon(QgisApp::getThemeIcon("/mActionAlignBottom.png"));
 }
 
 void QgsComposer::connectSlots()
@@ -772,7 +746,7 @@ void QgsComposer::on_mActionAddImage_activated( void )
   }
 }
 
-void QgsComposer::saveAsTemplate(void)
+void QgsComposer::on_mActionSaveAsTemplate_activated(void)
 {
   //show file dialog
   QSettings settings;
@@ -802,7 +776,7 @@ void QgsComposer::saveAsTemplate(void)
   }
 }
 
-void QgsComposer::loadFromTemplate(void)
+void QgsComposer::on_mActionLoadFromTemplate_activated(void)
 {
   QSettings settings;
   QString openFileDir = settings.value("UI/lastComposerTemplateDir", "").toString();
@@ -884,7 +858,7 @@ void QgsComposer::on_mActionMoveItemsToTop_activated(void)
   }
 }
 
-void QgsComposer::on_mActionMoveItemsToBottom(void)
+void QgsComposer::on_mActionMoveItemsToBottom_activated(void)
 {
   if ( mComposition )
   {
@@ -892,7 +866,7 @@ void QgsComposer::on_mActionMoveItemsToBottom(void)
   }
 }
 
-void QgsComposer::alignSelectedItemsLeft()
+void QgsComposer::on_mActionAlignLeft_activated(void)
 {
   if(mComposition)
     {
@@ -900,7 +874,7 @@ void QgsComposer::alignSelectedItemsLeft()
     }
 }
 
-void QgsComposer::alignSelectedItemsHCenter()
+void QgsComposer::on_mActionAlignHCenter_activated(void)
 {
   if(mComposition)
     {
@@ -908,7 +882,7 @@ void QgsComposer::alignSelectedItemsHCenter()
     }
 }
 
-void QgsComposer::alignSelectedItemsRight()
+void QgsComposer::on_mActionAlignRight_activated(void)
 {
   if(mComposition)
     {
@@ -916,7 +890,7 @@ void QgsComposer::alignSelectedItemsRight()
     }
 }
 
-void QgsComposer::alignSelectedItemsTop()
+void QgsComposer::on_mActionAlignTop_activated(void)
 {
   if(mComposition)
     {
@@ -924,7 +898,7 @@ void QgsComposer::alignSelectedItemsTop()
     }
 }
 
-void QgsComposer::alignSelectedItemsVCenter()
+void QgsComposer::on_mActionAlignVCenter_activated(void)
 {
   if(mComposition)
     {
@@ -932,7 +906,7 @@ void QgsComposer::alignSelectedItemsVCenter()
     }
 }
 
-void QgsComposer::alignSelectedItemsBottom()
+void QgsComposer::on_mActionAlignBottom_activated(void)
 {
   if(mComposition)
     {
