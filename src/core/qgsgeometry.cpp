@@ -4832,7 +4832,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
   GEOSGeometry *cutEdges = GEOSPolygonizer_getCutEdges( &nodedGeometry, 1 );
   if ( cutEdges )
   {
-    if ( GEOSGetNumGeometries( cutEdges ) > 0 )
+    if ( numberOfGeometries( cutEdges ) > 0 )
     {
       GEOSGeom_destroy( cutEdges );
       GEOSGeom_destroy( nodedGeometry );
@@ -4844,7 +4844,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
 #endif
 
   GEOSGeometry *polygons = GEOSPolygonize( &nodedGeometry, 1 );
-  if ( !polygons || GEOSGetNumGeometries( polygons ) == 0 )
+  if ( !polygons || numberOfGeometries( polygons ) == 0 )
   {
     if ( polygons )
       GEOSGeom_destroy( polygons );
@@ -4864,7 +4864,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
   //ratio intersect geometry / geometry. This should be close to 1
   //if the polygon belongs to the input geometry
 
-  for ( int i = 0; i < GEOSGetNumGeometries( polygons ); i++ )
+  for ( int i = 0; i < numberOfGeometries( polygons ); i++ )
   {
     const GEOSGeometry *polygon = GEOSGetGeometryN( polygons, i );
     intersectGeometry = GEOSIntersection( mGeos, polygon );
@@ -4883,7 +4883,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
   }
 
   bool splitDone = true;
-  int nGeometriesThis = GEOSGetNumGeometries( mGeos ); //original number of geometries
+  int nGeometriesThis = numberOfGeometries( mGeos ); //original number of geometries
   if ( testedGeometries.size() == nGeometriesThis )
   {
     splitDone = false;
@@ -5001,6 +5001,23 @@ GEOSGeometry *QgsGeometry::nodeGeometries( const GEOSGeometry *splitLine, GEOSGe
     GEOSGeom_destroy( geometryBoundary );
 
   return unionGeometry;
+}
+
+int QgsGeometry::numberOfGeometries(GEOSGeometry* g) const
+{
+  if(!g)
+  {
+    return 0;
+  }
+  int geometryType = GEOSGeomTypeId(g);
+  if(geometryType == GEOS_POINT || geometryType == GEOS_LINESTRING || geometryType == GEOS_LINEARRING
+     || geometryType == GEOS_POLYGON)
+  {
+    return 1;
+  }
+
+  //calling GEOSGetNumGeometries is save for multi types and collections also in geos2
+  return GEOSGetNumGeometries(g);
 }
 
 int QgsGeometry::mergeGeometriesMultiTypeSplit( QVector<GEOSGeometry*>& splitResult )

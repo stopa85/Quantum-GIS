@@ -28,6 +28,9 @@ class QgsVectorDataProvider : QgsDataProvider
         SequentialSelectGeometryAtId = 2048
       };
 
+      /** bitmask of all provider's editing capabilities */
+      static const int EditingCapabilities;
+
       /**
        * Constructor of the vector provider
        * @param uri  uniform resource locator (URI) for a dataset
@@ -141,7 +144,7 @@ class QgsVectorDataProvider : QgsDataProvider
        *
        * Default implementation simply iterates the features 
        */
-      virtual void uniqueValues(int index, QList<QVariant> &uniqueValues);
+      virtual void uniqueValues(int index, QList<QVariant> &uniqueValues /Out/);
 
       /**
        * Adds a list of features

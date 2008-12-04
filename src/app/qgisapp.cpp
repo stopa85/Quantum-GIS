@@ -304,6 +304,7 @@ QgisApp *QgisApp::smInstance = 0;
 QgisApp::QgisApp( QSplashScreen *splash, QWidget * parent, Qt::WFlags fl )
     : QMainWindow( parent, fl ),
     mSplash( splash ),
+    mComposer(0),
     mPythonConsole( NULL ),
     mPythonUtils( NULL )
 {
@@ -1438,6 +1439,7 @@ void QgisApp::setTheme( QString theThemeName )
   mActionHideAllLayers->setIcon( getThemeIcon( "/mActionHideAllLayers.png" ) );
   mActionShowAllLayers->setIcon( getThemeIcon( "/mActionShowAllLayers.png" ) );
   mActionRemoveAllFromOverview->setIcon( getThemeIcon( "/mActionRemoveAllFromOverview.png" ) );
+  mActionToggleFullScreen->setIcon( getThemeIcon( "/mActionToggleFullScreen.png" ) );
   mActionProjectProperties->setIcon( getThemeIcon( "/mActionProjectProperties.png" ) );
   mActionManagePlugins->setIcon( getThemeIcon( "/mActionShowPluginManager.png" ) );
   mActionCheckQgisVersion->setIcon( getThemeIcon( "/mActionCheckQgisVersion.png" ) );
@@ -1446,9 +1448,21 @@ void QgisApp::setTheme( QString theThemeName )
   mActionQgisHomePage->setIcon( getThemeIcon( "/mActionQgisHomePage.png" ) );
   mActionAbout->setIcon( getThemeIcon( "/mActionHelpAbout.png" ) );
   mActionDraw->setIcon( getThemeIcon( "/mActionDraw.png" ) );
+  mActionToggleEditing->setIcon( getThemeIcon( "/mActionToggleEditing.png" ) );
+  mActionCutFeatures->setIcon( getThemeIcon( "/mActionEditCut.png" ) );
+  mActionCopyFeatures->setIcon( getThemeIcon( "/mActionEditCopy.png" ) );
+  mActionPasteFeatures->setIcon( getThemeIcon( "/mActionEditPaste.png" ) );
   mActionCapturePoint->setIcon( getThemeIcon( "/mActionCapturePoint.png" ) );
   mActionCaptureLine->setIcon( getThemeIcon( "/mActionCaptureLine.png" ) );
   mActionCapturePolygon->setIcon( getThemeIcon( "/mActionCapturePolygon.png" ) );
+  mActionMoveFeature->setIcon( getThemeIcon( "/mActionMoveFeature.png" ) );
+  mActionSplitFeatures->setIcon( getThemeIcon( "/mActionSplitFeatures.png" ) );
+  mActionDeleteSelected->setIcon( getThemeIcon( "/mActionDeleteSelected.png" ) );
+  mActionAddVertex->setIcon( getThemeIcon( "/mActionAddVertex.png" ) );
+  mActionMoveVertex->setIcon( getThemeIcon( "/mActionMoveVertex.png" ) );
+  mActionDeleteVertex->setIcon( getThemeIcon( "/mActionDeleteVertex.png" ) );
+  mActionAddRing->setIcon( getThemeIcon( "/mActionAddRing.png" ) );
+  mActionAddIsland->setIcon( getThemeIcon( "/mActionAddIsland.png" ) );
   mActionZoomIn->setIcon( getThemeIcon( "/mActionZoomIn.png" ) );
   mActionZoomOut->setIcon( getThemeIcon( "/mActionZoomOut.png" ) );
   mActionZoomFullExtent->setIcon( getThemeIcon( "/mActionZoomFullExtent.png" ) );
@@ -1461,11 +1475,17 @@ void QgisApp::setTheme( QString theThemeName )
   mActionOpenTable->setIcon( getThemeIcon( "/mActionOpenTable.png" ) );
   mActionMeasure->setIcon( getThemeIcon( "/mActionMeasure.png" ) );
   mActionMeasureArea->setIcon( getThemeIcon( "/mActionMeasureArea.png" ) );
+  mActionMapTips->setIcon( getThemeIcon( "/mActionMapTips.png" ) );
   mActionShowBookmarks->setIcon( getThemeIcon( "/mActionShowBookmarks.png" ) );
   mActionNewBookmark->setIcon( getThemeIcon( "/mActionNewBookmark.png" ) );
   mActionCustomProjection->setIcon( getThemeIcon( "/mActionCustomProjection.png" ) );
   mActionAddWmsLayer->setIcon( getThemeIcon( "/mActionAddWmsLayer.png" ) );
   mActionAddToOverview->setIcon( getThemeIcon( "/mActionInOverview.png" ) );
+
+  if(mComposer)
+  {
+    mComposer->setupTheme();
+  }
 }
 
 void QgisApp::setupConnections()
@@ -1727,8 +1747,6 @@ void QgisApp::saveRecentProjectPath( QString projectPath, QSettings & settings )
 
 void QgisApp::saveWindowState()
 {
-  QgsPluginRegistry::instance()->unloadAll();
-
   // store window and toolbar positions
   QSettings settings;
   // store the toolbar/dock widget settings using Qt4 settings API
@@ -1736,6 +1754,8 @@ void QgisApp::saveWindowState()
 
   // store window geometry
   settings.setValue( "/UI/geometry", saveGeometry() );
+
+  QgsPluginRegistry::instance()->unloadAll();
 }
 
 void QgisApp::restoreWindowState()
@@ -3865,7 +3885,7 @@ void QgisApp::toggleEditing( QgsMapLayer *layer )
   if ( !vlayer->isEditable() )
   {
     vlayer->startEditing();
-    if ( !( vlayer->dataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures ) )
+    if ( !( vlayer->dataProvider()->capabilities() & QgsVectorDataProvider::EditingCapabilities ) )
     {
       QMessageBox::information( 0, tr( "Start editing failed" ), tr( "Provider cannot be opened for editing" ) );
     }
@@ -3980,7 +4000,7 @@ void QgisApp::userScale()
     if ( leftSide > 0.0 && leftOk && rightOk )
     {
       double wantedScale = rightSide / leftSide;
-      mMapCanvas->zoom( wantedScale / currentScale );
+      mMapCanvas->zoomByFactor( wantedScale / currentScale );
     }
   }
 }
@@ -4840,15 +4860,22 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
     if ( dprovider )
     {
       //start editing/stop editing
-      if ( dprovider->capabilities() & QgsVectorDataProvider::AddFeatures )
+      if ( dprovider->capabilities() & QgsVectorDataProvider::EditingCapabilities )
       {
         mActionToggleEditing->setEnabled( true );
         mActionToggleEditing->setChecked( vlayer->isEditable() );
-        mActionPasteFeatures->setEnabled( vlayer->isEditable() && !clipboard()->empty() );
       }
       else
       {
         mActionToggleEditing->setEnabled( false );
+      }
+      
+      if ( dprovider->capabilities() & QgsVectorDataProvider::AddFeatures )
+      {
+        mActionPasteFeatures->setEnabled( vlayer->isEditable() && !clipboard()->empty() );
+      }
+      else
+      {
         mActionPasteFeatures->setEnabled( false );
       }
 
@@ -4863,19 +4890,26 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         mActionDeleteSelected->setEnabled( false );
         mActionCutFeatures->setEnabled( false );
       }
-
+      
+      // moving enabled if geometry changes are supported
+      if ( vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries )
+      {
+        mActionMoveFeature->setEnabled( true );
+      }
+      else
+      {
+        mActionMoveFeature->setEnabled( false );
+      }
 
       if ( vlayer->geometryType() == QGis::Point )
       {
         if ( vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures )
         {
           mActionCapturePoint->setEnabled( true );
-          mActionMoveFeature->setEnabled( true );
         }
         else
         {
           mActionCapturePoint->setEnabled( false );
-          mActionMoveFeature->setEnabled( false );
         }
         mActionCaptureLine->setEnabled( false );
         mActionCapturePolygon->setEnabled( false );
@@ -4892,7 +4926,6 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
           {
             mActionMoveVertex->setEnabled( true );
           }
-          mActionMoveFeature->setEnabled( true );
         }
         return;
       }
@@ -4902,13 +4935,11 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         {
           mActionCaptureLine->setEnabled( true );
           mActionSplitFeatures->setEnabled( true );
-          mActionMoveFeature->setEnabled( true );
         }
         else
         {
           mActionCaptureLine->setEnabled( false );
           mActionSplitFeatures->setEnabled( false );
-          mActionMoveFeature->setEnabled( false );
         }
         mActionCapturePoint->setEnabled( false );
         mActionCapturePolygon->setEnabled( false );
@@ -4923,7 +4954,6 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
           mActionAddRing->setEnabled( true );
           mActionAddIsland->setEnabled( true );
           mActionSplitFeatures->setEnabled( true );
-          mActionMoveFeature->setEnabled( true );
         }
         else
         {
@@ -4931,7 +4961,6 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
           mActionAddRing->setEnabled( false );
           mActionAddIsland->setEnabled( false );
           mActionSplitFeatures->setEnabled( false );
-          mActionMoveFeature->setEnabled( false );
         }
         mActionCapturePoint->setEnabled( false );
         mActionCaptureLine->setEnabled( false );
@@ -4943,7 +4972,6 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         mActionAddVertex->setEnabled( true );
         mActionMoveVertex->setEnabled( true );
         mActionDeleteVertex->setEnabled( true );
-        mActionMoveFeature->setEnabled( true );
         if ( vlayer->geometryType() == QGis::Polygon )
         {
           mActionAddRing->setEnabled( true );
@@ -4957,7 +4985,6 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         mActionAddVertex->setEnabled( false );
         mActionMoveVertex->setEnabled( false );
         mActionDeleteVertex->setEnabled( false );
-        mActionMoveFeature->setEnabled( false );
       }
       return;
     }

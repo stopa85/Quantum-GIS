@@ -147,6 +147,11 @@ void QgsPythonUtilsImpl::installErrorHook()
   runString( "sys.excepthook = qgis_except_hook" );
 }
 
+void QgsPythonUtilsImpl::uninstallErrorHook()
+{
+  runString( "sys.excepthook = sys.__excepthook__" );
+}
+
 void QgsPythonUtilsImpl::installConsoleHooks()
 {
   runString( "sys.displayhook = console_display_hook\n" );
@@ -419,12 +424,24 @@ QString QgsPythonUtilsImpl::getPluginMetadata( QString pluginName, QString funct
   QString command = pluginName + "." + function + "()";
   QString retval = "???";
 
+  // temporary disable error hook - UI will handle this gracefully
+  uninstallErrorHook();
   PyObject* obj = PyRun_String( command.toLocal8Bit().data(), Py_eval_input, mMainDict, mMainDict );
+  
   if ( PyErr_Occurred() )
   {
     PyErr_Print(); // just print it to console
     PyErr_Clear();
-    return "__error__";
+    retval = "__error__";
+  }
+  else if ( PyUnicode_Check( obj ) )
+  {
+    PyObject* utf8 = PyUnicode_AsUTF8String( obj );
+    if (utf8)
+      retval = QString::fromUtf8( PyString_AS_STRING( utf8 ) );
+    else
+      retval = "__error__";
+    Py_XDECREF( utf8 );
   }
   else if ( PyString_Check( obj ) )
   {
@@ -436,6 +453,8 @@ QString QgsPythonUtilsImpl::getPluginMetadata( QString pluginName, QString funct
     retval = "__error__";
   }
   Py_XDECREF( obj );
+  
+  installErrorHook();
   return retval;
 }
 
