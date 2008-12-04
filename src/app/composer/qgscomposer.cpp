@@ -34,6 +34,7 @@
 #include "qgsexception.h"
 #include "qgsproject.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaprenderer.h"
 #include "qgsmessageviewer.h"
 #include "qgscontexthelp.h"
 #include "qgscursors.h"
@@ -1306,6 +1307,7 @@ void QgsComposer::cleanupAfterTemplateRead()
   QMap<QgsComposerItem*, QWidget*>::const_iterator itemIt = mItemWidgetMap.constBegin();
   for ( ; itemIt != mItemWidgetMap.constEnd(); ++itemIt )
   {
+    //update all legends completely
     QgsComposerLegend* legendItem = dynamic_cast<QgsComposerLegend*>(itemIt.key());
     if(legendItem)
     {
@@ -1313,10 +1315,40 @@ void QgsComposer::cleanupAfterTemplateRead()
       continue;
     }
 
+    //update composer map extent if it does not intersect the full extent of all layers
     QgsComposerMap* mapItem = dynamic_cast<QgsComposerMap*>(itemIt.key());
     if(mapItem)
     {
-      //todo: add some logic to get better extent
+      //test if composer map extent intersects extent of all layers
+      bool intersects = false;
+      QgsRectangle composerMapExtent = mapItem->extent();
+      if(mQgis)
+      {
+        QgsMapCanvas* canvas = mQgis->mapCanvas();
+        if(canvas)
+        {
+          QgsRectangle mapCanvasExtent = mQgis->mapCanvas()->fullExtent();
+          if(composerMapExtent.intersects(mapCanvasExtent))
+          {
+            intersects = true;
+          }
+        }
+      }
+
+      //if not: apply current canvas extent
+      if(!intersects)
+      {
+        double currentWidth = mapItem->rect().width();
+        double currentHeight = mapItem->rect().height();
+        if(curretWidth - 0 > 0.0) //don't divide through zero
+        {
+          QgsRectangle canvasExtent = mapItem->mapRenderer()->extent();
+          //adapt min y of extent such that the size of the map item stays the same
+          double newCanvasExtentHeight = currentHeight / currentWidth * canvasExtent.width();
+          canvasExtent.setYMinimum(canvasExtent.yMaximum() - newCanvasExtentHeight);
+          mapItem->setNewExtent( canvasExtent );
+        }
+      }
     }
   }
 }
