@@ -820,11 +820,17 @@ void QgsComposer::on_mActionAddImage_activated( void )
 void QgsComposer::saveAsTemplate(void)
 {
   //show file dialog
-  QString saveFileName = QFileDialog::getSaveFileName( 0, tr("save template"), QString(), "*.qpt");
+  QSettings settings;
+  QString lastSaveDir = settings.value("UI/lastComposerTemplateDir", "").toString();
+  QString saveFileName = QFileDialog::getSaveFileName( 0, tr("save template"), lastSaveDir, "*.qpt");
   if(saveFileName.isEmpty())
   {
     return;
   }
+
+  //save directory
+  QFileInfo saveFileInfo(saveFileName);
+  settings.setValue("UI/LastComposerTemplateDir", saveFileInfo.absolutePath());
 
   QFile templateFile(saveFileName);
   if(!templateFile.open(QIODevice::ReadWrite))
@@ -843,7 +849,18 @@ void QgsComposer::saveAsTemplate(void)
 
 void QgsComposer::loadFromTemplate(void)
 {
-  QString openFileString = QFileDialog::getOpenFileName(0, tr("Load template"), QString(), "*.qpt");
+  QSettings settings;
+  QString openFileDir = settings.value("UI/lastComposerTemplateDir", "").toString();
+  QString openFileString = QFileDialog::getOpenFileName(0, tr("Load template"), openFileDir, "*.qpt");
+
+  if(openFileString.isEmpty())
+  {
+    return; //canceled by the user
+  }
+
+  QFileInfo openFileInfo(openFileString);
+  settings.setValue("UI/LastComposerTemplateDir", openFileInfo.absolutePath());
+
   QFile templateFile(openFileString);
   if(!templateFile.open(QIODevice::ReadOnly))
   {
@@ -1340,7 +1357,7 @@ void QgsComposer::cleanupAfterTemplateRead()
       {
         double currentWidth = mapItem->rect().width();
         double currentHeight = mapItem->rect().height();
-        if(curretWidth - 0 > 0.0) //don't divide through zero
+        if(currentWidth - 0 > 0.0) //don't divide through zero
         {
           QgsRectangle canvasExtent = mapItem->mapRenderer()->extent();
           //adapt min y of extent such that the size of the map item stays the same
