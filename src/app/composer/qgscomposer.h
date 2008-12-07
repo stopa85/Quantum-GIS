@@ -92,6 +92,11 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     virtual void showEvent( QShowEvent * );
 #endif
 
+  signals:
+    //! Is emitted every time the view zoom has changed
+    void zoomLevelChanged();
+
+
   public slots:
     //! Zoom to full extent of the paper
     void on_mActionZoomAll_activated( void );

@@ -403,18 +403,22 @@ void QgsComposer::zoomFull( void )
 void QgsComposer::on_mActionZoomAll_activated( void )
 {
   zoomFull();
+  mView->update();
+  emit zoomLevelChanged();
 }
 
 void QgsComposer::on_mActionZoomIn_activated( void )
 {
   mView->scale( 2, 2 );
-  //mView->update();
+  mView->update();
+  emit zoomLevelChanged();
 }
 
 void QgsComposer::on_mActionZoomOut_activated( void )
 {
   mView->scale( .5, .5 );
-  //mView->update();
+  mView->update();
+  emit zoomLevelChanged();
 }
 
 void QgsComposer::on_mActionRefreshView_activated( void )
@@ -1142,6 +1146,7 @@ void QgsComposer::addComposerMap( QgsComposerMap* map )
   }
 
   QgsComposerMapWidget* mapWidget = new QgsComposerMapWidget( map );
+  connect(this, SIGNAL(zoomLevelChanged()), map, SLOT(renderModeUpdateCachedImage()));
   mItemWidgetMap.insert( map, mapWidget );
 }
 
