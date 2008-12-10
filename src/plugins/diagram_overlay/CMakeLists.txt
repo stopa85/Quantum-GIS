@@ -6,9 +6,12 @@ SET (DIAGRAMOVERLAY_SRCS
      qgsdiagramcategory.cpp
      qgsdiagramfactory.cpp
      qgswkndiagramfactory.cpp
+     qgswkndiagramfactorywidget.cpp
      qgsbardiagramfactory.cpp
      qgspiediagramfactory.cpp
      qgssvgdiagramfactory.cpp
+     qgssvgdiagramfactorywidget.cpp
+     qgsdiagramfactorywidget.cpp
      qgsdiagramoverlay.cpp
      qgsdiagramoverlayplugin.cpp
      qgsdiagramrenderer.cpp
@@ -16,12 +19,14 @@ SET (DIAGRAMOVERLAY_SRCS
      qgslinearlyscalingdialog.cpp
 )
 
-SET (DIAGRAMOVERLAY_UIS qgsdiagramdialogbase.ui qgslinearlyscalingdialogbase.ui)
+SET (DIAGRAMOVERLAY_UIS qgsdiagramdialogbase.ui qgslinearlyscalingdialogbase.ui qgssvgdiagramfactorywidgetbase.ui qgswkndiagramfactorywidgetbase.ui)
 
 SET (DIAGRAMOVERLAY_MOC_HDRS
      qgsdiagramoverlayplugin.h
      qgsdiagramdialog.h
      qgslinearlyscalingdialog.h
+     qgssvgdiagramfactorywidget.h
+     qgswkndiagramfactorywidget.h
 )
 
 

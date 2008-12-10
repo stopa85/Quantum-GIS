@@ -34,18 +34,8 @@ QgsLinearlyScalingDialog::~QgsLinearlyScalingDialog()
 
 }
 
-QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type, int classAttr, const QgsAttributeList& attributes, const std::list<QColor>& colors) const
+QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(int classAttr, const QgsAttributeList& attributes) const
 {
-  //convert color list to brush list
-  QList<QBrush> brushList;
-  QList<QPen> penList;
-
-  for(std::list<QColor>::const_iterator color_it = colors.begin(); color_it != colors.end(); ++color_it)
-    {
-      brushList.push_back(QBrush(*color_it));
-      penList.push_back(QPen(Qt::NoPen));
-    }
-
   //create a linearly scaling renderer
   QList<int> attributesList;
   attributesList.push_back(classAttr);
@@ -61,38 +51,6 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
   itemList.push_back(secondItem);
   renderer->setDiagramItems(itemList);
   renderer->setItemInterpretation(QgsDiagramRenderer::LINEAR);
-  
-  QgsWKNDiagramFactory* f = 0;//new QgsWKNDiagramFactory();
-  if(type == "Bar")
-    {
-      f = new QgsBarDiagramFactory();
-    }
-  else if(type == "Pie")
-    {
-      f = new QgsPieDiagramFactory();
-    }
-  else
-    {
-      return 0; //unknown diagram type
-    }
-  f->setDiagramType(type);
-   
-  std::list<QColor>::const_iterator c_it = colors.begin();
-  QgsAttributeList::const_iterator a_it = attributes.constBegin();
-  
-  for(; c_it != colors.end() && a_it != attributes.constEnd(); ++c_it, ++a_it)
-    {
-      QgsDiagramCategory newCategory;
-      newCategory.setPropertyIndex(*a_it);
-      newCategory.setBrush(QBrush(*c_it));
-      f->addCategory(newCategory);
-    }
-  
-
-   QList<int> classAttrList;
-   classAttrList.push_back(classAttr);
-   f->setScalingAttributes(classAttrList);
-   renderer->setFactory(f);
 
    return renderer;
 }
@@ -106,6 +64,19 @@ void QgsLinearlyScalingDialog::applySettings(const QgsDiagramRenderer* renderer)
       QgsDiagramItem theItem = itemList.at(1); //take the upper item
       mValueLineEdit->setText(theItem.value.toString());
       mSizeSpinBox->setValue(theItem.size);
+
+      if(linearRenderer->factory())
+      {
+        QgsDiagramFactory::SizeUnit sizeUnit = linearRenderer->factory()->sizeUnit();
+        if(sizeUnit == QgsDiagramFactory::MM)
+        {
+            mSizeUnitComboBox->setCurrentIndex(mSizeUnitComboBox->findText(tr("Millimeter")));
+        }
+        else if(sizeUnit == QgsDiagramFactory::MapUnits)
+        {
+            mSizeUnitComboBox->setCurrentIndex(mSizeUnitComboBox->findText(tr("Map units")));
+        }
+       }
     }
 }
 
@@ -117,7 +88,7 @@ void QgsLinearlyScalingDialog::insertMaximumAttributeValue()
       QgsVectorDataProvider *provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->dataProvider());
       if(provider)
 	{
-      mValueLineEdit->setText(provider->maximumValue(mClassificationField).toString());
+            mValueLineEdit->setText(provider->maximumValue(mClassificationField).toString());
 	}
     }
 }

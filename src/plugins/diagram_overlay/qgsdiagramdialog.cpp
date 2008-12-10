@@ -20,27 +20,22 @@
 #include "qgsdiagramoverlay.h"
 #include "qgsfield.h"
 #include "qgslinearlyscalingdialog.h"
+#include "qgssvgdiagramfactory.h"
+#include "qgssvgdiagramfactorywidget.h"
 #include "qgsvectordataprovider.h"
 #include "qgswkndiagramfactory.h"
+#include "qgswkndiagramfactorywidget.h"
 #include <QColorDialog>
 
 
 QgsDiagramDialog::QgsDiagramDialog(QgsVectorLayer* vl): mVectorLayer(vl)
 {
   setupUi(this);
-  QObject::connect(mAddPushButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
-  QObject::connect(mRemovePushButton, SIGNAL(clicked()), this, SLOT(removeAttribute()));
-  QObject::connect(mClassificationTypeComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeClassificationType(const QString&)));
   QObject::connect(mClassificationComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeClassificationAttribute(const QString&)));
-  QObject::connect(mAttributesTreeWidget, SIGNAL(itemDoubleClicked( QTreeWidgetItem*, int)), this, SLOT(handleItemDoubleClick(QTreeWidgetItem*, int)));
 
-  mDiagramTypeComboBox->insertItem(0, "Bar");
-  mDiagramTypeComboBox->insertItem(0, "Pie");
-
-  QStringList headerLabels;
-  headerLabels << "Attribute";
-  headerLabels << "Color";
-  mAttributesTreeWidget->setHeaderLabels(headerLabels);
+  mDiagramTypeComboBox->insertItem(0, tr("Pie chart"));
+  mDiagramTypeComboBox->insertItem(1, tr("Bar chart"));
+  mDiagramTypeComboBox->insertItem(2, tr("Proportional SVG symbols"));
 
   if(!mVectorLayer)
     {
@@ -58,7 +53,6 @@ QgsDiagramDialog::QgsDiagramDialog(QgsVectorLayer* vl): mVectorLayer(vl)
       for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
         {
 	  str = (*it).name();
-	  mAttributesComboBox->insertItem(comboIndex, str);
 	  mClassificationComboBox->insertItem(comboIndex, str);
 	  ++comboIndex;
 	}
@@ -84,37 +78,7 @@ QgsDiagramDialog::~QgsDiagramDialog()
 
 }
 
-void QgsDiagramDialog::addAttribute()
-{
-  QTreeWidgetItem* newItem = new QTreeWidgetItem(mAttributesTreeWidget);
-
-  //text
-  QString currentText = mAttributesComboBox->currentText();
-  newItem->setText(0, currentText);
-  
-  //and icon
-  int red = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-  int green = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-  int blue = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-  QColor randomColor(red, green, blue);
-  newItem->setBackground(1, QBrush(randomColor));
-	    
-  if(!currentText.isNull() && !currentText.isEmpty())
-    {
-      mAttributesTreeWidget->addTopLevelItem(newItem);
-    }
-}
-
-void QgsDiagramDialog::removeAttribute()
-{
-  QTreeWidgetItem* currentItem = mAttributesTreeWidget->currentItem();
-  if(currentItem)
-    {
-      delete currentItem;
-    }
-}
-
-void QgsDiagramDialog::changeClassificationType(const QString& newType)
+void QgsDiagramDialog::on_mClassificationTypeComboBox_currentIndexChanged(const QString& newType)
 {
   if(newType == "linearly scaling")
     {
@@ -126,11 +90,11 @@ void QgsDiagramDialog::changeClassificationType(const QString& newType)
       QWidget* newWidget = new QgsLinearlyScalingDialog(mVectorLayer);
       mWidgetStackRenderers->addWidget(newWidget);
       mWidgetStackRenderers->setCurrentWidget(newWidget);
-      changeClassificationAttribute(mClassificationComboBox->currentText());
+      on_mClassificationComboBox_currentIndexChanged(mClassificationComboBox->currentText());
     }
 }
 
-void QgsDiagramDialog::changeClassificationAttribute(const QString& newAttribute)
+void QgsDiagramDialog::on_mClassificationComboBox_currentIndexChanged(const QString& newAttribute)
 {
   int attributeIndex = QgsDiagramOverlay::indexFromAttributeName(newAttribute, mVectorLayer);
   if(attributeIndex == -1)
@@ -145,58 +109,107 @@ void QgsDiagramDialog::changeClassificationAttribute(const QString& newAttribute
   rendererWidget->changeClassificationField(attributeIndex);
 }
 
+void QgsDiagramDialog::on_mDiagramTypeComboBox_currentIndexChanged(const QString& text)
+{
+    //remove old widget
+    QWidget* currentWidget = mDiagramFactoryStackedWidget->currentWidget();
+    mDiagramFactoryStackedWidget->removeWidget(currentWidget);
+    delete currentWidget;
+
+    //and create a new one
+    QgsDiagramFactoryWidget* newWidget = 0;
+    if(text == tr("Pie chart"))
+    {
+        newWidget = new QgsWKNDiagramFactoryWidget(mVectorLayer, "Pie");
+    }
+    else if(text == tr("Bar chart"))
+    {
+        newWidget = new QgsWKNDiagramFactoryWidget(mVectorLayer, "Bar");
+    }
+    else if(text == (tr("Proportional SVG symbols")))
+    {
+        newWidget = new QgsSVGDiagramFactoryWidget();
+    }
+
+    if(newWidget)
+    {
+        mDiagramFactoryStackedWidget->addWidget(newWidget);
+        mDiagramFactoryStackedWidget->setCurrentWidget(newWidget);
+        newWidget->show();
+    }
+}
+
 void QgsDiagramDialog::apply() const
 {
-  std::list<QColor> colorList;
-  QgsAttributeList attList;
-
-  int topLevelItemCount = mAttributesTreeWidget->topLevelItemCount();
-  QTreeWidgetItem* currentItem;
-  int currentAttribute;
-  
-  int classificationField = QgsDiagramOverlay::indexFromAttributeName(mClassificationComboBox->currentText(), mVectorLayer);
-  
-  for(int i = 0; i < topLevelItemCount; ++i)
+    if(!mVectorLayer)
     {
-      currentItem = mAttributesTreeWidget->topLevelItem(i);
-      currentAttribute = QgsDiagramOverlay::indexFromAttributeName(currentItem->text(0), mVectorLayer);
-      if(currentAttribute != -1)
-	{
-	  colorList.push_back(currentItem->background(1).color());
-	  attList.push_back(currentAttribute);
-	}
+        return;
     }
 
-  QgsDiagramRendererWidget* rendererWidget = dynamic_cast<QgsDiagramRendererWidget*>(mWidgetStackRenderers->currentWidget());
-    if(!rendererWidget)
-      {
-	return;
-      }
+    //create diagram factory
+    QgsDiagramFactory* diagramFactory = 0;
+    QWidget* factoryWidget = mDiagramFactoryStackedWidget->currentWidget();
 
-  QgsDiagramRenderer* renderer = rendererWidget->createRenderer(mDiagramTypeComboBox->currentText(), classificationField, attList, colorList);
-  if(!renderer)
+    if(factoryWidget)
     {
-      return;
+        QgsDiagramFactoryWidget* diagramFactoryWidget = dynamic_cast<QgsDiagramFactoryWidget*>(factoryWidget);
+        if(factoryWidget)
+        {
+            diagramFactory = diagramFactoryWidget->createFactory();
+        }
     }
 
-  if(renderer->factory())
-  {
-      renderer->factory()->setSizeUnit(rendererWidget->sizeUnit());
-  }
+    if(!diagramFactory)
+    {
+        return;
+    }
 
-  //create QgsDiagramOverlay and add the renderer to it
-    
-    //the overlay may need a different attribute list than the renderer
-	if(!attList.contains(classificationField))
-	{
-		attList.push_back(classificationField);	
-	}
-    
-  QgsDiagramOverlay* diagramOverlay = new QgsDiagramOverlay(mVectorLayer);
-  diagramOverlay->setDiagramRenderer(renderer);
-  diagramOverlay->setAttributes(attList);
-  
-  //display flag
+    //and diagram renderer
+
+    //classAttr comes from the gui
+    int classAttr =  QgsDiagramOverlay::indexFromAttributeName(mClassificationComboBox->currentText(), mVectorLayer);
+    if(classAttr == -1)
+    {
+        return;
+    }
+
+    //attList comes from the diagram factory widget
+    QgsAttributeList attList = diagramFactory->categoryAttributes();
+
+    QgsDiagramRenderer* diagramRenderer = 0;
+    QgsDiagramFactory::SizeUnit diagramSizeUnit = QgsDiagramFactory::MM; //mm on output medium is default
+
+    QWidget* rendererWidget = mWidgetStackRenderers->currentWidget();
+    if(rendererWidget)
+    {
+        QgsDiagramRendererWidget* diagramRendererWidget = dynamic_cast<QgsDiagramRendererWidget*>(rendererWidget);
+        if(diagramRendererWidget)
+        {
+            diagramRenderer = diagramRendererWidget->createRenderer(classAttr, attList);
+            diagramSizeUnit = diagramRendererWidget->sizeUnit();
+        }
+    }
+
+    if(!diagramRenderer)
+    {
+        return;
+    }
+
+    diagramRenderer->setFactory(diagramFactory);
+    diagramFactory->setScalingAttributes(attList);
+    //also set units to the diagram factory
+    diagramFactory->setSizeUnit(diagramSizeUnit);
+
+      //the overlay may need a different attribute list than the renderer
+    if(!attList.contains(classAttr))
+    {
+        attList.push_back(classAttr);
+    }
+    QgsDiagramOverlay* diagramOverlay = new QgsDiagramOverlay(mVectorLayer);
+    diagramOverlay->setDiagramRenderer(diagramRenderer);
+    diagramOverlay->setAttributes(attList);
+
+     //display flag
   if(mDisplayDiagramsCheckBox->checkState() == Qt::Checked)
     {
       diagramOverlay->setDisplayFlag(true);
@@ -211,18 +224,6 @@ void QgsDiagramDialog::apply() const
 
   //finally add the new overlay to the vector layer
   mVectorLayer->addOverlay(diagramOverlay);
-}
-
-void QgsDiagramDialog::handleItemDoubleClick(QTreeWidgetItem * item, int column)
-{
-  if(column == 1) //change color
-    {
-      QColor newColor = QColorDialog::getColor();
-      if(newColor.isValid())
-	{
-	  item->setBackground(1, QBrush(newColor));
-	}
-    }
 }
 
 void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
@@ -242,23 +243,48 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
       const QgsDiagramRenderer* previousDiagramRenderer = dynamic_cast<const QgsDiagramRenderer*>(previousDiagramOverlay->diagramRenderer());
      
       if(previousDiagramRenderer && previousDiagramRenderer->factory())
-	{
-	  QgsWKNDiagramFactory* theFactory = dynamic_cast<QgsWKNDiagramFactory*>(previousDiagramRenderer->factory());
-	  if(theFactory)
-	    {
-	      //well known diagram name
-	      mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(theFactory->diagramType()));
-	      //insert attribute names and colors into mAttributesTreeWidget
-	      QList<QgsDiagramCategory> categoryList = theFactory->categories();    
-	      QList<QgsDiagramCategory>::const_iterator c_it = categoryList.constBegin();
-	      
-	      for(; c_it != categoryList.constEnd(); ++c_it)
-		{
-		  QTreeWidgetItem* newItem = new QTreeWidgetItem(mAttributesTreeWidget);
-		  newItem->setText(0, QgsDiagramOverlay::attributeNameFromIndex(c_it->propertyIndex(), mVectorLayer));
-		  newItem->setBackground(1, c_it->brush());
-		  mAttributesTreeWidget->addTopLevelItem(newItem);		 
-		}
+        {
+          QgsDiagramFactory* theFactory = previousDiagramRenderer->factory();
+           QgsDiagramFactoryWidget* newWidget = 0;
+
+
+          QgsWKNDiagramFactory* theWKNFactory = dynamic_cast<QgsWKNDiagramFactory*>(theFactory);
+          if(theWKNFactory)
+            {
+              QString wknType = theWKNFactory->diagramType();
+              if(wknType == ("Pie"))
+              {
+                newWidget = new QgsWKNDiagramFactoryWidget(mVectorLayer, "Pie");
+                mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(tr("Pie chart")));
+                }
+              else
+              {
+                  newWidget = new QgsWKNDiagramFactoryWidget(mVectorLayer, "Bar");
+                  mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(tr("Bar chart")));
+              }
+              newWidget->setExistingFactory(theWKNFactory);
+            }
+
+          QgsSVGDiagramFactory* theSVGFactory = dynamic_cast<QgsSVGDiagramFactory*>(theFactory);
+          if(theSVGFactory)
+          {
+            mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(tr("Proportional SVG symbols")));
+            newWidget = new QgsSVGDiagramFactoryWidget();
+          }
+
+          newWidget->setExistingFactory(theFactory);
+           //remove old widget
+        QWidget* currentWidget = mDiagramFactoryStackedWidget->currentWidget();
+        mDiagramFactoryStackedWidget->removeWidget(currentWidget);
+        delete currentWidget;
+
+        if(newWidget)
+        {
+            mDiagramFactoryStackedWidget->addWidget(newWidget);
+            mDiagramFactoryStackedWidget->setCurrentWidget(newWidget);
+            newWidget->show();
+        }
+
 	      
 	      //classification attribute
 	      QString classFieldName = QgsDiagramOverlay::attributeNameFromIndex(theFactory->scalingAttributes().first(), mVectorLayer);
@@ -275,10 +301,9 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 		    {
 		      rendererWidget->applySettings(previousDiagramRenderer);
 		    }
-		}
-	    }
-	}
-    }
+                }
+          }
+  }
 }
 
 

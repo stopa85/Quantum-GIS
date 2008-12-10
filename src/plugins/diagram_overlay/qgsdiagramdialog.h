@@ -34,14 +34,10 @@ class QgsDiagramDialog: public QgsApplyDialog, private Ui::QgsDiagramDialogBase
   void apply() const;
 
   private slots:
-  /**Adds name of the attribute combo box into the tree widget*/
-  void addAttribute();
-  /**Removes the current attribute from the tree widget*/
-  void removeAttribute();
-  void changeClassificationType(const QString& newType);
-  void changeClassificationAttribute(const QString& newAttribute);
-  /**Calls the color dialog if column == 1*/
-  void handleItemDoubleClick(QTreeWidgetItem * item, int column);
+  void on_mClassificationTypeComboBox_currentIndexChanged(const QString& newType);
+  void on_mClassificationComboBox_currentIndexChanged(const QString& newAttribute);
+  void on_mDiagramTypeComboBox_currentIndexChanged(const QString& text);
+
 
  private:
   QgsDiagramDialog();

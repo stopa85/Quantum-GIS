@@ -112,3 +112,14 @@ void QgsWKNDiagramFactory::addCategory(QgsDiagramCategory c)
       mMaximumGap = currentGap;
     }
 }
+
+QgsAttributeList QgsWKNDiagramFactory::categoryAttributes() const
+{
+    QgsAttributeList categoryAttList;
+    QList<QgsDiagramCategory>::const_iterator it = mCategories.constBegin();
+    for(; it != mCategories.constEnd(); ++it)
+    {
+        categoryAttList.push_back(it->propertyIndex());
+    }
+    return categoryAttList;
+}

@@ -52,17 +52,14 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   /**Adds a new category (attribute together with symbolisation)*/
   void addCategory(QgsDiagramCategory c);
 
-  //setters and getters for scaling attribute
-  QList<int> scalingAttributes() const {return mScalingAttributes;}
-  void setScalingAttributes(const QList<int>& att){mScalingAttributes = att;}
+  /**Returns the attribute indexes represented in the bars/pie slices*/
+  QgsAttributeList categoryAttributes() const;
   
   /**Returns the supported well known names in a list*/
   static void supportedWellKnownNames(std::list<QString>& names);
 
  protected:
-  /**List of scaling attribute indexes (the values are summed up to 
-     receive the scaling value)*/
-  QList<int> mScalingAttributes;
+
   /**Well known diagram name (e.g. pie, bar, line)*/
   QString mDiagramType;
   /**List of attributes that are represented as slices, pillars, etc.*/

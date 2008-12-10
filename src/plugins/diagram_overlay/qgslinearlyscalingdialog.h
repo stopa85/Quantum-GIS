@@ -30,7 +30,7 @@ class QgsLinearlyScalingDialog: public QgsDiagramRendererWidget, private Ui::Qgs
  public:
   QgsLinearlyScalingDialog(QgsVectorLayer* vl);
   ~QgsLinearlyScalingDialog();
-  QgsDiagramRenderer* createRenderer(const QString& type, int classAttr, const QgsAttributeList& attributes, const std::list<QColor>& colors) const;
+  QgsDiagramRenderer* createRenderer(int classAttr, const QgsAttributeList& attributes) const;
   void applySettings(const QgsDiagramRenderer* renderer);
   /**Is called from QgsDiagramDialog. Inserts new maximum value into the text widget*/
   void changeClassificationField(int newField){mClassificationField = newField;}

@@ -135,7 +135,7 @@ int QgsBarDiagramFactory::getMaximumHeight(int size, const QgsAttributeMap& feat
 double QgsBarDiagramFactory::sizeValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const
 {
  //find value for scaling attribute
-  QList<int>::const_iterator scaling_it = mScalingAttributes.constBegin();
+  QgsAttributeList::const_iterator scaling_it = mScalingAttributes.constBegin();
   double scalingValue = 0;
 
   for(; scaling_it != mScalingAttributes.constEnd(); ++scaling_it)

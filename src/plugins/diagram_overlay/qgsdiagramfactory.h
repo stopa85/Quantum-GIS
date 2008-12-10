@@ -20,6 +20,7 @@
 
 #include <QMap>
 #include <QString>
+#include "qgsvectorlayer.h"
 
 class QgsFeature;
 class QgsRenderContext;
@@ -80,10 +81,22 @@ class QgsDiagramFactory
   virtual QgsDiagramFactory::SizeType sizeType() const;
 
   void setSizeUnit(SizeUnit u){mSizeUnit = u;}
+  SizeUnit sizeUnit() const {return mSizeUnit;}
+
+   //setters and getters for scaling attribute
+  QgsAttributeList scalingAttributes() const {return mScalingAttributes;}
+  void setScalingAttributes(const QgsAttributeList& att){mScalingAttributes = att;}
+
+  /**Returns the attributes represented in the pies / bars*/
+  virtual QgsAttributeList categoryAttributes() const {return QgsAttributeList();}
 
  protected:
   /**Size units of diagram items*/
   SizeUnit mSizeUnit;
+
+  /**List of scaling attribute indexes (the values are summed up to
+     receive the scaling value)*/
+  QgsAttributeList mScalingAttributes;
 };
 
 #endif
