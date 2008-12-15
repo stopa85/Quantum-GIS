@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QProgressDialog>
 
 QgsSVGDiagramFactoryWidget::QgsSVGDiagramFactoryWidget(): QgsDiagramFactoryWidget()
@@ -70,6 +71,44 @@ QgsDiagramFactory* QgsSVGDiagramFactoryWidget::createFactory()
 void QgsSVGDiagramFactoryWidget::setExistingFactory(const QgsDiagramFactory* f)
 {
     //nothing to be done
+}
+
+void QgsSVGDiagramFactoryWidget::on_mPictureBrowseButton_clicked()
+{
+  QString openDir;
+  QString lineEditText = mPictureLineEdit->text();
+  if ( !lineEditText.isEmpty() )
+  {
+    QFileInfo openDirFileInfo( lineEditText );
+    openDir = openDirFileInfo.path();
+  }
+
+
+  //show file dialog
+  QString filePath = QFileDialog::getOpenFileName( 0, tr( "Select svg file" ), openDir );
+  if ( filePath.isEmpty() )
+  {
+    return;
+  }
+
+  //check if file exists
+  QFileInfo fileInfo( filePath );
+  if ( !fileInfo.exists() || !fileInfo.isReadable() )
+  {
+    QMessageBox::critical( 0, "Invalid file", "Error, file does not exist or is not readable" );
+    return;
+  }
+
+  //check if it is a valid svg file
+   if(!testSvgFile(filePath))
+   {
+      QMessageBox::critical( 0, "Invalid file", "Error, the selected file is not a valid svg file" );
+    return;
+   }
+
+  mPictureLineEdit->blockSignals( true );
+  mPictureLineEdit->setText( filePath );
+  mPictureLineEdit->blockSignals( false );
 }
 
 void QgsSVGDiagramFactoryWidget::on_mPreviewListWidget_currentItemChanged( QListWidgetItem* current, QListWidgetItem* previous )

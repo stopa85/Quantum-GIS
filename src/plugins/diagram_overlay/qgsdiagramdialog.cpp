@@ -31,7 +31,6 @@
 QgsDiagramDialog::QgsDiagramDialog(QgsVectorLayer* vl): mVectorLayer(vl)
 {
   setupUi(this);
-  QObject::connect(mClassificationComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeClassificationAttribute(const QString&)));
 
   mDiagramTypeComboBox->insertItem(0, tr("Pie chart"));
   mDiagramTypeComboBox->insertItem(1, tr("Bar chart"));
