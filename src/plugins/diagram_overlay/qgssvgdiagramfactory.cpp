@@ -69,8 +69,9 @@ int QgsSVGDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, co
   return 1; //soon...
 }
 
-bool QgsSVGDiagramFactory::setSVGData(const QByteArray& data)
+bool QgsSVGDiagramFactory::setSVGData(const QByteArray& data, const QString& filePath)
 {
+  mSvgFilePath = filePath;
   return mRenderer.load(data);
 }
 

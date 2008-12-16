@@ -60,7 +60,7 @@ QgsDiagramFactory* QgsSVGDiagramFactoryWidget::createFactory()
     QByteArray svgData = svgFile.readAll();
 
     QgsSVGDiagramFactory* factory = new QgsSVGDiagramFactory();
-    if(!factory->setSVGData(svgData))
+    if(!factory->setSVGData(svgData, filePath))
     {
         delete factory; return 0;
     }
@@ -71,6 +71,11 @@ QgsDiagramFactory* QgsSVGDiagramFactoryWidget::createFactory()
 void QgsSVGDiagramFactoryWidget::setExistingFactory(const QgsDiagramFactory* f)
 {
     mPreviewListWidget->setLayoutDirection(Qt::LeftToRight);
+    const QgsSVGDiagramFactory* svgFactory = dynamic_cast<const QgsSVGDiagramFactory*>(f);
+    if(svgFactory)
+    {
+        mPictureLineEdit->setText(svgFactory->svgFilePath());
+    }
 }
 
 void QgsSVGDiagramFactoryWidget::on_mPictureBrowseButton_clicked()

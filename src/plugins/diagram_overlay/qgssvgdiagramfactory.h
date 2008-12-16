@@ -53,10 +53,15 @@ class QgsSVGDiagramFactory: public QgsDiagramFactory
 
   /**Sets the SVG data to be rendered.
    @return true in case of success*/
-  bool setSVGData(const QByteArray& data);
+  bool setSVGData(const QByteArray& data, const QString& filePath = "");
+
+  QString svgFilePath() const {return mSvgFilePath;}
 
  private:
   mutable QSvgRenderer mRenderer;
+
+  /**Path to the current svg file. Mainly for the purpose of inserting the path into a newly created dialog*/
+  QString mSvgFilePath;
 };
 
 #endif
