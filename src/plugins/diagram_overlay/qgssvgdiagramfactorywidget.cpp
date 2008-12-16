@@ -70,7 +70,7 @@ QgsDiagramFactory* QgsSVGDiagramFactoryWidget::createFactory()
 
 void QgsSVGDiagramFactoryWidget::setExistingFactory(const QgsDiagramFactory* f)
 {
-    //nothing to be done
+    mPreviewListWidget->setLayoutDirection(Qt::LeftToRight);
 }
 
 void QgsSVGDiagramFactoryWidget::on_mPictureBrowseButton_clicked()

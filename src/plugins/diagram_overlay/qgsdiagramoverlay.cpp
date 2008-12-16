@@ -50,6 +50,11 @@ void QgsDiagramOverlay::setDiagramRenderer(QgsDiagramRenderer* r)
 
 void QgsDiagramOverlay::createOverlayObjects(const QgsRenderContext& renderContext)
 {
+    if(!mDisplayFlag)
+    {
+        return;
+    }
+
   //memory cleanup
   for(QMap<int, QgsOverlayObject*>::iterator it = mOverlayObjects.begin(); it != mOverlayObjects.end(); ++it)
     {

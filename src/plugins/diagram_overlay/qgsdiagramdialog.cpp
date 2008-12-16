@@ -286,11 +286,16 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 
 	      
 	      //classification attribute
-	      QString classFieldName = QgsDiagramOverlay::attributeNameFromIndex(theFactory->scalingAttributes().first(), mVectorLayer);
-	      mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
+              QString classFieldName;
+              QgsAttributeList attList = previousDiagramRenderer->classificationAttributes();
+              if(attList.size() > 0)
+              {
+                classFieldName  = QgsDiagramOverlay::attributeNameFromIndex(attList.first(), mVectorLayer);
+                mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
 	      
-	      //classification type (specific for renderer subclass)
-	      mClassificationTypeComboBox->setCurrentIndex(mClassificationTypeComboBox->findText("linearly scaling"));
+                //classification type (specific for renderer subclass)
+                mClassificationTypeComboBox->setCurrentIndex(mClassificationTypeComboBox->findText("linearly scaling"));
+                }
 	      
 	      //apply the renderer settings to the renderer specific dialog
 	      if(mWidgetStackRenderers->count() > 0)
