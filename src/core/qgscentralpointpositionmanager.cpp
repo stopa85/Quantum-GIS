@@ -72,31 +72,6 @@ void QgsCentralPointPositionManager::findObjectPositions(const QgsRenderContext&
   }
 }
 
-#if 0
-void QgsCentralPointPositionManager::findObjectPositions(const QgsRect& viewExtent, const QgsMapToPixel * cXf, const QgsCoordinateTransform* ct)
-{
-  QgsPoint currentPosition;
-
-  for(std::list<QgsVectorOverlay*>::iterator list_it = mOverlays.begin(); list_it != mOverlays.end(); ++list_it)
-    {
-      std::multimap<int, QgsOverlayObject*>* objectMapPointer = (*list_it)->overlayObjects();
-      if(!objectMapPointer)
-    {
-      continue;
-    }
-      std::multimap<int, QgsOverlayObject*>::iterator map_it;
-      for(map_it = objectMapPointer->begin(); map_it != objectMapPointer->end(); ++map_it)
-    {
-      if(findObjectPosition(map_it->second->wkb(), currentPosition) != 0)
-        {
-          //error
-        }
-      map_it->second->setPosition(currentPosition);
-    }
-    }
-}
-#endif //0
-
 int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb, QgsPoint& position) const
 {
   QGis::WkbType type;
@@ -110,15 +85,9 @@ int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb,
 
   switch (type)
     {
-      //multigeometries should be already split
-    case QGis::WKBMultiPoint25D:
     case QGis::WKBMultiPoint:
-    case QGis::WKBMultiLineString25D:
-    case QGis::WKBMultiLineString:
-    case QGis::WKBMultiPolygon25D:
-    case QGis::WKBMultiPolygon:
-      return 1;
-
+    case QGis::WKBMultiPoint25D:
+      currentPosition += (2 * sizeof(int) + 1);
     case QGis::WKBPoint25D:
     case QGis::WKBPoint:
       memcpy(&currentX, &(wkb[currentPosition]), sizeof(double));
@@ -128,73 +97,120 @@ int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb,
       position.setY(currentY);
       return 0;
 
+    case QGis::WKBMultiLineString25D:
+    case QGis::WKBMultiLineString:
+      {
+          int numberOfLines;
+          memcpy(&numberOfLines, &(wkb[currentPosition]), sizeof(int));
+          if(numberOfLines < 1)
+          {
+              return 1;
+          }
+          currentPosition +=  (2 * sizeof(int) + 1);
+      }
     case QGis::WKBLineString25D:
-      hasZValue = true;
     case QGis::WKBLineString://get the middle point
       {
-    int numberOfPoints;
-    memcpy(&numberOfPoints, &(wkb[currentPosition]), sizeof(int));
-    currentPosition += sizeof(int);
-    if(numberOfPoints < 1)
-      {
-        return 1;
-      }
-    if(numberOfPoints > 2)
-      {
-        int midpoint = (numberOfPoints-1)/2    ;
-        for(int i = 0; i < midpoint; ++i)
-          {
-        currentPosition += 2 * sizeof(double);
-        if(hasZValue)
-          {
-            currentPosition += sizeof(double);
-          }
-          }
-      }
-    double xPos, yPos;
-    memcpy(&xPos, &(wkb[currentPosition]), sizeof(double));
-    currentPosition+= sizeof(double);
-    memcpy(&yPos, &(wkb[currentPosition]), sizeof(double));
-    position.setX(xPos);
-    position.setY(yPos);
-    return 0;
-      }
-    case QGis::WKBPolygon25D:
-      hasZValue = true;
-    case QGis::WKBPolygon: //calculate the centroid of the first ring
-      {
-    currentPosition+= sizeof(int); //skip number of rings
-    int numberOfPoints;
-    memcpy(&numberOfPoints, &(wkb[currentPosition]), sizeof(int));
-    currentPosition+= sizeof(int);
-    double x[numberOfPoints];
-    double y[numberOfPoints];
+        if(type == QGis::WKBLineString25D || type == QGis::WKBMultiLineString25D)
+        {
+            hasZValue = true;
+        }
 
-    for(int i = 0; i < numberOfPoints; ++i)
-      {
-        memcpy(&(x[i]), &(wkb[currentPosition]), sizeof(double));
+        int numberOfPoints;
+        memcpy(&numberOfPoints, &(wkb[currentPosition]), sizeof(int));
+        currentPosition += sizeof(int);
+        if(numberOfPoints < 1)
+        {
+            return 2;
+        }
+        if(numberOfPoints > 2)
+        {
+            int midpoint = (numberOfPoints-1)/2    ;
+            for(int i = 0; i < midpoint; ++i)
+            {
+                currentPosition += 2 * sizeof(double);
+                if(hasZValue)
+                {
+                    currentPosition += sizeof(double);
+                }
+            }
+        }
+        double xPos, yPos;
+        memcpy(&xPos, &(wkb[currentPosition]), sizeof(double));
         currentPosition+= sizeof(double);
-        memcpy(&(y[i]), &(wkb[currentPosition]), sizeof(double));
-        currentPosition+= sizeof(double);
-        if(hasZValue)
-          {
-        currentPosition += sizeof(double);
-          }
-      }
-    double centroidX, centroidY;
-    if(calculatePolygonCentroid(x, y, numberOfPoints, centroidX, centroidY) != 0)
-      {
-        return 1;
-      }
-    else
-      {
-        position.setX(centroidX);
-        position.setY(centroidY);
+        memcpy(&yPos, &(wkb[currentPosition]), sizeof(double));
+        position.setX(xPos);
+        position.setY(yPos);
         return 0;
       }
-      }
+
+    case QGis::WKBMultiPolygon25D:
+    case QGis::WKBMultiPolygon:
+        {
+            int numberOfPolygons;
+            memcpy(&numberOfPolygons, &(wkb[currentPosition]), sizeof(int));
+            if(numberOfPolygons < 1)
+            {
+                return 3;
+            }
+            currentPosition += sizeof(int);
+            currentPosition += (1 + sizeof(int));
+        }
+    case QGis::WKBPolygon25D:
+    case QGis::WKBPolygon: //calculate the centroid of the first ring
+      {
+        //2.5D or 2D type?
+        if(type == QGis::WKBPolygon25D || type == QGis::WKBMultiPolygon25D)
+        {
+            hasZValue = true;
+        }
+        //number of rings
+        int numberOfRings;
+        memcpy(&numberOfRings, &(wkb[currentPosition]), sizeof(int));
+        if(numberOfRings < 1)
+        {
+            return 4;
+        }
+        currentPosition+= sizeof(int);
+
+        //number of points
+        int numberOfPoints;
+        memcpy(&numberOfPoints, &(wkb[currentPosition]), sizeof(int));
+        if(numberOfPoints < 1)
+        {
+            return 5;
+        }
+        currentPosition+= sizeof(int);
+
+        double x[numberOfPoints];
+        double y[numberOfPoints];
+
+        for(int i = 0; i < numberOfPoints; ++i)
+          {
+            memcpy(&(x[i]), &(wkb[currentPosition]), sizeof(double));
+            currentPosition+= sizeof(double);
+            memcpy(&(y[i]), &(wkb[currentPosition]), sizeof(double));
+            currentPosition+= sizeof(double);
+            if(hasZValue)
+              {
+            currentPosition += sizeof(double);
+              }
+          }
+        double centroidX, centroidY;
+        if(calculatePolygonCentroid(x, y, numberOfPoints, centroidX, centroidY) != 0)
+          {
+            return 1;
+          }
+        else
+          {
+            position.setX(centroidX);
+            position.setY(centroidY);
+            return 0;
+          }
+        }
+
     default:
-      return 1;
+      return 6;
     }
   return 0;
 }
