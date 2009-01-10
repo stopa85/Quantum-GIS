@@ -32,6 +32,10 @@ QgsComposition::QgsComposition( QgsMapRenderer* mapRenderer ): QGraphicsScene( 0
   addItem( mPaperItem );
   mPaperItem->setZValue( 0 );
   mPrintResolution = 300; //hardcoded default
+
+  //snap grid settings
+  mGridPen = QPen(QColor(127, 127, 127));
+  mGridPen.setWidthF(0.3);
 }
 
 QgsComposition::QgsComposition(): QGraphicsScene( 0 ), mMapRenderer( 0 ), mPlotStyle( QgsComposition::Preview ), mPaperItem( 0 ), mSnapToGrid(false), mSnapGridResolution(0.0), mSnapGridOffsetX(0.0), mSnapGridOffsetY(0.0)
@@ -641,4 +645,22 @@ void QgsComposition::setSnapGridOffsetY(double offset)
     {
       mPaperItem->update();
     } 
+}
+
+void QgsComposition::setGridPen(const QPen& p)
+{
+  mGridPen = p;
+  if(mPaperItem)
+    {
+      mPaperItem->update();
+    }
+}
+
+void QgsComposition::setGridStyle(GridStyle s)
+{
+  mGridStyle = s;
+  if(mPaperItem)
+    {
+      mPaperItem->update();
+    }
 }

@@ -46,6 +46,14 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
       Postscript   // Fonts need different scaling!
     };
 
+    /**Style to draw the snapping grid*/
+    enum GridStyle
+    {
+      Solid,
+      Dots,
+      Crosses
+    };
+
     QgsComposition( QgsMapRenderer* mapRenderer );
     ~QgsComposition();
 
@@ -69,6 +77,12 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
 
     void setSnapGridOffsetY(double offset);
     double snapGridOffsetY() const {return mSnapGridOffsetY;}
+
+    void setGridPen(const QPen& p);
+    const QPen& gridPen() const {return mGridPen;}
+
+    void setGridStyle(GridStyle s);
+    GridStyle gridStyle() const {return mGridStyle;}
 
     /**Returns the topmose composer item. Ignores mPaperItem*/
     QgsComposerItem* composerItemAt( const QPointF & position );
@@ -153,6 +167,8 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     double mSnapGridResolution;
     double mSnapGridOffsetX;
     double mSnapGridOffsetY;
+    QPen mGridPen;
+    GridStyle mGridStyle;
 
     QgsComposition(); //default constructor is forbidden
 

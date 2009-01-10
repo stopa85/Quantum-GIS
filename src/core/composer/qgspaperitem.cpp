@@ -55,27 +55,58 @@ void QgsPaperItem::paint( QPainter* painter, const QStyleOptionGraphicsItem* ite
     {
       if(mComposition->snapToGridEnabled() && mComposition->plotStyle() ==  QgsComposition::Preview 
 	 && mComposition->snapGridResolution() > 0)
-	{
-	  QPen pen(QColor(100, 100, 100));
-	  pen.setWidthF(0.3);
-	  painter->setPen(pen);
+      {
+        int gridMultiplyX = (int)(mComposition->snapGridOffsetX() / mComposition->snapGridResolution());
+        int gridMultiplyY = (int)(mComposition->snapGridOffsetY() / mComposition->snapGridResolution());
+        double currentXCoord = mComposition->snapGridOffsetX() - gridMultiplyX * mComposition->snapGridResolution();
+        double currentYCoord;
+        double minYCoord = mComposition->snapGridOffsetY() - gridMultiplyY * mComposition->snapGridResolution();
 
-	  //draw vertical lines  
-	  int gridMultiplyX = (int)(mComposition->snapGridOffsetX() / mComposition->snapGridResolution());  
-	  double currentXCoord = mComposition->snapGridOffsetX() - gridMultiplyX * mComposition->snapGridResolution();
-	  for(; currentXCoord <= rect().width(); currentXCoord += mComposition->snapGridResolution())
-	    {
-	      painter->drawLine(QPointF(currentXCoord, 0), QPointF(currentXCoord, rect().height()));
-	    }
-	  
-	  //draw horizontal lines
-	  int gridMultiplyY = (int)(mComposition->snapGridOffsetY() / mComposition->snapGridResolution());
-	  double currentYCoord = mComposition->snapGridOffsetY() - gridMultiplyY * mComposition->snapGridResolution();
-	  for(; currentYCoord <= rect().height(); currentYCoord += mComposition->snapGridResolution())
-	    {
-	      painter->drawLine(QPointF(0, currentYCoord), QPointF(rect().width(), currentYCoord));
-	    }
-	}
+        if(mComposition->gridStyle() == QgsComposition::Solid)
+        {
+          painter->setPen(mComposition->gridPen());
+
+          //draw vertical lines
+
+
+          for(; currentXCoord <= rect().width(); currentXCoord += mComposition->snapGridResolution())
+          {
+            painter->drawLine(QPointF(currentXCoord, 0), QPointF(currentXCoord, rect().height()));
+          }
+
+          //draw horizontal lines
+
+          for(; currentYCoord <= rect().height(); currentYCoord += mComposition->snapGridResolution())
+          {
+            painter->drawLine(QPointF(0, currentYCoord), QPointF(rect().width(), currentYCoord));
+          }
+        }
+        else //'Dots' or 'Crosses'
+        {
+          QPen gridPen = mComposition->gridPen();
+          painter->setPen(gridPen);
+          painter->setBrush(QBrush(gridPen.color()));
+          double halfCrossLength = mComposition->snapGridResolution() / 6;
+
+          for(; currentXCoord <= rect().width(); currentXCoord += mComposition->snapGridResolution())
+          {
+            currentYCoord = minYCoord;
+            for(; currentYCoord <= rect().height(); currentYCoord += mComposition->snapGridResolution())
+            {
+              if(mComposition->gridStyle() == QgsComposition::Dots)
+              {
+                QRectF pieRect(currentXCoord - gridPen.widthF() / 2, currentYCoord - gridPen.widthF() / 2, gridPen.widthF(), gridPen.widthF());
+                painter->drawChord(pieRect, 0, 5760);
+              }
+              else if(mComposition->gridStyle() == QgsComposition::Crosses)
+              {
+                painter->drawLine(QPointF(currentXCoord - halfCrossLength, currentYCoord), QPointF(currentXCoord + halfCrossLength, currentYCoord));
+                painter->drawLine(QPointF(currentXCoord, currentYCoord - halfCrossLength), QPointF(currentXCoord, currentYCoord + halfCrossLength));
+              }
+            }
+          }
+        }
+      }
     }
 }
 

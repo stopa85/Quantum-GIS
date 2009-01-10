@@ -16,6 +16,7 @@
 
 #include "qgscompositionwidget.h"
 #include "qgscomposition.h"
+#include <QColorDialog>
 #include <QWidget>
 #include <QPrinter> //for screen resolution
 
@@ -42,7 +43,24 @@ QgsCompositionWidget::QgsCompositionWidget( QWidget* parent, QgsComposition* c )
   if ( mComposition )
   {
     mResolutionLineEdit->setText( QString::number( mComposition->printResolution() ) );
+
+    //grid pen width
+    mPenWidthSpinBox->blockSignals(true);
+    mPenWidthSpinBox->setValue(mComposition->gridPen().widthF());
+    mPenWidthSpinBox->blockSignals(false);
+
+    //grid pen color
+    mGridColorButton->blockSignals(true);
+    mGridColorButton->setColor(mComposition->gridPen().color());
+    mGridColorButton->blockSignals(false);
   }
+
+  mGridStyleComboBox->blockSignals(true);
+  mGridStyleComboBox->insertItem( 0, tr("Solid"));
+  mGridStyleComboBox->insertItem( 1, tr("Dots"));
+  mGridStyleComboBox->insertItem( 2, tr("Crosses"));
+  mGridStyleComboBox->blockSignals(false);
+  mGridStyleComboBox->setCurrentIndex( 0 );
 }
 
 QgsCompositionWidget::QgsCompositionWidget(): QWidget( 0 ), mComposition( 0 )
@@ -359,4 +377,50 @@ void QgsCompositionWidget::on_mOffsetYSpinBox_valueChanged(double d)
     {
       mComposition->setSnapGridOffsetY(d);
     }
+}
+
+void QgsCompositionWidget::on_mGridColorButton_clicked()
+{
+  QColor newColor = QColorDialog::getColor(mGridColorButton->color());
+  if( !newColor.isValid() )
+  {
+    return ; //dialog canceled by user
+  }
+  mGridColorButton->setColor(newColor);
+
+  if(mComposition)
+  {
+    QPen pen = mComposition->gridPen();
+    pen.setColor(newColor);
+    mComposition->setGridPen(pen);
+  }
+}
+
+void QgsCompositionWidget::on_mGridStyleComboBox_currentIndexChanged( const QString& text )
+{
+  if(mComposition)
+  {
+    if( mGridStyleComboBox->currentText() == tr("Solid") )
+    {
+      mComposition->setGridStyle(QgsComposition::Solid);
+    }
+    else if( mGridStyleComboBox->currentText() == tr("Dots") )
+    {
+      mComposition->setGridStyle(QgsComposition::Dots);
+    }
+    else if( mGridStyleComboBox->currentText() == tr("Crosses"))
+    {
+      mComposition->setGridStyle(QgsComposition::Crosses);
+    }
+  }
+}
+
+void QgsCompositionWidget::on_mPenWidthSpinBox_valueChanged(double d)
+{
+  if(mComposition)
+  {
+    QPen pen = mComposition->gridPen();
+    pen.setWidthF(d);
+    mComposition->setGridPen(pen);
+  }
 }
