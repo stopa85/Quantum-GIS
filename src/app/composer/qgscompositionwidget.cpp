@@ -39,10 +39,24 @@ QgsCompositionWidget::QgsCompositionWidget( QWidget* parent, QgsComposition* c )
   //read with/height from composition and find suitable entries to display
   displayCompositionWidthHeight();
 
-  //read printout resolution from composition
   if ( mComposition )
   {
+    //read printout resolution from composition
     mResolutionLineEdit->setText( QString::number( mComposition->printResolution() ) );
+
+    //snap grid
+    if( mComposition->snapToGridEnabled() )
+    {
+      mSnapToGridCheckBox->setCheckState(Qt::Checked);
+    }
+    else
+    {
+      mSnapToGridCheckBox->setCheckState(Qt::Unchecked);
+    }
+    mResolutionSpinBox->setValue( mComposition->snapGridResolution() );
+    mOffsetXSpinBox->setValue( mComposition->snapGridOffsetX() );
+    mOffsetYSpinBox->setValue( mComposition->snapGridOffsetY() );
+
 
     //grid pen width
     mPenWidthSpinBox->blockSignals(true);
@@ -53,14 +67,27 @@ QgsCompositionWidget::QgsCompositionWidget( QWidget* parent, QgsComposition* c )
     mGridColorButton->blockSignals(true);
     mGridColorButton->setColor(mComposition->gridPen().color());
     mGridColorButton->blockSignals(false);
-  }
 
-  mGridStyleComboBox->blockSignals(true);
-  mGridStyleComboBox->insertItem( 0, tr("Solid"));
-  mGridStyleComboBox->insertItem( 1, tr("Dots"));
-  mGridStyleComboBox->insertItem( 2, tr("Crosses"));
-  mGridStyleComboBox->blockSignals(false);
-  mGridStyleComboBox->setCurrentIndex( 0 );
+    mGridStyleComboBox->blockSignals(true);
+    mGridStyleComboBox->insertItem( 0, tr("Solid"));
+    mGridStyleComboBox->insertItem( 1, tr("Dots"));
+    mGridStyleComboBox->insertItem( 2, tr("Crosses"));
+
+    QgsComposition::GridStyle snapGridStyle = mComposition->gridStyle();
+    if(snapGridStyle == QgsComposition::Solid)
+    {
+      mGridStyleComboBox->setCurrentIndex( 0 );
+    }
+    else if(snapGridStyle == QgsComposition::Dots)
+    {
+      mGridStyleComboBox->setCurrentIndex( 1 );
+    }
+    else
+    {
+      mGridStyleComboBox->setCurrentIndex( 2 );
+    }
+    mGridStyleComboBox->blockSignals(false);
+  }
 }
 
 QgsCompositionWidget::QgsCompositionWidget(): QWidget( 0 ), mComposition( 0 )

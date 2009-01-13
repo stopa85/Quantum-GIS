@@ -178,6 +178,9 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     /**Returns the bounding rectangle of the selected items in scene coordinates
      @return 0 in case of success*/
     int boundingRectOfSelectedItems(QRectF& bRect);
+
+    void loadGridAppearanceSettings();
+    void saveGridAppearanceSettings();
 };
 
 #endif

@@ -75,7 +75,7 @@ void QgsPaperItem::paint( QPainter* painter, const QStyleOptionGraphicsItem* ite
           }
 
           //draw horizontal lines
-
+          currentYCoord = minYCoord;
           for(; currentYCoord <= rect().height(); currentYCoord += mComposition->snapGridResolution())
           {
             painter->drawLine(QPointF(0, currentYCoord), QPointF(rect().width(), currentYCoord));
