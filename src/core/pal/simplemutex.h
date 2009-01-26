@@ -5,28 +5,28 @@
  *                      University of Applied Sciences, Western Switzerland
  *                      http://www.hes-so.ch
  *
- *   Contact: 
+ *   Contact:
  *      maxence.laurent <at> heig-vd <dot> ch
  *    or
  *      eric.taillard <at> heig-vd <dot> ch
  *
  * This file is part of libpal.
- * 
+ *
  * libpal is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * libpal is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with libpal.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
- 
+
 #ifndef _SIMPLE_MUTEX_H_
 #define _SIMPLE_MUTEX_H_
 
@@ -34,8 +34,8 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
-// Platform dependant mutex 
+
+// Platform dependant mutex
 #ifdef _HAVE_PTHREAD_
 #include <pthread.h>
 #define THREAD_TYPE pthread_mutex_t
@@ -56,31 +56,31 @@
 #define DESTROY_MUTEX(mutex) (CloseHandle(mutex))
 #endif
 
-namespace pal{
+namespace pal {
 
-typedef THREAD_TYPE MUTEX_T;
+    typedef THREAD_TYPE MUTEX_T;
 
-class SimpleMutex {
-private:
-   MUTEX_T mutex;
+    class SimpleMutex {
+    private:
+        MUTEX_T mutex;
 
-public:
-   SimpleMutex(){
-      CREATE_MUTEX(mutex);
-   }
+    public:
+        SimpleMutex() {
+            CREATE_MUTEX (mutex);
+        }
 
-   ~SimpleMutex(){
-      DESTROY_MUTEX(mutex);
-   }
+        ~SimpleMutex() {
+            DESTROY_MUTEX (mutex);
+        }
 
-   void lock(){
-      LOCK(mutex);
-   }
+        void lock() {
+            LOCK (mutex);
+        }
 
-   void unlock(){
-      UNLOCK(mutex);
-   }
-};
+        void unlock() {
+            UNLOCK (mutex);
+        }
+    };
 
 } // namespace
 
