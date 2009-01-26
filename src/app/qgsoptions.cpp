@@ -200,11 +200,11 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
 #endif //Q_WS_MAC
 
    //overlay placement algorithm
-  mOverlayAlgorithmComboBox->insertItem(0, "Central point");
-  mOverlayAlgorithmComboBox->insertItem(1, "Chain");
-  mOverlayAlgorithmComboBox->insertItem(2, "Popmusic tabu chain");
-  mOverlayAlgorithmComboBox->insertItem(3, "Popmusic tabu");
-  mOverlayAlgorithmComboBox->insertItem(4, "Popmusic chain");
+  mOverlayAlgorithmComboBox->insertItem(0, tr("Central point (fastest)"));
+  mOverlayAlgorithmComboBox->insertItem(1, tr("Chain (fast)"));
+  mOverlayAlgorithmComboBox->insertItem(2, tr("Popmusic tabu chain (slow)"));
+  mOverlayAlgorithmComboBox->insertItem(3, tr("Popmusic tabu (slow)"));
+  mOverlayAlgorithmComboBox->insertItem(4, tr("Popmusic chain (very slow)"));
 
   QString overlayAlgorithmString = settings.value( "qgis/overlayPlacementAlgorithm", "Central point").toString();
   if(overlayAlgorithmString == "Chain"){mOverlayAlgorithmComboBox->setCurrentIndex(1);}
@@ -286,7 +286,29 @@ void QgsOptions::saveOptions()
   settings.setValue( "qgis/capitaliseLayerName", capitaliseCheckBox->isChecked() );
   settings.setValue( "qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked() );
   settings.setValue( "qgis/warnOldProjectVersion", chbWarnOldProjectVersion->isChecked() );
-  settings.setValue( "qgis/overlayPlacementAlgorithm", mOverlayAlgorithmComboBox->currentText() );
+
+  //overlay placement method
+  int overlayIndex = mOverlayAlgorithmComboBox->currentIndex();
+  if(overlayIndex == 1)
+  {
+    settings.setValue( "qgis/overlayPlacementAlgorithm", "Chain");
+  }
+  else if(overlayIndex == 2)
+  {
+    settings.setValue( "qgis/overlayPlacementAlgorithm", "Popmusic tabu chain");
+  }
+  else if(overlayIndex == 3)
+  {
+    settings.setValue( "qgis/overlayPlacementAlgorithm",  "Popmusic tabu");
+  }
+  else if(overlayIndex == 4)
+  {
+    settings.setValue( "qgis/overlayPlacementAlgorithm", "Popmusic chain");
+  }
+  else
+  {
+     settings.setValue( "qgis/overlayPlacementAlgorithm", "Central point" );
+  }
 
   if ( cmbTheme->currentText().length() == 0 )
   {
