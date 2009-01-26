@@ -86,7 +86,6 @@ void QgsPALObjectPositionManager::addLayer(QgsVectorLayer* vl, QList<QgsVectorOv
       QMap<int, QgsOverlayObject*>::const_iterator objectIt = positionObjects->begin();
       for(; objectIt != positionObjects->end(); ++objectIt)
       {
-      //positionLayer->registerFeature (const char *geom_id, double label_x, double label_y, PalGeometry *userGeom)
       positionLayer->registerFeature(strdup(QString::number(objectNr).toAscii().data()), objectIt.value()->width(), objectIt.value()->height(), objectIt.value());
       ++objectNr;
     }

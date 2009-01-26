@@ -66,7 +66,20 @@ QImage* QgsSVGDiagramFactory::createDiagram(int size, const QgsFeature& f, const
 
 int QgsSVGDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const
 {
-  return 1; //soon...
+  double scaleFactor;
+  QSize defaultSize = mRenderer.defaultSize();
+  //size parameter applies to maximum of width, height
+  if(defaultSize.width() >= defaultSize.height())
+    {
+      scaleFactor = ((double)size * diagramSizeScaleFactor(context) * context.rasterScaleFactor()) / defaultSize.width();
+    }
+  else
+    {
+      scaleFactor = ((double)size * diagramSizeScaleFactor(context) * context.rasterScaleFactor()) / defaultSize.height();
+    }
+    width = (int)(defaultSize.width() * scaleFactor);
+    height = (int)(defaultSize.height() * scaleFactor);
+    return 0;
 }
 
 bool QgsSVGDiagramFactory::setSVGData(const QByteArray& data, const QString& filePath)
