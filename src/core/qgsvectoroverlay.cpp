@@ -16,6 +16,7 @@
  ***************************************************************************/
 
 #include "qgsvectoroverlay.h"
+#include "qgsoverlayobject.h"
 
 QgsVectorOverlay::QgsVectorOverlay(QgsVectorLayer* vl): mVectorLayer(vl), mDisplayFlag(true)
 {

@@ -55,6 +55,12 @@ class CORE_EXPORT QgsVectorOverlay
         /**Display yes/no*/
         void setDisplayFlag(bool flag){mDisplayFlag = flag;}
 
+        /**Restore from project file*/
+        virtual bool readXML(const QDomNode& overlayNode) = 0;
+
+        /**Save to project file*/
+        virtual bool writeXML(QDomNode& layer_node, QDomDocument& doc) const = 0;
+
     protected:
         /**Pointer to the vector layer for this overlay*/
         QgsVectorLayer* mVectorLayer;

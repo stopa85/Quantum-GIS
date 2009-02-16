@@ -2369,6 +2369,16 @@ bool QgsVectorLayer::writeXml( QDomNode & layer_node,
     myLabel->writeXML( layer_node, document );
   }
 
+  //save vector overlays (e.g. diagrams)
+  QList<QgsVectorOverlay*>::const_iterator overlay_it = mOverlays.constBegin();
+  for(; overlay_it != mOverlays.constEnd(); ++overlay_it)
+  {
+    if(*overlay_it)
+    {
+      (*overlay_it)->writeXML(layer_node, document);
+    }
+  }
+
   return true;
 } // bool QgsVectorLayer::writeXml
 

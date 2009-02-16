@@ -46,6 +46,7 @@ class QgsDiagramOverlay: public QgsVectorOverlay
    in case of error.*/
   static QString attributeNameFromIndex(int index, const QgsVectorLayer* vl);
 
+
 protected:
   int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f, const QgsRenderContext& renderContext) const;
   
