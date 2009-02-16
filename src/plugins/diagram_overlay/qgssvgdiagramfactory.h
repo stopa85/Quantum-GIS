@@ -49,13 +49,16 @@ class QgsSVGDiagramFactory: public QgsDiagramFactory
   @param height out: the height of the diagram image in pixels*/
   int getDiagramDimensions(int size, const QgsFeature& f, const QgsRenderContext& context, int& width, int& height) const;
 
-  bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const {return false;} //later...
+  bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
 
   /**Sets the SVG data to be rendered.
    @return true in case of success*/
   bool setSVGData(const QByteArray& data, const QString& filePath = "");
 
   QString svgFilePath() const {return mSvgFilePath;}
+
+  /**Read settings from project file*/
+  bool readXML(const QDomNode& factoryNode);
 
  private:
   mutable QSvgRenderer mRenderer;

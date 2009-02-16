@@ -96,7 +96,7 @@ class QgsDiagramRenderer
   QList<QgsDiagramItem> mItems;
   /**Describes the type of interpolation (linear by default)*/
   ItemInterpretation mItemInterpretation;
-  /**Factor to multiply the sizes*/
+  /**Factor to multiply the sizes (e.g. used by QGIS mapserver dependent on the current scale)*/
   double mScaleFactor;
 
   /**Searches the value of the classification attribute(s). Considers that there 

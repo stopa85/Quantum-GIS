@@ -90,6 +90,9 @@ class QgsDiagramFactory
   /**Returns the attributes represented in the pies / bars*/
   virtual QgsAttributeList categoryAttributes() const {return QgsAttributeList();}
 
+  /**Read settings from project file*/
+  virtual bool readXML(const QDomNode& factoryNode) = 0;
+
  protected:
   /**Size units of diagram items*/
   SizeUnit mSizeUnit;

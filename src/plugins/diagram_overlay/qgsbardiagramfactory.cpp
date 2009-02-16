@@ -151,3 +151,11 @@ double QgsBarDiagramFactory::sizeValueRatioBarChart(int size, const QgsAttribute
   //calculate value/pixel ratio
   return (size / scalingValue); 
 }
+
+bool QgsBarDiagramFactory::_writeXML(QDomNode& factory_node, QDomDocument& doc) const
+{
+    QDomElement barWidthElem = doc.createElement("barWidth");
+    QDomText barWidthText = doc.createTextNode(QString::number(mBarWidth));
+    barWidthElem.appendChild(barWidthText);
+    factory_node.appendChild(barWidthElem);
+}

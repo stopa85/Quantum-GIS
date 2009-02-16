@@ -45,6 +45,9 @@ class QgsBarDiagramFactory: public QgsWKNDiagramFactory
    know if e.g. size has to be calculated proportional to pie area*/
   QgsDiagramFactory::SizeType sizeType() const {return QgsDiagramFactory::HEIGHT;}
 
+   /**Writes bar with into the project file*/
+  bool _writeXML(QDomNode& factory_node, QDomDocument& doc) const;
+
  private: 
 
   /**width of one bar (default 5 mm)*/

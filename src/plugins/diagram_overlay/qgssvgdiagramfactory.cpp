@@ -88,5 +88,22 @@ bool QgsSVGDiagramFactory::setSVGData(const QByteArray& data, const QString& fil
   return mRenderer.load(data);
 }
 
+bool QgsSVGDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) const
+{
+    QDomElement factoryElem = doc.createElement("factory");
+    factoryElem.setAttribute("type", "svg");
+    QDomElement svgPathElem = doc.createElement("svgPath");
+    QDomText svgPathText = doc.createTextNode(mSvgFilePath);
+    svgPathElem.appendChild(svgPathText);
+    factoryElem.appendChild(svgPathElem);
+    overlay_node.appendChild(factoryElem);
+    return true;
+}
+
+bool QgsSVGDiagramFactory::readXML(const QDomNode& factoryNode)
+{
+    //soon...
+}
+
 
 

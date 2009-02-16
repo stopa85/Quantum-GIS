@@ -47,11 +47,15 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
 {
   QDomElement overlayElement = overlay_node.toElement();
 
+  QDomElement factoryElement = doc.createElement("factory");
+  factoryElement.setAttribute("type", diagramType());
+  overlay_node.appendChild(factoryElement);
+
   //well known name
   QDomElement wellKnownNameElem = doc.createElement("wellknownname");
   QDomText wknText = doc.createTextNode(mDiagramType);
   wellKnownNameElem.appendChild(wknText);
-  overlayElement.appendChild(wellKnownNameElem);
+  factoryElement.appendChild(wellKnownNameElem);
 	    
   //classification fields
   QList<int>::const_iterator scaling_it = mScalingAttributes.constBegin();
@@ -60,7 +64,7 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
       QDomElement classificationFieldElem = doc.createElement("classificationfield");
       QDomText classFieldText = doc.createTextNode(QString::number(*scaling_it));
       classificationFieldElem.appendChild(classFieldText);
-      overlayElement.appendChild(classificationFieldElem);
+      factoryElement.appendChild(classificationFieldElem);
     }
 
   //diagram categories
@@ -89,8 +93,12 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
       currentCategoryElem.appendChild(currentBrushElem);
       currentCategoryElem.appendChild(currentPenElem);
       
-      overlayElement.appendChild(currentCategoryElem);
+      factoryElement.appendChild(currentCategoryElem);
     }
+
+  //write subclass specific information
+  _writeXML(factoryElement, doc);
+
   return true;
 }
 
@@ -122,4 +130,9 @@ QgsAttributeList QgsWKNDiagramFactory::categoryAttributes() const
         categoryAttList.push_back(it->propertyIndex());
     }
     return categoryAttList;
+}
+
+bool QgsWKNDiagramFactory::readXML(const QDomNode& factoryNode)
+{
+    return false; //soon...
 }
