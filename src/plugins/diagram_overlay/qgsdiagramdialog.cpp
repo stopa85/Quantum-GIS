@@ -172,8 +172,14 @@ void QgsDiagramDialog::apply() const
         return;
     }
 
-    //attList comes from the diagram factory widget
+    //attList contains the category attributes
     QgsAttributeList attList;
+    QgsWKNDiagramFactory* wknDiagramFactory = dynamic_cast<QgsWKNDiagramFactory*>(diagramFactory);
+    if(wknDiagramFactory)
+    {
+        attList += wknDiagramFactory->categoryAttributes();
+    }
+
 
     QgsDiagramRenderer* diagramRenderer = 0;
     QgsDiagramFactory::SizeUnit diagramSizeUnit = QgsDiagramFactory::MM; //mm on output medium is default
@@ -201,7 +207,7 @@ void QgsDiagramDialog::apply() const
     //also set units to the diagram factory
     diagramFactory->setSizeUnit(diagramSizeUnit);
 
-      //the overlay may need a different attribute list than the renderer
+      //the overlay needs to fetch scaling attributes and category attributes
     if(!attList.contains(classAttr))
     {
         attList.push_back(classAttr);

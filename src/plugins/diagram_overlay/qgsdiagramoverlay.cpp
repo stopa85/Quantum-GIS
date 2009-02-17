@@ -69,8 +69,8 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRenderContext& renderConte
       QgsVectorDataProvider* theProvider = mVectorLayer->dataProvider();
       if(theProvider)
 	{
-	  //set spatial filter on data provider
-      theProvider->select(mAttributes, renderContext.extent());
+          //set spatial filter on data provider
+          theProvider->select(mAttributes, renderContext.extent());
 
 	  QgsFeature currentFeature;
 	  int width, height;
