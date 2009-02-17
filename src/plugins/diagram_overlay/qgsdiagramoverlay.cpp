@@ -238,7 +238,7 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
         return false;
     }
 
-    if(!newFactory->readXML(overlayNode))
+    if(!newFactory->readXML(factoryElem))
     {
         delete newFactory;
         return false;

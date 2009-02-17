@@ -173,7 +173,7 @@ void QgsDiagramDialog::apply() const
     }
 
     //attList comes from the diagram factory widget
-    QgsAttributeList attList = diagramFactory->categoryAttributes();
+    QgsAttributeList attList;
 
     QgsDiagramRenderer* diagramRenderer = 0;
     QgsDiagramFactory::SizeUnit diagramSizeUnit = QgsDiagramFactory::MM; //mm on output medium is default
@@ -195,7 +195,9 @@ void QgsDiagramDialog::apply() const
     }
 
     diagramRenderer->setFactory(diagramFactory);
-    diagramFactory->setScalingAttributes(attList);
+    QgsAttributeList scalingAttributeList;
+    scalingAttributeList.push_back(classAttr);
+    diagramFactory->setScalingAttributes(scalingAttributeList);
     //also set units to the diagram factory
     diagramFactory->setSizeUnit(diagramSizeUnit);
 

@@ -97,12 +97,39 @@ bool QgsSVGDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
     svgPathElem.appendChild(svgPathText);
     factoryElem.appendChild(svgPathElem);
     overlay_node.appendChild(factoryElem);
+
+    //and superclass specific information
+    writeScalingAttributesToXML(factoryElem, doc);
+
     return true;
 }
 
 bool QgsSVGDiagramFactory::readXML(const QDomNode& factoryNode)
 {
-    //soon...
+    QDomElement factoryElem = factoryNode.toElement();
+    if(factoryElem.isNull())
+    {
+        return false;
+    }
+
+    //get <svgPath> element
+    QDomElement svgPathElem = factoryElem.namedItem("svgPath").toElement();
+    if(svgPathElem.isNull())
+    {
+        return false;
+    }
+
+    QString svgFilePath = svgPathElem.text();
+    if(!mRenderer.load(svgFilePath))
+    {
+        return false;
+    }
+    mSvgFilePath = svgFilePath;
+
+    //read scaling attributes by superclass
+    readScalingAttributesFromXML(factoryElem);
+
+    return true;
 }
 
 

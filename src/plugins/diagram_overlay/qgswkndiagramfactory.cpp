@@ -56,7 +56,7 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
   QDomText wknText = doc.createTextNode(mDiagramType);
   wellKnownNameElem.appendChild(wknText);
   factoryElement.appendChild(wellKnownNameElem);
-	    
+
   //classification fields
   QList<int>::const_iterator scaling_it = mScalingAttributes.constBegin();
   for(; scaling_it != mScalingAttributes.constEnd(); ++scaling_it)
@@ -98,6 +98,9 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
 
   //write subclass specific information
   _writeXML(factoryElement, doc);
+
+  //and superclass specific information
+  writeScalingAttributesToXML(factoryElement, doc);
 
   return true;
 }
@@ -191,5 +194,9 @@ bool QgsWKNDiagramFactory::readXML(const QDomNode& factoryNode)
         }
       mCategories.push_back(newCategory);
     }
+
+  //read scaling attributes by superclass
+  readScalingAttributesFromXML(factoryElem);
+
   return true;
 }
