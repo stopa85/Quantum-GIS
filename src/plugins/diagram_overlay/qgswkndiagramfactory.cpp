@@ -134,5 +134,62 @@ QgsAttributeList QgsWKNDiagramFactory::categoryAttributes() const
 
 bool QgsWKNDiagramFactory::readXML(const QDomNode& factoryNode)
 {
-    return false; //soon...
+    QDomElement factoryElem = factoryNode.toElement();
+    if(factoryElem.isNull())
+    {
+        return false;
+    }
+
+    //wellknownname
+  QDomNodeList wknNodeList = factoryElem.elementsByTagName("wellknownname");
+  if(wknNodeList.size() < 1)
+    {
+      return false;
+    }
+  mDiagramType = wknNodeList.at(0).toElement().text();
+
+  //categories
+  mCategories.clear();
+  int red, green, blue;
+  QDomElement categoryElem, penElem, brushElem;
+  QDomNodeList categoryList = factoryElem.elementsByTagName("category");
+
+  //todo: mMaximumGap, mMaximumPenWidth
+
+  for(int i = 0; i < categoryList.size(); ++i)
+    {
+      categoryElem = categoryList.at(i).toElement();
+
+      QgsDiagramCategory newCategory;
+      newCategory.setPropertyIndex(categoryElem.attribute("attribute").toInt());
+      newCategory.setGap(categoryElem.attribute("gap").toInt());
+
+      //pen element
+      penElem = categoryElem.namedItem("pen").toElement();
+      if(!penElem.isNull())
+        {
+          QPen currentPen;
+          red = penElem.attribute("red").toInt();
+          green = penElem.attribute("green").toInt();
+          blue = penElem.attribute("blue").toInt();
+          currentPen.setColor(QColor(red, green, blue));
+          currentPen.setStyle(QgsSymbologyUtils::qString2PenStyle(penElem.attribute("style")));
+          newCategory.setPen(currentPen);
+        }
+
+      //brush element
+      brushElem = categoryElem.namedItem("brush").toElement();
+      if(!brushElem.isNull())
+        {
+          QBrush currentBrush;
+          red = brushElem.attribute("red").toInt();
+          green = brushElem.attribute("green").toInt();
+          blue = brushElem.attribute("blue").toInt();
+          currentBrush.setColor(QColor(red, green, blue));
+          currentBrush.setStyle(QgsSymbologyUtils::qString2BrushStyle(brushElem.attribute("style")));
+          newCategory.setBrush(currentBrush);
+        }
+      mCategories.push_back(newCategory);
+    }
+  return true;
 }

@@ -20,6 +20,7 @@
 #include "qgsdiagramfactory.h"
 #include "qgsbardiagramfactory.h"
 #include "qgspiediagramfactory.h"
+#include "qgssvgdiagramfactory.h"
 #include "qgsdiagramrenderer.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
@@ -182,30 +183,7 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
 
   QString wellKnownName;
   QgsAttributeList attributeList;
-  QList<QBrush> brushList;
-  QList<QPen> penList;
   QList<int> classAttrList;
-
-  //wellknownname
-  QDomNodeList wknNodeList = overlayElem.elementsByTagName("wellknownname");
-  if(wknNodeList.size() < 1)
-    {
-      return false;
-    }
-  wellKnownName = wknNodeList.at(0).toElement().text(); 
-  QgsWKNDiagramFactory* wknFactory = 0;
-  if(wellKnownName == "Pie")
-    {
-      wknFactory = new QgsPieDiagramFactory();
-    }
-  else if(wellKnownName == "Bar")
-    {
-      wknFactory = new QgsBarDiagramFactory();
-    }
-  else
-    {
-      return false; //unknown type
-    }
 
   //classificationField
   QDomNodeList classificationFieldList = overlayElem.elementsByTagName("classificationfield");
@@ -215,50 +193,15 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
     }
 
   theDiagramRenderer = new QgsDiagramRenderer(classAttrList);
-  wknFactory->setScalingAttributes(classAttrList);
-  wknFactory->setDiagramType(wellKnownName);
 
-  
-  int red, green, blue;
-  QDomElement categoryElem, penElem, brushElem;
+    //in case of well-known diagrams, the category attributes also need to be fetched
+  QDomElement categoryElem;
   QDomNodeList categoryList = overlayElem.elementsByTagName("category");
 
   for(int i = 0; i < categoryList.size(); ++i)
     {
       categoryElem = categoryList.at(i).toElement();
-      
-      QgsDiagramCategory newCategory;
-      newCategory.setPropertyIndex(categoryElem.attribute("attribute").toInt());
       attributeList.push_back(categoryElem.attribute("attribute").toInt());
-      newCategory.setGap(categoryElem.attribute("gap").toInt());
-
-      //pen element
-      penElem = categoryElem.namedItem("pen").toElement();
-      if(!penElem.isNull())
-	{
-	  QPen currentPen;
-	  red = penElem.attribute("red").toInt();
-	  green = penElem.attribute("green").toInt();
-	  blue = penElem.attribute("blue").toInt();
-	  currentPen.setColor(QColor(red, green, blue));
-	  currentPen.setStyle(QgsSymbologyUtils::qString2PenStyle(penElem.attribute("style")));
-	  newCategory.setPen(currentPen);
-	}
-
-      //brush element
-      brushElem = categoryElem.namedItem("brush").toElement();
-      if(!brushElem.isNull())
-	{
-	  QBrush currentBrush;
-	  red = brushElem.attribute("red").toInt();
-	  green = brushElem.attribute("green").toInt();
-	  blue = brushElem.attribute("blue").toInt();
-	  currentBrush.setColor(QColor(red, green, blue));
-	  currentBrush.setStyle(QgsSymbologyUtils::qString2BrushStyle(brushElem.attribute("style")));
-	  newCategory.setBrush(currentBrush);
-	}
-
-      wknFactory->addCategory(newCategory);
     }
 
   if(rendererList.size() < 1)
@@ -267,7 +210,40 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
     }
   rendererElem = rendererList.at(0).toElement();
 
-  theDiagramRenderer->setFactory(wknFactory);
+  //read settings about factory
+  QDomNode factoryNode = overlayElem.namedItem("factory");
+  if(factoryNode.isNull())
+  {
+      return false;
+  }
+
+  QDomElement factoryElem = factoryNode.toElement();
+  QString factoryType = factoryElem.attribute("type");
+  QgsDiagramFactory* newFactory = 0;
+  if(factoryType == "svg")
+  {
+    newFactory = new QgsSVGDiagramFactory();
+   }
+   else if(factoryType == "Pie")
+   {
+    newFactory = new QgsPieDiagramFactory();
+    }
+    else if(factoryType == "Bar")
+    {
+        newFactory = new QgsBarDiagramFactory();
+    }
+
+    if(!newFactory)
+    {
+        return false;
+    }
+
+    if(!newFactory->readXML(overlayNode))
+    {
+        delete newFactory;
+        return false;
+    }
+   theDiagramRenderer->setFactory(newFactory);
 
   //Read renderer specific settings
   if(theDiagramRenderer)
