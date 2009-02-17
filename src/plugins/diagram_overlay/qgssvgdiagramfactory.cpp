@@ -92,6 +92,9 @@ bool QgsSVGDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
 {
     QDomElement factoryElem = doc.createElement("factory");
     factoryElem.setAttribute("type", "svg");
+    //add size units as an attribute to the factory element
+    writeSizeUnits(factoryElem, doc);
+
     QDomElement svgPathElem = doc.createElement("svgPath");
     QDomText svgPathText = doc.createTextNode(mSvgFilePath);
     svgPathElem.appendChild(svgPathText);
@@ -108,6 +111,9 @@ bool QgsSVGDiagramFactory::readXML(const QDomNode& factoryNode)
     {
         return false;
     }
+
+    //size units
+    readSizeUnits(factoryElem);
 
     //get <svgPath> element
     QDomElement svgPathElem = factoryElem.namedItem("svgPath").toElement();

@@ -91,6 +91,9 @@ class QgsDiagramFactory
   /**Read settings from project file*/
   virtual bool readXML(const QDomNode& factoryNode) = 0;
 
+  bool writeSizeUnits(QDomElement& factoryElem, QDomDocument& doc) const;
+  bool readSizeUnits(const QDomElement& factoryElem);
+
  protected:
   /**Size units of diagram items*/
   SizeUnit mSizeUnit;

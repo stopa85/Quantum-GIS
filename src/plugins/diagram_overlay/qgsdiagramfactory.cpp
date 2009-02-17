@@ -46,3 +46,40 @@ QgsDiagramFactory::QgsDiagramFactory(): mSizeUnit(MM)
 
      return 1.0;
  }
+
+bool QgsDiagramFactory::writeSizeUnits(QDomElement& factoryElem, QDomDocument& doc) const
+{
+    if(factoryElem.isNull())
+    {
+        return false;
+    }
+
+    if(mSizeUnit == MM)
+    {
+        factoryElem.setAttribute("sizeUnits", "MM");
+    }
+    else if(mSizeUnit == MapUnits)
+    {
+        factoryElem.setAttribute("sizeUnits", "MapUnits");
+    }
+    return true;
+}
+
+bool QgsDiagramFactory::readSizeUnits(const QDomElement& factoryElem)
+{
+    if(factoryElem.isNull())
+    {
+        return false;
+    }
+
+    QString unitString = factoryElem.attribute("sizeUnits");
+    if(unitString == "MapUnits")
+    {
+        mSizeUnit = MapUnits;
+    }
+    else
+    {
+        mSizeUnit = MM;
+    }
+    return true;
+}

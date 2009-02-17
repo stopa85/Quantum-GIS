@@ -49,6 +49,8 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
 
   QDomElement factoryElement = doc.createElement("factory");
   factoryElement.setAttribute("type", diagramType());
+    //add size units as an attribute to the factory element
+  writeSizeUnits(factoryElement, doc);
   overlay_node.appendChild(factoryElement);
 
   //well known name
@@ -98,7 +100,6 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
 
   //write subclass specific information
   _writeXML(factoryElement, doc);
-
   return true;
 }
 
@@ -139,6 +140,9 @@ bool QgsWKNDiagramFactory::readXML(const QDomNode& factoryNode)
     {
         return false;
     }
+
+    //size units
+    readSizeUnits(factoryElem);
 
     //wellknownname
   QDomNodeList wknNodeList = factoryElem.elementsByTagName("wellknownname");
