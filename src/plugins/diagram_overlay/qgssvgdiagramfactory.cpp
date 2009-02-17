@@ -98,9 +98,6 @@ bool QgsSVGDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
     factoryElem.appendChild(svgPathElem);
     overlay_node.appendChild(factoryElem);
 
-    //and superclass specific information
-    writeScalingAttributesToXML(factoryElem, doc);
-
     return true;
 }
 
@@ -125,9 +122,6 @@ bool QgsSVGDiagramFactory::readXML(const QDomNode& factoryNode)
         return false;
     }
     mSvgFilePath = svgFilePath;
-
-    //read scaling attributes by superclass
-    readScalingAttributesFromXML(factoryElem);
 
     return true;
 }

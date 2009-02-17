@@ -98,12 +98,6 @@ class QgsDiagramFactory
   /**List of scaling attribute indexes (the values are summed up to
      receive the value that is used for diagram size calculation)*/
   QgsAttributeList mScalingAttributes;
-
-  /**Writes the scaling attributes indices to project file. Usually called from subclasses*/
-  bool writeScalingAttributesToXML(QDomElement& factoryElem, QDomDocument& doc) const;
-
-  /**Reads the scaling attributes from project file. Usually called from subclasses*/
-  bool readScalingAttributesFromXML(const QDomElement& factoryElem);
 };
 
 #endif

@@ -186,10 +186,15 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
   QList<int> classAttrList;
 
   //classificationField
-  QDomNodeList classificationFieldList = overlayElem.elementsByTagName("classificationfield");
+  QDomNodeList classificationFieldList = overlayElem.elementsByTagName("scalingAttribute");
   for(int i = 0; i < classificationFieldList.size(); ++i)
     {
-      classAttrList.push_back(classificationFieldList.at(i).toElement().text().toInt());
+      bool conversionSuccess = false;
+      int classificationField = classificationFieldList.at(i).toElement().text().toInt(&conversionSuccess);
+      if(conversionSuccess)
+      {
+        classAttrList.push_back(classificationFieldList.at(i).toElement().text().toInt());
+       }
     }
 
   theDiagramRenderer = new QgsDiagramRenderer(classAttrList);
@@ -243,6 +248,7 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
         delete newFactory;
         return false;
     }
+    newFactory->setScalingAttributes(classAttrList);
    theDiagramRenderer->setFactory(newFactory);
 
   //Read renderer specific settings
@@ -287,7 +293,18 @@ bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
       if(f)
 	{
 	  f->writeXML(overlayElement, doc);
-	}
+        }
+
+      //write classification attributes
+       QList<int> scalingAttributes = mDiagramRenderer->classificationAttributes();
+       QList<int>::const_iterator it = scalingAttributes.constBegin();
+       for(; it != scalingAttributes.constEnd(); ++it)
+       {
+            QDomElement scalingAttributeElem = doc.createElement("scalingAttribute");
+            QDomText scalingAttributeText = doc.createTextNode(QString::number(*it));
+            scalingAttributeElem.appendChild(scalingAttributeText);
+            overlayElement.appendChild(scalingAttributeElem);
+       }
     }
   return true;
 }

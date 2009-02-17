@@ -99,9 +99,6 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
   //write subclass specific information
   _writeXML(factoryElement, doc);
 
-  //and superclass specific information
-  writeScalingAttributesToXML(factoryElement, doc);
-
   return true;
 }
 
@@ -194,9 +191,6 @@ bool QgsWKNDiagramFactory::readXML(const QDomNode& factoryNode)
         }
       mCategories.push_back(newCategory);
     }
-
-  //read scaling attributes by superclass
-  readScalingAttributesFromXML(factoryElem);
 
   return true;
 }
