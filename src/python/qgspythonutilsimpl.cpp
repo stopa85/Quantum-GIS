@@ -87,17 +87,17 @@ void QgsPythonUtilsImpl::initPython( QgisInterface* interface )
   runString(
     "def qgis_except_hook_msg(type, value, tb, msg):\n"
     "  lst = traceback.format_exception(type, value, tb)\n"
-    "  if msg == None: msg = '" + QObject::tr( "An error has occured while executing Python code:" ).replace("'", "\\'") + "'\n"
+    "  if msg == None: msg = '" + QObject::tr( "An error has occured while executing Python code:" ).replace( "'", "\\'" ) + "'\n"
     "  txt = '<font color=\"red\">'+msg+'</font><br><br>'\n"
     "  for s in lst:\n"
     "    txt += s\n"
-    "  txt += '<br>" + QObject::tr( "Python version:" ).replace("'", "\\'") + "<br>' + sys.version + '<br><br>'\n"
-    "  txt += '" + QObject::tr( "Python path:" ).replace("'", "\\'") + "' + str(sys.path)\n"
+    "  txt += '<br>" + QObject::tr( "Python version:" ).replace( "'", "\\'" ) + "<br>' + sys.version + '<br><br>'\n"
+    "  txt += '" + QObject::tr( "Python path:" ).replace( "'", "\\'" ) + "' + str(sys.path)\n"
     "  txt = txt.replace('\\n', '<br>')\n"
     "  txt = txt.replace('  ', '&nbsp; ')\n" // preserve whitespaces for nicer output
     "  \n"
     "  msg = QgsMessageOutput.createMessageOutput()\n"
-    "  msg.setTitle('" + QObject::tr( "Python error" ).replace("'", "\\'") + "')\n"
+    "  msg.setTitle('" + QObject::tr( "Python error" ).replace( "'", "\\'" ) + "')\n"
     "  msg.setMessage(txt, QgsMessageOutput.MessageHtml)\n"
     "  msg.showMessage()\n" );
   runString(
@@ -169,7 +169,10 @@ void QgsPythonUtilsImpl::uninstallConsoleHooks()
 
 bool QgsPythonUtilsImpl::runStringUnsafe( const QString& command )
 {
-  PyRun_String( command.toLocal8Bit().data(), Py_single_input, mMainDict, mMainDict );
+  // TODO: convert special characters from unicode strings u"..." to \uXXXX
+  // so that they're not mangled to utf-8
+  // (non-unicode strings can be mangled)
+  PyRun_String( command.toUtf8().data(), Py_single_input, mMainDict, mMainDict );
   return ( PyErr_Occurred() == 0 );
 }
 
@@ -294,12 +297,7 @@ QString QgsPythonUtilsImpl::getTypeAsString( PyObject* obj )
   else
   {
     QgsDebugMsg( "got object" );
-    PyObject* s = PyObject_Str( obj );
-    QString str;
-    if ( s && PyString_Check( s ) )
-      str = QString( PyString_AsString( s ) );
-    Py_XDECREF( s );
-    return str;
+    return PyObjectToQString( obj );
   }
 }
 
@@ -308,7 +306,6 @@ bool QgsPythonUtilsImpl::getError( QString& errorClassName, QString& errorText )
   if ( !PyErr_Occurred() )
     return false;
 
-  PyObject* obj_str;
   PyObject* err_type;
   PyObject* err_value;
   PyObject* err_tb;
@@ -322,9 +319,7 @@ bool QgsPythonUtilsImpl::getError( QString& errorClassName, QString& errorText )
   // get exception's text
   if ( err_value != NULL && err_value != Py_None )
   {
-    obj_str = PyObject_Str( err_value ); // new reference
-    errorText = PyString_AS_STRING( obj_str );
-    Py_XDECREF( obj_str );
+    errorText = PyObjectToQString( err_value );
   }
   else
     errorText.clear();
@@ -342,11 +337,69 @@ QString QgsPythonUtilsImpl::getResult()
   return getVariableFromMain( "__result" );
 }
 
+QString QgsPythonUtilsImpl::PyObjectToQString( PyObject* obj )
+{
+  QString result;
+
+  // is it None?
+  if ( obj == Py_None )
+  {
+    return QString();
+  }
+
+  // check whether the object is already a unicode string
+  if ( PyUnicode_Check( obj ) )
+  {
+    PyObject* utf8 = PyUnicode_AsUTF8String( obj );
+    if ( utf8 )
+      result = QString::fromUtf8( PyString_AS_STRING( utf8 ) );
+    else
+      result = "(qgis error)";
+    Py_XDECREF( utf8 );
+    return result;
+  }
+
+  // check whether the object is a classical (8-bit) string
+  if ( PyString_Check( obj ) )
+  {
+    return QString::fromUtf8( PyString_AS_STRING( obj ) );
+  }
+
+  // it's some other type of object:
+  // convert object to unicode string (equivalent to calling unicode(obj) )
+
+  PyObject* obj_uni = PyObject_Unicode( obj ); // obj_uni is new reference
+  if ( obj_uni )
+  {
+    // get utf-8 representation of unicode string (new reference)
+    PyObject* obj_utf8 = PyUnicode_AsUTF8String( obj_uni );
+    // convert from utf-8 to QString
+    if ( obj_utf8 )
+      result = QString::fromUtf8( PyString_AsString( obj_utf8 ) );
+    else
+      result = "(qgis error)";
+    Py_XDECREF( obj_utf8 );
+    Py_XDECREF( obj_uni );
+    return result;
+  }
+
+  // if conversion to unicode failed, try to convert it to classic string, i.e. str(obj)
+  PyObject* obj_str = PyObject_Str( obj ); // new reference
+  if ( obj_str )
+  {
+    result = QString::fromUtf8( PyString_AS_STRING( obj_str ) );
+    Py_XDECREF( obj_str );
+    return result;
+  }
+
+  // some problem with conversion to unicode string
+  QgsDebugMsg( "unable to convert PyObject to a QString!" );
+  return "(qgis error)";
+}
+
 QString QgsPythonUtilsImpl::getVariableFromMain( QString name )
 {
   PyObject* obj;
-  PyObject* obj_str;
-
   QString output;
 
   // get the result
@@ -354,12 +407,7 @@ QString QgsPythonUtilsImpl::getVariableFromMain( QString name )
 
   if ( obj != NULL && obj != Py_None )
   {
-    obj_str = PyObject_Str( obj ); // obj_str is new reference
-    if ( obj_str != NULL && obj_str != Py_None )
-    {
-      output = PyString_AsString( obj_str );
-    }
-    Py_XDECREF( obj_str );
+    output = PyObjectToQString( obj );
   }
 
   // erase result
@@ -370,15 +418,13 @@ QString QgsPythonUtilsImpl::getVariableFromMain( QString name )
 
 bool QgsPythonUtilsImpl::evalString( const QString& command, QString& result )
 {
-  PyObject* res = PyRun_String( command.toLocal8Bit().data(), Py_eval_input, mMainDict, mMainDict );
+  PyObject* res = PyRun_String( command.toUtf8().data(), Py_eval_input, mMainDict, mMainDict );
 
-  if ( res != NULL && PyString_Check( res ) )
+  if ( res != NULL )
   {
-    result = PyString_AsString( res );
-    Py_XDECREF( res );
+    result = PyObjectToQString( res );
     return true;
   }
-  Py_XDECREF( res );
   return false;
 }
 
@@ -426,8 +472,8 @@ QString QgsPythonUtilsImpl::getPluginMetadata( QString pluginName, QString funct
 
   // temporary disable error hook - UI will handle this gracefully
   uninstallErrorHook();
-  PyObject* obj = PyRun_String( command.toLocal8Bit().data(), Py_eval_input, mMainDict, mMainDict );
-  
+  PyObject* obj = PyRun_String( command.toUtf8().data(), Py_eval_input, mMainDict, mMainDict );
+
   if ( PyErr_Occurred() )
   {
     PyErr_Print(); // just print it to console
@@ -437,7 +483,7 @@ QString QgsPythonUtilsImpl::getPluginMetadata( QString pluginName, QString funct
   else if ( PyUnicode_Check( obj ) )
   {
     PyObject* utf8 = PyUnicode_AsUTF8String( obj );
-    if (utf8)
+    if ( utf8 )
       retval = QString::fromUtf8( PyString_AS_STRING( utf8 ) );
     else
       retval = "__error__";
@@ -453,7 +499,7 @@ QString QgsPythonUtilsImpl::getPluginMetadata( QString pluginName, QString funct
     retval = "__error__";
   }
   Py_XDECREF( obj );
-  
+
   installErrorHook();
   return retval;
 }
@@ -494,15 +540,16 @@ bool QgsPythonUtilsImpl::startPlugin( QString packageName )
 {
   QString pluginPythonVar = "plugins['" + packageName + "']";
 
-  QString errMsg = QObject::tr( "Couldn't load plugin " ) + packageName;
+  QString errMsg = QObject::tr( "Couldn't load plugin %1" ).arg( packageName );
 
   // create an instance of the plugin
   if ( !runString( pluginPythonVar + " = " + packageName + ".classFactory(iface)",
-                   errMsg + QObject::tr( " due an error when calling its classFactory() method" ) ) )
+                   QObject::tr( "%1 due an error when calling its classFactory() method" ).arg( errMsg ) ) )
     return false;
 
   // initGui
-  if ( !runString( pluginPythonVar + ".initGui()", errMsg + QObject::tr( " due an error when calling its initGui() method" ) ) )
+  if ( !runString( pluginPythonVar + ".initGui()",
+                   QObject::tr( "%1 due an error when calling its initGui() method" ).arg( errMsg ) ) )
     return false;
 
   return true;
@@ -514,7 +561,7 @@ bool QgsPythonUtilsImpl::unloadPlugin( QString packageName )
   // unload and delete plugin!
   QString varName = "plugins['" + packageName + "']";
 
-  QString errMsg = QObject::tr( "Error while unloading plugin " ) + packageName;
+  QString errMsg = QObject::tr( "Error while unloading plugin %1" ).arg( packageName );
 
   if ( !runString( varName + ".unload()", errMsg ) )
     return false;

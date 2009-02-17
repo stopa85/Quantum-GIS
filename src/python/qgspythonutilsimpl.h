@@ -113,8 +113,11 @@ class QgsPythonUtilsImpl : public QgsPythonUtils
     void installErrorHook();
 
     void uninstallErrorHook();
-    
+
     QString getTraceback();
+
+    //! convert python object to QString. If the object isn't unicode/str, it will be converted
+    QString PyObjectToQString( PyObject* obj );
 
     //! reference to module __main__
     PyObject* mMainModule;

@@ -39,6 +39,7 @@ SET(QGIS_APP_SRCS
   qgsmeasuretool.cpp
   qgsnewhttpconnection.cpp
   qgsnumericsortlistviewitem.cpp
+  qgsogrsublayersdialog.cpp
   qgsoptions.cpp
   qgspastetransformations.cpp
   qgspluginitem.cpp
@@ -64,6 +65,7 @@ SET(QGIS_APP_SRCS
   composer/qgscomposerlegenditemdialog.cpp
   composer/qgscomposerlegendwidget.cpp
   composer/qgscompositionwidget.cpp
+  composer/qgsitempositiondialog.cpp
 
   legend/qgslegendgroup.cpp
   legend/qgslegend.cpp
@@ -98,13 +100,21 @@ SET (QGIS_APP_MOC_HDRS
   qgsidentifyresults.h
   qgslabeldialog.h
   qgsludialog.h
+
   qgsmaptoolidentify.h
   qgsmaptoolsplitfeatures.h
   qgsmaptoolvertexedit.h
+  qgsmaptooladdfeature.h
+  qgsmaptooladdisland.h
+  qgsmaptooladdring.h
+  qgsmaptoolmovefeature.h
+  qgsmaptoolselect.h
+
   qgsmeasuretool.h
   qgsmeasuredialog.h
   qgsnewhttpconnection.h
   qgsoptions.h
+  qgsogrsublayersdialog.h
   qgspastetransformations.h
   qgspluginmanager.h
   qgspythondialog.h
@@ -126,6 +136,7 @@ SET (QGIS_APP_MOC_HDRS
   composer/qgscomposerpicturewidget.h
   composer/qgscomposerscalebarwidget.h
   composer/qgscompositionwidget.h
+  composer/qgsitempositiondialog.h
 
   legend/qgslegend.h
   legend/qgslegendlayer.h
@@ -133,6 +144,10 @@ SET (QGIS_APP_MOC_HDRS
   )
 
 IF (POSTGRES_FOUND)
+  IF(HAVE_PGCONFIG)
+    ADD_DEFINITIONS(-DHAVE_PGCONFIG=1)
+  ENDIF(HAVE_PGCONFIG)
+
   SET (QGIS_APP_SRCS ${QGIS_APP_SRCS}
     qgsdbsourceselect.cpp
     qgsnewconnection.cpp

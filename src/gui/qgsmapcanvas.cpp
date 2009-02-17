@@ -20,6 +20,8 @@ email                : sherman at mrcc.com
 #include <QtGlobal>
 #include <QApplication>
 #include <QCursor>
+#include <QDir>
+#include <QFile>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -29,6 +31,7 @@ email                : sherman at mrcc.com
 #include <QPaintEvent>
 #include <QPixmap>
 #include <QRect>
+#include <QTextStream>
 #include <QResizeEvent>
 #include <QString>
 #include <QStringList>
@@ -160,6 +163,7 @@ void QgsMapCanvas::enableAntiAliasing( bool theFlag )
 void QgsMapCanvas::useImageToRender( bool theFlag )
 {
   mMap->useImageToRender( theFlag );
+  refresh(); // redraw the map on change - prevents black map view
 }
 
 QgsMapCanvasMap* QgsMapCanvas::map()
@@ -411,6 +415,31 @@ void QgsMapCanvas::saveAsImage( QString theFileName, QPixmap * theQPixmap, QStri
   {
     mMap->pixmap().save( theFileName, theFormat.toLocal8Bit().data() );
   }
+  //create a world file to go with the image...
+  QgsRectangle myRect = mMapRenderer->extent();
+  QString myHeader;
+  //Pixel XDim
+  myHeader += QString::number( mapUnitsPerPixel() ) + "\r\n";
+  //Rotation on y axis - hard coded
+  myHeader += "0 \r\n";
+  //Rotation on x axis - hard coded
+  myHeader += "0 \r\n";
+  //Pixel YDim - almost always negative - see
+  //http://en.wikipedia.org/wiki/World_file#cite_note-2
+  myHeader += "-" + QString::number( mapUnitsPerPixel() ) + "\r\n";
+  //Origin X (top left corner)
+  myHeader += QString::number( myRect.xMinimum() ) + "\r\n";
+  //Origin Y (top left corner)
+  myHeader += QString::number( myRect.yMaximum() ) + "\r\n";
+  QFileInfo myInfo  = QFileInfo( theFileName );
+  QString myWorldFileName = myInfo.absolutePath() + QDir::separator() + myInfo.baseName() + "." + theFormat + "w";
+  QFile myWorldFile( myWorldFileName );
+  if ( !myWorldFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
+  {
+    return;
+  }
+  QTextStream myStream( &myWorldFile );
+  myStream << myHeader;
 } // saveAsImage
 
 
@@ -703,6 +732,11 @@ void QgsMapCanvas::keyReleaseEvent( QKeyEvent * e )
 
     default:
       // Pass it on
+        if ( mMapTool )
+        {
+          mMapTool->keyReleaseEvent( e );
+        }
+      
       e->ignore();
 
       QgsDebugMsg( "Ignoring key release: " + QString::number( e->key() ) );
@@ -810,8 +844,8 @@ void QgsMapCanvas::resizeEvent( QResizeEvent * e )
     int height = lastSize.height();
     lastSize = QSize( -1, -1 );
 
-    //set map size before scene size seems to solve the white box problem
-    //when moving rubber bands
+    //set map size before scene size helps keep scene indexes updated properly
+    // this was the cause of rubberband artifacts
     mMap->resize( QSize( width, height ) );
     mScene->setSceneRect( QRectF( 0, 0, width, height ) );
 
@@ -860,7 +894,7 @@ void QgsMapCanvas::wheelEvent( QWheelEvent *e )
   {
     case WheelZoom:
       // zoom without changing extent
-      if (e->delta() > 0)
+      if ( e->delta() > 0 )
         zoomIn();
       else
         zoomOut();
@@ -1210,19 +1244,18 @@ void QgsMapCanvas::moveCanvasContents( bool reset )
 
 void QgsMapCanvas::showError( QgsMapLayer * mapLayer )
 {
-//   QMessageBox::warning(
-//     this,
-//     mapLayer->lastErrorTitle(),
-//     tr("Could not draw") + " " + mapLayer->name() + " " + tr("because") + ":\n" +
-//       mapLayer->lastError()
-//   );
+#if 0
+  QMessageBox::warning(
+    this,
+    mapLayer->lastErrorTitle(),
+    tr( "Could not draw %1 because:\n%2", "COMMENTED OUT" ).arg( mapLayer->name() ).arg( mapLayer->lastError() )
+  );
+#endif
 
   QgsMessageViewer * mv = new QgsMessageViewer( this );
   mv->setWindowTitle( mapLayer->lastErrorTitle() );
-  mv->setMessageAsPlainText(
-    tr( "Could not draw" ) + " " + mapLayer->name() + " " + tr( "because" ) + ":\n" +
-    mapLayer->lastError()
-  );
+  mv->setMessageAsPlainText( tr( "Could not draw %1 because:\n%2" )
+                             .arg( mapLayer->name() ).arg( mapLayer->lastError() ) );
   mv->exec();
   //MH
   //QgsMessageViewer automatically sets delete on close flag

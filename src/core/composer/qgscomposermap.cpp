@@ -48,6 +48,7 @@ QgsComposerMap::QgsComposerMap( QgsComposition *composition, int x, int y, int w
   mComposition = composition;
   mMapRenderer = mComposition->mapRenderer();
   mId = mCurrentComposerId++;
+  mPreviewMode = QgsComposerMap::Rectangle;
 
   // Cache
   mCacheUpdated = false;
@@ -65,7 +66,7 @@ QgsComposerMap::QgsComposerMap( QgsComposition *composition, int x, int y, int w
     mExtent = mMapRenderer->extent();
   }
   setSceneRect( QRectF( x, y, width, height ) );
-  setToolTip( tr( "Map" ) + " " + QString::number( mId ) );
+  setToolTip( tr( "Map %1" ).arg( mId ) );
 }
 
 QgsComposerMap::QgsComposerMap( QgsComposition *composition )
@@ -80,7 +81,8 @@ QgsComposerMap::QgsComposerMap( QgsComposition *composition )
   mComposition = composition;
   mMapRenderer = mComposition->mapRenderer();
   mId = mCurrentComposerId++;
-  setToolTip( tr( "Map" ) + " " + QString::number( mId ) );
+  mPreviewMode = QgsComposerMap::Rectangle;
+  setToolTip( tr( "Map %1" ).arg( mId ) );
   QGraphicsRectItem::show();
 }
 
@@ -116,6 +118,13 @@ void QgsComposerMap::draw( QPainter *painter, const QgsRectangle& extent, const 
   theMapRenderer.setProjectionsEnabled( mMapRenderer->hasCrsTransformEnabled() );
   theMapRenderer.setDestinationSrs( mMapRenderer->destinationSrs() );
 
+  //set antialiasing if enabled in options
+  QSettings settings;
+  if ( settings.value( "/qgis/enable_anti_aliasing", false ).toBool() )
+  {
+    painter->setRenderHint( QPainter::Antialiasing );
+  }
+
   QgsRenderContext* theRendererContext = theMapRenderer.rendererContext();
   if ( theRendererContext )
   {
@@ -142,14 +151,14 @@ void QgsComposerMap::cache( void )
   int w = rect().width() * horizontalViewScaleFactor();
   int h = rect().height() * horizontalViewScaleFactor();
 
-  if ( w > 3000 ) //limit size of image for better performance
+  if ( w > 5000 ) //limit size of image for better performance
   {
-    w = 3000;
+    w = 5000;
   }
 
-  if ( h > 3000 )
+  if ( h > 5000 )
   {
-    h = 3000;
+    h = 5000;
   }
 
   mCachePixmap = QPixmap( w, h );
@@ -231,11 +240,19 @@ void QgsComposerMap::paint( QPainter* painter, const QStyleOptionGraphicsItem* i
   mLastScaleFactorX =  currentScaleFactorX;
 }
 
-void QgsComposerMap::mapCanvasChanged( void )
+void QgsComposerMap::updateCachedImage( void )
 {
   mCacheUpdated = false;
   cache();
   QGraphicsRectItem::update();
+}
+
+void QgsComposerMap::renderModeUpdateCachedImage()
+{
+  if ( mPreviewMode == Render )
+  {
+    updateCachedImage();
+  }
 }
 
 void QgsComposerMap::setCacheUpdated( bool u )
@@ -355,7 +372,10 @@ void QgsComposerMap::setSceneRect( const QRectF& rectangle )
   mExtent = QgsRectangle( mExtent.xMinimum(), mExtent.yMinimum(), mExtent.xMaximum(), mExtent.yMinimum() + newHeight );
   mCacheUpdated = false;
   emit extentChanged();
-  cache();
+  if ( mPreviewMode != Rectangle )
+  {
+    cache();
+  }
   update();
 }
 
@@ -461,12 +481,12 @@ void QgsComposerMap::connectUpdateSlot()
   QgsMapLayerRegistry* layerRegistry = QgsMapLayerRegistry::instance();
   if ( layerRegistry )
   {
-    connect( layerRegistry, SIGNAL( layerWillBeRemoved( QString ) ), this, SLOT( mapCanvasChanged() ) );
-    connect( layerRegistry, SIGNAL( layerWasAdded( QgsMapLayer* ) ), this, SLOT( mapCanvasChanged() ) );
+    connect( layerRegistry, SIGNAL( layerWillBeRemoved( QString ) ), this, SLOT( updateCachedImage() ) );
+    connect( layerRegistry, SIGNAL( layerWasAdded( QgsMapLayer* ) ), this, SLOT( updateCachedImage() ) );
   }
 }
 
-bool QgsComposerMap::writeXML( QDomElement& elem, QDomDocument & doc )
+bool QgsComposerMap::writeXML( QDomElement& elem, QDomDocument & doc ) const
 {
   if ( elem.isNull() )
   {
@@ -497,8 +517,11 @@ bool QgsComposerMap::writeXML( QDomElement& elem, QDomDocument & doc )
   extentElem.setAttribute( "ymax", QString::number( mExtent.yMaximum() ) );
   composerMapElem.appendChild( extentElem );
 
+#if 0
+  // why is saving the map changing anything about the cache?
   mCacheUpdated = false;
   mNumCachedLayers = 0;
+#endif
 
   elem.appendChild( composerMapElem );
   return _writeXML( composerMapElem, doc );

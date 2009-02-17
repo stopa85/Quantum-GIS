@@ -318,7 +318,7 @@ bool QgsGrassProvider::nextFeature( QgsFeature& feature )
   QgsDebugMsg( QString( "cat = %1 type = %2 id = %3" ).arg( cat ).arg( type ).arg( id ) );
 #endif
 
-  feature = QgsFeature( id );
+  feature.setFeatureId( id );
 
   // TODO int may be 64 bits (memcpy)
   if ( type & ( GV_POINTS | GV_LINES ) ) /* points or lines */
@@ -1045,7 +1045,7 @@ int QgsGrassProvider::openMap( QString gisdbase, QString location, QString mapse
     ( ( GRASS_VERSION_MAJOR == 6 && GRASS_VERSION_MINOR >= 4 ) || GRASS_VERSION_MAJOR > 6 )
     Vect_build( map.map );
 #else
-    Vect_build( map.map, stderr ); 
+    Vect_build( map.map, stderr );
 #endif
 
     if ( QgsGrass::getError() == QgsGrass::FATAL )
@@ -1528,8 +1528,8 @@ bool QgsGrassProvider::closeEdit( bool newMap )
 #if defined(GRASS_VERSION_MAJOR) && defined(GRASS_VERSION_MINOR) && \
     ( ( GRASS_VERSION_MAJOR == 6 && GRASS_VERSION_MINOR >= 4 ) || GRASS_VERSION_MAJOR > 6 )
   Vect_build_partial( map->map, GV_BUILD_NONE );
-  Vect_build( map->map ); 
-#else 
+  Vect_build( map->map );
+#else
   Vect_build_partial( map->map, GV_BUILD_NONE, NULL );
   Vect_build( map->map, stderr );
 #endif

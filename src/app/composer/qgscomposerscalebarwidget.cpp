@@ -64,7 +64,7 @@ void QgsComposerScaleBarWidget::refreshMapComboBox()
       QList<const QgsComposerMap*>::const_iterator mapItemIt = availableMaps.constBegin();
       for ( ; mapItemIt != availableMaps.constEnd(); ++mapItemIt )
       {
-        mMapComboBox->addItem( tr( "Map " ) + QString::number(( *mapItemIt )->id() ) );
+        mMapComboBox->addItem( tr( "Map %1" ).arg(( *mapItemIt )->id() ) );
       }
     }
   }
@@ -145,7 +145,7 @@ void QgsComposerScaleBarWidget::setGuiElements()
   //map combo box
   if ( mComposerScaleBar->composerMap() )
   {
-    QString mapText = tr( "Map " ) + mComposerScaleBar->composerMap()->id();
+    QString mapText = tr( "Map %1" ).arg( mComposerScaleBar->composerMap()->id() );
     int itemId = mMapComboBox->findText( mapText );
     if ( itemId > 0 )
     {
@@ -282,7 +282,36 @@ void QgsComposerScaleBarWidget::on_mStyleComboBox_currentIndexChanged( const QSt
     return;
   }
 
-  mComposerScaleBar->setStyle( text );
+  QString untranslatedStyleName;
+  if ( text == tr( "Single Box" ) )
+  {
+    untranslatedStyleName = "Single Box";
+  }
+  else if ( text == tr( "Double Box" ) )
+  {
+    untranslatedStyleName = "Double Box";
+  }
+  else if ( text == tr( "Line Ticks Middle" ) )
+  {
+    untranslatedStyleName = "Line Ticks Middle";
+  }
+  else if ( text == tr( "Line Ticks Middle" ) )
+  {
+    untranslatedStyleName = "Line Ticks Middle";
+  }
+  else if ( text == tr( "Line Ticks Down" ) )
+  {
+    untranslatedStyleName = "Line Ticks Down";
+  }
+  else if ( text == tr( "Line Ticks Up" ) )
+  {
+    untranslatedStyleName = "Line Ticks Up";
+  }
+  else if ( text == tr( "Numeric" ) )
+  {
+    untranslatedStyleName = "Numeric";
+  }
+  mComposerScaleBar->setStyle( untranslatedStyleName );
   mComposerScaleBar->update();
 }
 

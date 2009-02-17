@@ -34,6 +34,7 @@
 #include "qgsexception.h"
 #include "qgsproject.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaprenderer.h"
 #include "qgsmessageviewer.h"
 #include "qgscontexthelp.h"
 #include "qgscursors.h"
@@ -58,6 +59,7 @@
 #include <QSvgGenerator>
 #endif
 #include <QToolBar>
+#include <QToolButton>
 #include <QImageWriter>
 #include <QCheckBox>
 #include <QSizeGrip>
@@ -68,45 +70,34 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
   setupUi( this );
   setupTheme();
 
-  QString myIconPath = QgsApplication::activeThemePath();
+  QToolButton* orderingToolButton = new QToolButton( this );
+  orderingToolButton->setPopupMode( QToolButton::InstantPopup );
+  orderingToolButton->setAutoRaise( true );
+  orderingToolButton->setToolButtonStyle( Qt::ToolButtonIconOnly );
 
-  // Actions defined in qgscomposerbase.ui:
-  // mActionAddNewMap
-  // mActionAddNewLegend
-  // mActionAddNewLabel
-  // mActionAddNewScalebar
-  // mActionAddImage
-  // mActionSelectMoveItem
+  orderingToolButton->addAction( mActionRaiseItems );
+  orderingToolButton->addAction( mActionLowerItems );
+  orderingToolButton->addAction( mActionMoveItemsToTop );
+  orderingToolButton->addAction( mActionMoveItemsToBottom );
+  orderingToolButton->setDefaultAction( mActionRaiseItems );
+  toolBar->addWidget( orderingToolButton );
 
-  QAction* moveItemContentAction = new QAction( QIcon( QPixmap( myIconPath + "mActionMoveItemContent.png" ) ),
-      tr( "Move Content" ), 0 );
-  moveItemContentAction->setToolTip( tr( "Move item content" ) );
-  moveItemContentAction->setCheckable( true );
-  connect( moveItemContentAction, SIGNAL( triggered() ), this, SLOT( moveItemContent() ) );
-  toolBar->addAction( moveItemContentAction );
-  //toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionMoveItemContent.png")), tr("Move Item content"), this, SLOT(moveItemContent()));
+  QToolButton* alignToolButton = new QToolButton( this );
+  alignToolButton->setPopupMode( QToolButton::InstantPopup );
+  alignToolButton->setAutoRaise( true );
+  alignToolButton->setToolButtonStyle( Qt::ToolButtonIconOnly );
 
-  QAction* groupItemsAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionGroupItems.png" ) ),
-                              tr( "&Group" ), this, SLOT( groupItems() ) );
-  groupItemsAction->setToolTip( tr( "Group items" ) );
-  QAction* ungroupItemsAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionUngroupItems.png" ) ),
-                                tr( "&Ungroup" ), this, SLOT( ungroupItems() ) );
-  ungroupItemsAction->setToolTip( tr( "Ungroup items" ) );
-  QAction* raiseItemsAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionRaiseItems.png" ) ),
-                              tr( "Raise" ), this, SLOT( raiseSelectedItems() ) );
-  raiseItemsAction->setToolTip( tr( "Raise selected items" ) );
-  QAction* lowerItemsAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionLowerItems.png" ) ),
-                              tr( "Lower" ), this, SLOT( lowerSelectedItems() ) );
-  lowerItemsAction->setToolTip( tr( "Lower selected items" ) );
-  QAction* moveItemsToTopAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionMoveItemsToTop.png" ) ),
-                                  tr( "Bring to Front" ), this, SLOT( moveSelectedItemsToTop() ) );
-  moveItemsToTopAction->setToolTip( tr( "Move selected items to top" ) );
-  QAction* moveItemsToBottomAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionMoveItemsToBottom.png" ) ),
-                                     tr( "Send to Back" ), this, SLOT( moveSelectedItemsToBottom() ) );
-  moveItemsToBottomAction->setToolTip( tr( "Move selected items to bottom" ) );
+  alignToolButton->addAction( mActionAlignLeft );
+  alignToolButton->addAction( mActionAlignHCenter );
+  alignToolButton->addAction( mActionAlignRight );
+  alignToolButton->addAction( mActionAlignTop );
+  alignToolButton->addAction( mActionAlignVCenter );
+  alignToolButton->addAction( mActionAlignBottom );
+  alignToolButton->setDefaultAction( mActionAlignLeft );
+  toolBar->addWidget( alignToolButton );
 
   QActionGroup* toggleActionGroup = new QActionGroup( this );
-  toggleActionGroup->addAction( moveItemContentAction );
+  toggleActionGroup->addAction( mActionMoveItemContent );
   toggleActionGroup->addAction( mActionAddNewMap );
   toggleActionGroup->addAction( mActionAddNewLabel );
   toggleActionGroup->addAction( mActionAddNewLegend );
@@ -114,7 +105,6 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
   toggleActionGroup->addAction( mActionAddImage );
   toggleActionGroup->addAction( mActionSelectMoveItem );
   toggleActionGroup->setExclusive( true );
-
 
   setWindowTitle( tr( "QGIS - print composer" ) );
 
@@ -124,6 +114,7 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
   mActionSelectMoveItem->setCheckable( true );
   mActionAddNewScalebar->setCheckable( true );
   mActionAddImage->setCheckable( true );
+  mActionMoveItemContent->setCheckable( true );
 
 #ifdef Q_WS_MAC
   QMenu *appMenu = menuBar()->addMenu( tr( "QGIS" ) );
@@ -164,14 +155,14 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
   layoutMenu->addAction( mActionAddNewLegend );
   layoutMenu->addAction( mActionAddImage );
   layoutMenu->addAction( mActionSelectMoveItem );
-  layoutMenu->addAction( moveItemContentAction );
+  layoutMenu->addAction( mActionMoveItemContent );
   layoutMenu->addSeparator();
-  layoutMenu->addAction( groupItemsAction );
-  layoutMenu->addAction( ungroupItemsAction );
-  layoutMenu->addAction( raiseItemsAction );
-  layoutMenu->addAction( lowerItemsAction );
-  layoutMenu->addAction( moveItemsToTopAction );
-  layoutMenu->addAction( moveItemsToBottomAction );
+  layoutMenu->addAction( mActionGroupItems );
+  layoutMenu->addAction( mActionUngroupItems );
+  layoutMenu->addAction( mActionRaiseItems );
+  layoutMenu->addAction( mActionLowerItems );
+  layoutMenu->addAction( mActionMoveItemsToTop );
+  layoutMenu->addAction( mActionMoveItemsToBottom );
 
 #ifndef Q_WS_MAC64 /* assertion failure in NSMenuItem setSubmenu (Qt 4.5.0-snapshot-20080830) */
   menuBar()->addMenu( QgisApp::instance()->windowMenu() );
@@ -244,6 +235,8 @@ void QgsComposer::setupTheme()
 {
   //now set all the icons - getThemeIcon will fall back to default theme if its
   //missing from active theme
+  mActionLoadFromTemplate->setIcon( QgisApp::getThemeIcon( "/mActionFileOpen.png" ) );
+  mActionSaveAsTemplate->setIcon( QgisApp::getThemeIcon( "/mActionFileSaveAs.png" ) );
   mActionExportAsImage->setIcon( QgisApp::getThemeIcon( "/mActionExportMapServer.png" ) );
   mActionExportAsSVG->setIcon( QgisApp::getThemeIcon( "/mActionSaveAsSVG.png" ) );
   mActionPrint->setIcon( QgisApp::getThemeIcon( "/mActionFilePrint.png" ) );
@@ -257,6 +250,19 @@ void QgsComposer::setupTheme()
   mActionAddNewLegend->setIcon( QgisApp::getThemeIcon( "/mActionAddLegend.png" ) );
   mActionAddNewScalebar->setIcon( QgisApp::getThemeIcon( "/mActionScaleBar.png" ) );
   mActionSelectMoveItem->setIcon( QgisApp::getThemeIcon( "/mActionSelectPan.png" ) );
+  mActionMoveItemContent->setIcon( QgisApp::getThemeIcon( "/mActionMoveItemContent.png" ) );
+  mActionGroupItems->setIcon( QgisApp::getThemeIcon( "/mActionGroupItems.png" ) );
+  mActionUngroupItems->setIcon( QgisApp::getThemeIcon( "/mActionUngroupItems.png" ) );
+  mActionRaiseItems->setIcon( QgisApp::getThemeIcon( "/mActionRaiseItems.png" ) );
+  mActionLowerItems->setIcon( QgisApp::getThemeIcon( "/mActionLowerItems.png" ) );
+  mActionMoveItemsToTop->setIcon( QgisApp::getThemeIcon( "/mActionMoveItemsToTop.png" ) );
+  mActionMoveItemsToBottom->setIcon( QgisApp::getThemeIcon( "/mActionMoveItemsToBottom.png" ) );
+  mActionAlignLeft->setIcon( QgisApp::getThemeIcon( "/mActionAlignLeft.png" ) );
+  mActionAlignHCenter->setIcon( QgisApp::getThemeIcon( "/mActionAlignHCenter.png" ) );
+  mActionAlignRight->setIcon( QgisApp::getThemeIcon( "/mActionAlignRight.png" ) );
+  mActionAlignTop->setIcon( QgisApp::getThemeIcon( "/mActionAlignTop.png" ) );
+  mActionAlignVCenter->setIcon( QgisApp::getThemeIcon( "/mActionAlignVCenter.png" ) );
+  mActionAlignBottom->setIcon( QgisApp::getThemeIcon( "/mActionAlignBottom.png" ) );
 }
 
 void QgsComposer::connectSlots()
@@ -397,18 +403,22 @@ void QgsComposer::zoomFull( void )
 void QgsComposer::on_mActionZoomAll_activated( void )
 {
   zoomFull();
+  mView->update();
+  emit zoomLevelChanged();
 }
 
 void QgsComposer::on_mActionZoomIn_activated( void )
 {
   mView->scale( 2, 2 );
-  //mView->update();
+  mView->update();
+  emit zoomLevelChanged();
 }
 
 void QgsComposer::on_mActionZoomOut_activated( void )
 {
   mView->scale( .5, .5 );
-  //mView->update();
+  mView->update();
+  emit zoomLevelChanged();
 }
 
 void QgsComposer::on_mActionRefreshView_activated( void )
@@ -450,7 +460,6 @@ void QgsComposer::on_mActionPrint_activated( void )
   printer.setColorMode( QPrinter::Color );
 
   QPrintDialog printDialog( &printer );
-
   if ( printDialog.exec() == QDialog::Accepted )
   {
     //set user-defined resolution
@@ -465,6 +474,24 @@ void QgsComposer::on_mActionPrint_activated( void )
 
     QApplication::setOverrideCursor( Qt::BusyCursor );
 
+    if(mComposition->printAsRaster())
+    {
+      //print out via QImage, code copied from on_mActionExportAsImage_activated
+      int width = ( int )( mComposition->printResolution() * mComposition->paperWidth() / 25.4 );
+      int height = ( int )( mComposition-> printResolution() * mComposition->paperHeight() / 25.4 );
+      QImage image( QSize( width, height ), QImage::Format_ARGB32 );
+      image.setDotsPerMeterX( mComposition->printResolution() / 25.4 * 1000 );
+      image.setDotsPerMeterY( mComposition->printResolution() / 25.4 * 1000 );
+      image.fill( 0 );
+      QPainter imagePainter( &image );
+      QRectF sourceArea( 0, 0, mComposition->paperWidth(), mComposition->paperHeight() );
+      QRectF targetArea( 0, 0, width, height );
+      mComposition->render( &imagePainter, targetArea, sourceArea );
+      imagePainter.end();
+      p.drawImage(targetArea, image, targetArea);
+    }
+    else
+    {
 #if QT_VERSION < 0x040400
     QRectF paperRect( 0, 0, mComposition->paperWidth(), mComposition->paperHeight() );
     QRect pageRect = printer.pageRect();
@@ -475,8 +502,8 @@ void QgsComposer::on_mActionPrint_activated( void )
     QRectF paperRectPixel = printer.pageRect( QPrinter::DevicePixel );
     mComposition->render( &p, paperRectPixel, paperRectMM );
 #endif
+    }
     mComposition->setPlotStyle( savedPlotStyle );
-
     QApplication::restoreOverrideCursor();
   }
 }
@@ -499,10 +526,8 @@ void QgsComposer::on_mActionExportAsImage_activated( void )
   if ( memuse > 200 )   // cca 4500 x 4500
   {
     int answer = QMessageBox::warning( 0, tr( "Big image" ),
-                                       tr( "To create image " ) + QString::number( width ) + " x "
-                                       + QString::number( height )
-                                       + tr( " requires circa " )
-                                       + QString::number( memuse ) + tr( " MB of memory" ),
+                                       tr( "To create image %1 x %2 requires circa %3 MB of memory" )
+                                       .arg( width ).arg( height ).arg( memuse ),
                                        QMessageBox::Ok,  QMessageBox::Abort );
 
     raise();
@@ -529,7 +554,8 @@ void QgsComposer::on_mActionExportAsImage_activated( void )
   for ( ; myCounterInt < QImageWriter::supportedImageFormats().count(); myCounterInt++ )
   {
     QString myFormat = QString( QImageWriter::supportedImageFormats().at( myCounterInt ) );
-    QString myFilter = myFormat + " " + tr( "format" ) + " (*." + myFormat.toLower() + " *." + myFormat.toUpper() + ")";
+    QString myFilter = tr( "%1 format (*.%2 *.%3)" )
+                       .arg( myFormat ).arg( myFormat.toLower() ).arg( myFormat.toUpper() );
 
     if ( myCounterInt > 0 ) myFilters += ";;";
     myFilters += myFilter;
@@ -578,7 +604,7 @@ void QgsComposer::on_mActionExportAsImage_activated( void )
   }
 
   myOutputFileNameQString = myQFileDialog->selectedFiles().last();
-  qWarning( myOutputFileNameQString.toLocal8Bit().data() );
+  qWarning( "%s", myOutputFileNameQString.toLocal8Bit().constData() );
   QString myFilterString = myQFileDialog->selectedFilter();
   QgsDebugMsg( QString( "Selected filter: %1" ).arg( myFilterString ) );
   QgsDebugMsg( QString( "Image type: %1" ).arg( myFilterMap[myFilterString] ) );
@@ -628,22 +654,22 @@ void QgsComposer::on_mActionExportAsSVG_activated( void )
     m->setCheckBoxVisible( true );
     m->setCheckBoxQSettingsLabel( myQSettingsLabel );
     m->setMessageAsHtml( tr( "<p>The SVG export function in Qgis has several "
-                             "problems due to bugs and deficiencies in the "
+                             "problems due to bugs and deficiencies in the " )
 #if QT_VERSION < 0x040300
-                             "Qt4 svg code. Of note, text does not "
-                             "appear in the SVG file and there are problems "
-                             "with the map bounding box clipping other items "
-                             "such as the legend or scale bar.</p>"
+                         + tr( "Qt4 svg code. Of note, text does not "
+                               "appear in the SVG file and there are problems "
+                               "with the map bounding box clipping other items "
+                               "such as the legend or scale bar.</p>" )
 #else
-                             "Qt4 svg code. In particular, there are problems "
-                             "with layers not being clipped to the map "
-                             "bounding box.</p>"
+                         + tr( "Qt4 svg code. In particular, there are problems "
+                               "with layers not being clipped to the map "
+                               "bounding box.</p>" )
 #endif
-                             "If you require a vector-based output file from "
-                             "Qgis it is suggested that you try printing "
-                             "to PostScript if the SVG output is not "
-                             "satisfactory."
-                             "</p>" ) );
+                         + tr( "If you require a vector-based output file from "
+                               "Qgis it is suggested that you try printing "
+                               "to PostScript if the SVG output is not "
+                               "satisfactory."
+                               "</p>" ) );
     m->exec();
   }
   QString myLastUsedFile = myQSettings.value( "/UI/lastSaveAsSvgFile", "qgis.svg" ).toString();
@@ -740,7 +766,71 @@ void QgsComposer::on_mActionAddImage_activated( void )
   }
 }
 
-void QgsComposer::moveItemContent()
+void QgsComposer::on_mActionSaveAsTemplate_activated( void )
+{
+  //show file dialog
+  QSettings settings;
+  QString lastSaveDir = settings.value( "UI/lastComposerTemplateDir", "" ).toString();
+  QString saveFileName = QFileDialog::getSaveFileName( 0, tr( "save template" ), lastSaveDir, "*.qpt" );
+  if ( saveFileName.isEmpty() )
+  {
+    return;
+  }
+
+  //save directory
+  QFileInfo saveFileInfo( saveFileName );
+  settings.setValue( "UI/LastComposerTemplateDir", saveFileInfo.absolutePath() );
+
+  QFile templateFile( saveFileName );
+  if ( !templateFile.open( QIODevice::WriteOnly ) )
+  {
+    return;
+  }
+
+  QDomDocument saveDocument;
+  writeXML( saveDocument, saveDocument );
+
+  if ( templateFile.write( saveDocument.toByteArray() ) == -1 )
+  {
+    QMessageBox::warning( 0, tr( "Save error" ), tr( "Error, could not save file" ) );
+  }
+}
+
+void QgsComposer::on_mActionLoadFromTemplate_activated( void )
+{
+  QSettings settings;
+  QString openFileDir = settings.value( "UI/lastComposerTemplateDir", "" ).toString();
+  QString openFileString = QFileDialog::getOpenFileName( 0, tr( "Load template" ), openFileDir, "*.qpt" );
+
+  if ( openFileString.isEmpty() )
+  {
+    return; //canceled by the user
+  }
+
+  QFileInfo openFileInfo( openFileString );
+  settings.setValue( "UI/LastComposerTemplateDir", openFileInfo.absolutePath() );
+
+  QFile templateFile( openFileString );
+  if ( !templateFile.open( QIODevice::ReadOnly ) )
+  {
+    QMessageBox::warning( 0, tr( "Read error" ), tr( "Error, could not read file" ) );
+    return;
+  }
+
+  QDomDocument templateDocument;
+  if ( !templateDocument.setContent( &templateFile, false ) )
+  {
+    QMessageBox::warning( 0, tr( "Read error" ), tr( "Content of template file is not valid" ) );
+    return;
+  }
+
+  readXML( templateDocument );
+
+  //clean up after template read (e.g. legend and map extent)
+  cleanupAfterTemplateRead();
+}
+
+void QgsComposer::on_mActionMoveItemContent_activated( void )
 {
   if ( mView )
   {
@@ -748,7 +838,7 @@ void QgsComposer::moveItemContent()
   }
 }
 
-void QgsComposer::groupItems( void )
+void QgsComposer::on_mActionGroupItems_activated( void )
 {
   if ( mView )
   {
@@ -756,7 +846,7 @@ void QgsComposer::groupItems( void )
   }
 }
 
-void QgsComposer::ungroupItems( void )
+void QgsComposer::on_mActionUngroupItems_activated( void )
 {
   if ( mView )
   {
@@ -764,7 +854,7 @@ void QgsComposer::ungroupItems( void )
   }
 }
 
-void QgsComposer::raiseSelectedItems()
+void QgsComposer::on_mActionRaiseItems_activated( void )
 {
   if ( mComposition )
   {
@@ -772,7 +862,7 @@ void QgsComposer::raiseSelectedItems()
   }
 }
 
-void QgsComposer::lowerSelectedItems()
+void QgsComposer::on_mActionLowerItems_activated( void )
 {
   if ( mComposition )
   {
@@ -780,7 +870,7 @@ void QgsComposer::lowerSelectedItems()
   }
 }
 
-void QgsComposer::moveSelectedItemsToTop()
+void QgsComposer::on_mActionMoveItemsToTop_activated( void )
 {
   if ( mComposition )
   {
@@ -788,11 +878,59 @@ void QgsComposer::moveSelectedItemsToTop()
   }
 }
 
-void QgsComposer::moveSelectedItemsToBottom()
+void QgsComposer::on_mActionMoveItemsToBottom_activated( void )
 {
   if ( mComposition )
   {
     mComposition->moveSelectedItemsToBottom();
+  }
+}
+
+void QgsComposer::on_mActionAlignLeft_activated( void )
+{
+  if ( mComposition )
+  {
+    mComposition->alignSelectedItemsLeft();
+  }
+}
+
+void QgsComposer::on_mActionAlignHCenter_activated( void )
+{
+  if ( mComposition )
+  {
+    mComposition->alignSelectedItemsHCenter();
+  }
+}
+
+void QgsComposer::on_mActionAlignRight_activated( void )
+{
+  if ( mComposition )
+  {
+    mComposition->alignSelectedItemsRight();
+  }
+}
+
+void QgsComposer::on_mActionAlignTop_activated( void )
+{
+  if ( mComposition )
+  {
+    mComposition->alignSelectedItemsTop();
+  }
+}
+
+void QgsComposer::on_mActionAlignVCenter_activated( void )
+{
+  if ( mComposition )
+  {
+    mComposition->alignSelectedItemsVCenter();
+  }
+}
+
+void QgsComposer::on_mActionAlignBottom_activated( void )
+{
+  if ( mComposition )
+  {
+    mComposition->alignSelectedItemsBottom();
   }
 }
 
@@ -842,6 +980,7 @@ void QgsComposer::on_closePButton_clicked()
 
 void  QgsComposer::writeXML( QDomDocument& doc )
 {
+
   QDomNodeList nl = doc.elementsByTagName( "qgis" );
   if ( nl.count() < 1 )
   {
@@ -853,8 +992,13 @@ void  QgsComposer::writeXML( QDomDocument& doc )
     return;
   }
 
+  writeXML( qgisElem, doc );
+}
+
+void QgsComposer::writeXML( QDomNode& parentNode, QDomDocument& doc )
+{
   QDomElement composerElem = doc.createElement( "Composer" );
-  qgisElem.appendChild( composerElem );
+  parentNode.appendChild( composerElem );
 
   //store composer items:
   QMap<QgsComposerItem*, QWidget*>::const_iterator itemIt = mItemWidgetMap.constBegin();
@@ -870,9 +1014,6 @@ void  QgsComposer::writeXML( QDomDocument& doc )
   {
     mComposition->writeXML( composerElem, doc );
   }
-
-
-  return;
 }
 
 void QgsComposer::readXML( const QDomDocument& doc )
@@ -1021,6 +1162,7 @@ void QgsComposer::addComposerMap( QgsComposerMap* map )
   }
 
   QgsComposerMapWidget* mapWidget = new QgsComposerMapWidget( map );
+  connect( this, SIGNAL( zoomLevelChanged() ), map, SLOT( renderModeUpdateCachedImage() ) );
   mItemWidgetMap.insert( map, mapWidget );
 }
 
@@ -1124,5 +1266,56 @@ void QgsComposer::showWMSPrintingWarning()
     m->setCheckBoxVisible( true );
     m->setCheckBoxQSettingsLabel( myQSettingsLabel );
     m->exec();
+  }
+}
+
+void QgsComposer::cleanupAfterTemplateRead()
+{
+  QMap<QgsComposerItem*, QWidget*>::const_iterator itemIt = mItemWidgetMap.constBegin();
+  for ( ; itemIt != mItemWidgetMap.constEnd(); ++itemIt )
+  {
+    //update all legends completely
+    QgsComposerLegend* legendItem = dynamic_cast<QgsComposerLegend*>( itemIt.key() );
+    if ( legendItem )
+    {
+      legendItem->updateLegend();
+      continue;
+    }
+
+    //update composer map extent if it does not intersect the full extent of all layers
+    QgsComposerMap* mapItem = dynamic_cast<QgsComposerMap*>( itemIt.key() );
+    if ( mapItem )
+    {
+      //test if composer map extent intersects extent of all layers
+      bool intersects = false;
+      QgsRectangle composerMapExtent = mapItem->extent();
+      if ( mQgis )
+      {
+        QgsMapCanvas* canvas = mQgis->mapCanvas();
+        if ( canvas )
+        {
+          QgsRectangle mapCanvasExtent = mQgis->mapCanvas()->fullExtent();
+          if ( composerMapExtent.intersects( mapCanvasExtent ) )
+          {
+            intersects = true;
+          }
+        }
+      }
+
+      //if not: apply current canvas extent
+      if ( !intersects )
+      {
+        double currentWidth = mapItem->rect().width();
+        double currentHeight = mapItem->rect().height();
+        if ( currentWidth - 0 > 0.0 ) //don't divide through zero
+        {
+          QgsRectangle canvasExtent = mapItem->mapRenderer()->extent();
+          //adapt min y of extent such that the size of the map item stays the same
+          double newCanvasExtentHeight = currentHeight / currentWidth * canvasExtent.width();
+          canvasExtent.setYMinimum( canvasExtent.yMaximum() - newCanvasExtentHeight );
+          mapItem->setNewExtent( canvasExtent );
+        }
+      }
+    }
   }
 }

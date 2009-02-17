@@ -1,3 +1,40 @@
+qgis (1.1.0) UNRELEASED; urgency=low
+
+  * gridmaker plugin removed from package
+  * updated mime support
+  * sync with debian-gis debian/ tree
+    - introduce arch-independant qgis-comman and
+      qgis-plugin-grass-common
+    - policy updated to 3.8.0
+    - join libqgis1-core and libqgis1-gui to libqgis1
+    - add debian/watch
+    - dh_lintian overrides
+    - compat 5=>6
+    - fix qgis.desktop
+    - fix license reference in copyright
+  * introduce arch-independant python-qgis-comman
+  * added sharedmimeinfo
+  * remove dpatch
+
+ -- Jürgen E. Fischer <jef@norbit.de>  Fri, 13 Feb 2009 22:03:25 +0100
+
+qgis (1.0.0) experimental; urgency=low
+ 
+  * new upstream release
+  * update qgis.mime
+  * add qgis.desktop and qgis.xml 
+  * add mime types for KDE
+  * don't ignore errors in preinst and postrm
+  * run ldconfig in postrm
+
+ -- Jürgen E. Fischer <jef@norbit.de>  Tue, 23 Dec 2008 20:42:21 +0100
+
+qgis (1.0preview18) experimental; urgency=low
+
+  * add suggestion for gpsbabel
+
+ -- Jürgen E. Fischer <jef@norbit.de>  Sat, 20 Dec 2008 19:08:34 +0100
+
 qgis (1.0preview17) experimental; urgency=low
 
   * include quickprint and coordinate capture plugin

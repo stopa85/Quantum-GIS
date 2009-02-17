@@ -120,6 +120,8 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     /** Get the label object associated with this layer */
     QgsLabel *label();
 
+    const QgsLabel *label() const;
+
     QgsAttributeAction* actions() { return mActions; }
 
     /** The number of features that are selected in this layer */
@@ -130,6 +132,9 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
 
     /** Select not selected features and deselect selected ones */
     void invertSelection();
+
+    /** Invert selection of features found within the search rectangle (in layer's coordinates) */
+    void invertSelectionInRectangle( QgsRectangle & rect );
 
     /** Get a copy of the user-selected features */
     QgsFeatureList selectedFeatures();
@@ -322,7 +327,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     void enableLabels( bool on );
 
     /** Label is on */
-    bool hasLabelsEnabled( void );
+    bool hasLabelsEnabled( void ) const;
 
     /** Returns true if the provider is in editing mode */
     virtual bool isEditable() const;
@@ -359,7 +364,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     void drawLabels( QgsRenderContext& rendererContext );
 
     /** returns field list in the to-be-committed state */
-    const QgsFieldMap &pendingFields();
+    const QgsFieldMap &pendingFields() const;
 
     /** returns list of attributes */
     QgsAttributeList pendingAllAttributesList();
@@ -438,6 +443,9 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     /** Select feature by its ID, optionally emit signal selectionChanged() */
     void select( int featureId, bool emitSignal = TRUE );
 
+    /** Deselect feature by its ID, optionally emit signal selectionChanged() */
+    void deselect( int featureId, bool emitSignal = TRUE );
+
     /** Clear selection */
     void removeSelection( bool emitSignal = TRUE );
 
@@ -470,7 +478,8 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     enum VertexMarkerType
     {
       SemiTransparentCircle,
-      Cross
+      Cross,
+      NoMarker  /* added in version 1.1 */
     };
 
     /** vector layers are not copyable */
@@ -582,6 +591,9 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     /** cache of the committed geometries retrieved *for the current display* */
     QgsGeometryMap mCachedGeometries;
 
+    /** extent for which there are cached geometries */
+    QgsRectangle mCachedGeometriesRect;
+
     /** Set holding the feature IDs that are activated.  Note that if a feature
         subsequently gets deleted (i.e. by its addition to mDeletedFeatureIds),
         it always needs to be removed from mSelectedFeatureIds as well.
@@ -641,7 +653,6 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     bool mFetching;
     QgsRectangle mFetchRect;
     QgsAttributeList mFetchAttributes;
-    QgsAttributeList mFetchNullAttributes;
     bool mFetchGeometry;
 
     QSet<int> mFetchConsidered;

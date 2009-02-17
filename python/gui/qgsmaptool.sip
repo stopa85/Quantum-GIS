@@ -41,7 +41,15 @@ class QgsMapTool : QObject
 
     //! Mouse release event for overriding
     virtual void canvasReleaseEvent(QMouseEvent * e);
+
+    //! Key press for overriding
+    //! (binding) added in version 1.1
+    virtual void keyPressEvent(QKeyEvent * e);
     
+    //! Key press for overriding
+    //! Added in version 1.1
+    virtual void keyReleaseEvent(QKeyEvent * e);
+
     //! Called when rendering has finished
     virtual void renderComplete();
     
@@ -70,6 +78,9 @@ class QgsMapTool : QObject
     //! called when map tool is being deactivated
     virtual void deactivate();
     
+    //! returns pointer to the tool's map canvas
+    QgsMapCanvas* canvas();
+
   protected:
 
     //! constructor takes map canvas as a parameter
@@ -84,6 +95,9 @@ class QgsMapTool : QObject
     //! trnasformation from map coordinates to layer's coordinates
     QgsPoint toLayerCoordinates(QgsMapLayer* layer, const QgsPoint& point);
     
+    //!transformation from layer's coordinates to map coordinates (which is different in case reprojection is used)
+    QgsPoint toMapCoordinates( QgsMapLayer* layer, const QgsPoint& point );
+
     //! trnasformation of the rect from map coordinates to layer's coordinates
     QgsRectangle toLayerCoordinates(QgsMapLayer* layer, const QgsRectangle& rect);
 

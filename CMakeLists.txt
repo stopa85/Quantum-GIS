@@ -1,8 +1,8 @@
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
-SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "1")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
-SET(RELEASE_NAME "Kore-preview2")
+SET(RELEASE_NAME "Unstable-trunk")
 SET(PROJECT_VERSION ${COMPLETE_VERSION})
 PROJECT(qgis${PROJECT_VERSION})
 SET(QGIS_VERSION_INT 10000)
@@ -178,7 +178,7 @@ IF (PEDANTIC)
     ADD_DEFINITIONS( /wd4512 )  # assignment operator could not be generated (sqlite3_index_info)
     ADD_DEFINITIONS( /wd4610 )  # user defined constructor required (sqlite3_index_info)
   ELSE (MSVC)
-    ADD_DEFINITIONS( -Wall -Wno-long-long )
+    ADD_DEFINITIONS( -Wall -Wno-long-long -Wformat-security )
     # Qt produces lots of warnings with strict aliasing (as of Qt 4.4.0 & GCC 4.3)
     # ADD_DEFINITIONS( -fstrict-aliasing -Wstrict-aliasing=1 )
   ENDIF (MSVC)
@@ -252,6 +252,15 @@ ELSE (WIN32)
 
 ENDIF (WIN32)
 
+
+#assume we have excaped compiler directives
+#eventually we want to change this to new
+#since we dont need to jump through so many 
+#hoops to escape compiler directives then
+IF(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+  cmake_policy(SET CMP0005 OLD)
+ENDIF(COMMAND cmake_policy)
 
 IF (WIN32)
   # expect that classes are being imported
@@ -336,7 +345,7 @@ ADD_CUSTOM_TARGET(svnversion ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversi
 #############################################################
 # process subdirs
 
-SUBDIRS(src doc images resources i18n tools)
+SUBDIRS(src doc images resources i18n)
 
 IF (HAVE_PYTHON AND WITH_BINDINGS)
   SUBDIRS (python)

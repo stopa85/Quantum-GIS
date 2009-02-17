@@ -115,8 +115,7 @@ QgsGrassTools::QgsGrassTools( QgisInterface *iface,
   //statusBar()->hide();
 
   // set the dialog title
-  QString title = tr( "GRASS Tools: " ) + QgsGrass::getDefaultLocation()
-                  + "/" + QgsGrass::getDefaultMapset();
+  QString title = tr( "GRASS Tools: %1/%2" ).arg( QgsGrass::getDefaultLocation() ).arg( QgsGrass::getDefaultMapset() );
   setWindowTitle( title );
 
 
@@ -171,31 +170,8 @@ void QgsGrassTools::runModule( QString name )
 #endif
 
 #ifdef WIN32
-    // Run MSYS if available
-    // Note: I was not able to run cmd.exe and command.com
-    //       with QProcess
-
-    QString msysPath = appDir() + "/msys/bin/rxvt.exe";
-    QString myArguments = "-backspacekey ^H -sl 2500 -fg white -bg black -sr -fn Courier-16 -tn msys -geometry 80x25 -e    /bin/sh --login -i";
-    QFile file( msysPath );
-
-    if ( !file.exists() )
-    {
-      QMessageBox::warning( 0, tr( "Warning" ),
-                            tr( "Cannot find MSYS (" ) + msysPath + ")" );
-    }
-    else
-    {
-      QProcess *proc = new QProcess( this );
-      //allow msys to exist in a path with spaces
-      msysPath =  "\"" + msysPath + "\""  ;
-      proc->start( msysPath + " " +  myArguments );
-      proc->waitForStarted();
-      if ( proc->state() != QProcess::Running )
-      {
-        QMessageBox::warning( 0, "Warning",
-                              "Cannot start MSYS (" + msysPath + ")" );
-      }
+    if( !QProcess::startDetached( getenv("COMSPEC") ) ) {
+      QMessageBox::warning( 0, "Warning", tr("Cannot start command shell (%1)").arg( getenv("COMSPEC") ) );
     }
     return;
 #else
@@ -252,12 +228,12 @@ bool QgsGrassTools::loadConfig( QString filePath )
 
   if ( !file.exists() )
   {
-    QMessageBox::warning( 0, tr( "Warning" ), tr( "The config file (" ) + filePath + tr( ") not found." ) );
+    QMessageBox::warning( 0, tr( "Warning" ), tr( "The config file (%1) not found." ).arg( filePath ) );
     return false;
   }
   if ( ! file.open( QIODevice::ReadOnly ) )
   {
-    QMessageBox::warning( 0, tr( "Warning" ), tr( "Cannot open config file (" ) + filePath + tr( ")" ) );
+    QMessageBox::warning( 0, tr( "Warning" ), tr( "Cannot open config file (%1)." ).arg( filePath ) );
     return false;
   }
 
@@ -266,8 +242,8 @@ bool QgsGrassTools::loadConfig( QString filePath )
   int line, column;
   if ( !doc.setContent( &file,  &err, &line, &column ) )
   {
-    QString errmsg = tr( "Cannot read config file (" ) + filePath + "):\n" + err + tr( "\nat line " )
-                     + QString::number( line ) + tr( " column " ) + QString::number( column );
+    QString errmsg = tr( "Cannot read config file (%1):" ).arg( filePath )
+                     + tr( "\n%1\nat line %2 column %3" ).arg( err ).arg( line ).arg( column );
     QgsDebugMsg( errmsg );
     QMessageBox::warning( 0, tr( "Warning" ), errmsg );
     file.close();
@@ -380,8 +356,7 @@ void QgsGrassTools::mapsetChanged()
 {
   QgsDebugMsg( "entered." );
 
-  QString title = tr( "GRASS Tools: " ) + QgsGrass::getDefaultLocation()
-                  + "/" + QgsGrass::getDefaultMapset();
+  QString title = tr( "GRASS Tools: %1/%2" ).arg( QgsGrass::getDefaultLocation() ).arg( QgsGrass::getDefaultMapset() );
   setWindowTitle( title );
 
   closeTools();
@@ -438,7 +413,7 @@ void QgsGrassTools::closeTools()
 {
   QgsDebugMsg( "entered." );
 
-  for ( int i = mTabWidget->count() - 1; i > 1; i-- )
+  for ( int i = mTabWidget->count() - 1; i > 2; i-- )
   {
     delete mTabWidget->widget( i );
     mTabWidget->removeTab( i );

@@ -288,9 +288,9 @@ void QgsVectorLayer::drawLabels( QgsRenderContext& rendererContext )
   QgsDebugMsg( "Starting draw of labels" );
 
   if ( mRenderer && mLabelOn &&
-       (!label()->scaleBasedVisibility() ||
-        (label()->minScale()<=rendererContext.rendererScale() &&
-                              rendererContext.rendererScale()<=label()->maxScale())) )
+       ( !label()->scaleBasedVisibility() ||
+         ( label()->minScale() <= rendererContext.rendererScale() &&
+           rendererContext.rendererScale() <= label()->maxScale() ) ) )
   {
     QgsAttributeList attributes = mRenderer->classificationAttributes();
 
@@ -592,7 +592,7 @@ unsigned char *QgsVectorLayer::drawPolygon(
     QgsDebugMsg( "Outer ring point is " + QString::number( outerRingPt.x() ) + ", " + QString::number( outerRingPt.y() ) );
 #endif
 
-    /*
+#if 0
     // A bit of code to aid in working out what values of
     // QgsClipper::minX, etc cause the X11 zoom bug.
     int largestX  = -std::numeric_limits<int>::max();
@@ -600,18 +600,18 @@ unsigned char *QgsVectorLayer::drawPolygon(
     int largestY  = -std::numeric_limits<int>::max();
     int smallestY = std::numeric_limits<int>::max();
 
-    for (int i = 0; i < pa.size(); ++i)
+    for ( int i = 0; i < pa.size(); ++i )
     {
-    largestX  = std::max(largestX,  pa.point(i).x());
-    smallestX = std::min(smallestX, pa.point(i).x());
-    largestY  = std::max(largestY,  pa.point(i).y());
-    smallestY = std::min(smallestY, pa.point(i).y());
+      largestX  = std::max( largestX,  pa.point( i ).x() );
+      smallestX = std::min( smallestX, pa.point( i ).x() );
+      largestY  = std::max( largestY,  pa.point( i ).y() );
+      smallestY = std::min( smallestY, pa.point( i ).y() );
     }
-    QgsDebugMsg(QString("Largest  X coordinate was %1").arg(largestX));
-    QgsDebugMsg(QString("Smallest X coordinate was %1").arg(smallestX));
-    QgsDebugMsg(QString("Largest  Y coordinate was %1").arg(largestY));
-    QgsDebugMsg(QString("Smallest Y coordinate was %1").arg(smallestY));
-    */
+    QgsDebugMsg( QString( "Largest  X coordinate was %1" ).arg( largestX ) );
+    QgsDebugMsg( QString( "Smallest X coordinate was %1" ).arg( smallestX ) );
+    QgsDebugMsg( QString( "Largest  Y coordinate was %1" ).arg( largestY ) );
+    QgsDebugMsg( QString( "Smallest Y coordinate was %1" ).arg( smallestY ) );
+#endif
 
     //preserve a copy of the brush and pen before we start fiddling with it
     QBrush brush = p->brush(); //to be kept as original
@@ -698,6 +698,8 @@ bool QgsVectorLayer::draw( QgsRenderContext& rendererContext )
     {
       // Destroy all cached geometries and clear the references to them
       deleteCachedGeometries();
+
+      mCachedGeometriesRect = rendererContext.extent();
     }
 
     updateFeatureCount();
@@ -784,6 +786,11 @@ bool QgsVectorLayer::draw( QgsRenderContext& rendererContext )
     QgsLogger::warning( "QgsRenderer is null in QgsVectorLayer::draw()" );
   }
 
+  if ( mEditable )
+  {
+    QgsDebugMsg( QString( "Cached %1 geometries." ).arg( mCachedGeometries.count() ) );
+  }
+
   return TRUE; // Assume success always
 }
 
@@ -791,6 +798,7 @@ void QgsVectorLayer::deleteCachedGeometries()
 {
   // Destroy any cached geometries
   mCachedGeometries.clear();
+  mCachedGeometriesRect = QgsRectangle();
 }
 
 void QgsVectorLayer::drawVertexMarker( int x, int y, QPainter& p, QgsVectorLayer::VertexMarkerType type )
@@ -801,7 +809,7 @@ void QgsVectorLayer::drawVertexMarker( int x, int y, QPainter& p, QgsVectorLayer
     p.setBrush( QColor( 200, 200, 210, 120 ) );
     p.drawEllipse( QRectF( x - 7, y - 7, 14, 14 ) );
   }
-  else
+  else if ( type == QgsVectorLayer::Cross )
   {
     int size = 15;
     int m = ( size - 1 ) / 2;
@@ -814,6 +822,16 @@ void QgsVectorLayer::drawVertexMarker( int x, int y, QPainter& p, QgsVectorLayer
 void QgsVectorLayer::select( int number, bool emitSignal )
 {
   mSelectedFeatureIds.insert( number );
+
+  if ( emitSignal )
+  {
+    emit selectionChanged();
+  }
+}
+
+void QgsVectorLayer::deselect( int number, bool emitSignal )
+{
+  mSelectedFeatureIds.remove( number );
 
   if ( emitSignal )
   {
@@ -861,6 +879,29 @@ void QgsVectorLayer::invertSelection()
   for ( QgsFeatureIds::iterator iter = tmp.begin(); iter != tmp.end(); ++iter )
   {
     mSelectedFeatureIds.remove( *iter );
+  }
+
+  emit selectionChanged();
+}
+
+void QgsVectorLayer::invertSelectionInRectangle( QgsRectangle & rect )
+{
+  // normalize the rectangle
+  rect.normalize();
+
+  select( QgsAttributeList(), rect, false, true );
+
+  QgsFeature fet;
+  while ( nextFeature( fet ) )
+  {
+    if ( mSelectedFeatureIds.contains( fet.id() ) )
+    {
+      deselect( fet.id(), false ); // don't emit signal
+    }
+    else
+    {
+      select( fet.id(), false ); // don't emit signal
+    }
   }
 
   emit selectionChanged();
@@ -961,7 +1002,7 @@ QGis::GeometryType QgsVectorLayer::geometryType() const
   // rewritten to cope with a value of QGis::Unknown. To make this
   // need known, the following message is printed every time we get
   // here.
-  QgsDebugMsg( QString( "WARNING: This code (file %1, line %2) should never be reached. Problems may occur..." ).arg( __FILE__ ).arg( __LINE__ ) );
+  QgsDebugMsg( "WARNING: This code should never be reached. Problems may occur..." );
 
   return QGis::UnknownGeometry;
 }
@@ -1055,7 +1096,7 @@ void QgsVectorLayer::updateExtents()
   if ( !mDataProvider )
     QgsLogger::warning( " QgsVectorLayer::updateExtents() invoked with null mDataProvider" );
 
-  if ( mDeletedFeatureIds.isEmpty() )
+  if ( mDeletedFeatureIds.isEmpty() && mChangedGeometries.isEmpty() )
   {
     // get the extent of the layer from the provider
     // but only when there are some features already
@@ -1122,6 +1163,10 @@ void QgsVectorLayer::setSubsetString( QString subset )
 
 void QgsVectorLayer::updateFeatureAttributes( QgsFeature &f )
 {
+  // do not update when we aren't in editing mode
+  if ( ! mEditable )
+    return;
+
   if ( mChangedAttributeValues.contains( f.id() ) )
   {
     const QgsAttributeMap &map = mChangedAttributeValues[f.id()];
@@ -1129,8 +1174,16 @@ void QgsVectorLayer::updateFeatureAttributes( QgsFeature &f )
       f.changeAttribute( it.key(), it.value() );
   }
 
-  for ( QgsAttributeList::const_iterator it = mFetchNullAttributes.begin(); it != mFetchNullAttributes.end(); it++ )
-    f.changeAttribute( *it, QVariant( QString::null ) );
+  // remove all attributes that will disappear
+  const QgsAttributeMap &map = f.attributeMap();
+  for ( QgsAttributeMap::const_iterator it = map.begin(); it != map.end(); it++ )
+    if ( !mUpdatedFields.contains( it.key() ) )
+      f.deleteAttribute( it.key() );
+
+  // null/add all attributes that were added, but don't exist in the feature yet
+  for ( QgsFieldMap::const_iterator it = mUpdatedFields.begin(); it != mUpdatedFields.end(); it++ )
+    if ( !map.contains( it.key() ) )
+      f.changeAttribute( it.key(), QVariant( QString::null ) );
 }
 
 void QgsVectorLayer::updateFeatureGeometry( QgsFeature &f )
@@ -1155,28 +1208,22 @@ void QgsVectorLayer::select( QgsAttributeList attributes, QgsRectangle rect, boo
   if ( mEditable )
   {
     mFetchAddedFeaturesIt = mAddedFeatures.begin();
-    if ( mFetchGeometry )
-      mFetchChangedGeomIt = mChangedGeometries.begin();
+    mFetchChangedGeomIt = mChangedGeometries.begin();
   }
 
   //look in the normal features of the provider
   if ( mFetchAttributes.size() > 0 )
   {
-    mFetchNullAttributes.clear();
-
     if ( mEditable )
     {
       // fetch only available field from provider
       QgsAttributeList provAttributes;
       for ( QgsAttributeList::iterator it = mFetchAttributes.begin(); it != mFetchAttributes.end(); it++ )
       {
-        if ( !mUpdatedFields.contains( *it ) )
+        if ( !mUpdatedFields.contains( *it ) || mAddedAttributeIds.contains( *it ) )
           continue;
 
-        if ( !mDeletedAttributeIds.contains( *it ) && !mAddedAttributeIds.contains( *it ) )
-          provAttributes << *it;
-        else
-          mFetchNullAttributes << *it;
+        provAttributes << *it;
       }
 
       mDataProvider->select( provAttributes, rect, fetchGeometries, useIntersect );
@@ -1348,6 +1395,7 @@ bool QgsVectorLayer::featureAtId( int featureId, QgsFeature& f, bool fetchGeomet
       }
       updateFeatureAttributes( f );
     }
+    return true;
   }
 
   //added features
@@ -1610,7 +1658,7 @@ int QgsVectorLayer::addIsland( const QList<QgsPoint>& ring )
     }
   }
 
-  //else, if must be contained in mCachedGeometries
+  //is the feature contained in the view extent (mCachedGeometries) ?
   QgsGeometryMap::iterator cachedIt = mCachedGeometries.find( selectedFeatureId );
   if ( cachedIt != mCachedGeometries.end() )
   {
@@ -1621,6 +1669,23 @@ int QgsVectorLayer::addIsland( const QList<QgsPoint>& ring )
       setModified( true, true );
     }
     return errorCode;
+  }
+  else //maybe the selected feature has been moved outside the visible area and therefore is not contained in mCachedGeometries
+  {
+    QgsFeature f;
+    QgsGeometry* fGeom = 0;
+    if(featureAtId( selectedFeatureId, f, true, false ))
+    {
+      fGeom = f.geometryAndOwnership();
+      if(fGeom)
+      {
+        int errorCode = fGeom->addIsland(ring);
+        mChangedGeometries.insert( selectedFeatureId, *fGeom);
+        setModified( true, true );
+        delete fGeom;
+        return errorCode;
+      }
+    }
   }
 
   return 6; //geometry not found
@@ -1706,7 +1771,7 @@ int QgsVectorLayer::splitFeatures( const QList<QgsPoint>& splitLine, bool topolo
       }
     }
 
-    select( QgsAttributeList(), bBox, true, true );
+    select( pendingAllAttributesList(), bBox, true, true );
 
     QgsFeature f;
     while ( nextFeature( f ) )
@@ -1961,12 +2026,17 @@ QgsLabel * QgsVectorLayer::label()
   return mLabel;
 }
 
+const QgsLabel *QgsVectorLayer::label() const
+{
+  return mLabel;
+}
+
 void QgsVectorLayer::enableLabels( bool on )
 {
   mLabelOn = on;
 }
 
-bool QgsVectorLayer::hasLabelsEnabled( void )
+bool QgsVectorLayer::hasLabelsEnabled( void ) const
 {
   return mLabelOn;
 }
@@ -1978,7 +2048,8 @@ bool QgsVectorLayer::startEditing()
     return false;
   }
 
-  if ( !( mDataProvider->capabilities() & QgsVectorDataProvider::AddFeatures ) )
+  // allow editing if provider supports any of the capabilities
+  if ( !( mDataProvider->capabilities() & QgsVectorDataProvider::EditingCapabilities ) )
   {
     return false;
   }
@@ -2007,9 +2078,6 @@ bool QgsVectorLayer::startEditing()
 bool QgsVectorLayer::readXml( QDomNode & layer_node )
 {
   QgsDebugMsg( QString( "Datasource in QgsVectorLayer::readXml: " ) + mDataSource.toLocal8Bit().data() );
-
-  // process the attribute actions
-  mActions->readXML( layer_node );
 
   //process provider key
   QDomNode pkeyNode = layer_node.namedItem( "provider" );
@@ -2051,86 +2119,12 @@ bool QgsVectorLayer::readXml( QDomNode & layer_node )
     mDataProvider->setEncoding( encodingNode.toElement().text() );
   }
 
-  // get and set the display field if it exists.
-  QDomNode displayFieldNode = layer_node.namedItem( "displayfield" );
-  if ( !displayFieldNode.isNull() )
-  {
-    QDomElement e = displayFieldNode.toElement();
-    setDisplayField( e.text() );
-  }
-
-  // use scale dependent visibility flag
-  QDomElement e = layer_node.toElement();
-  label()->setScaleBasedVisibility( e.attribute( "scaleBasedLabelVisibilityFlag", "0") == "1" );
-  label()->setMinScale( e.attribute( "minLabelScale", "1" ).toFloat() );
-  label()->setMaxScale( e.attribute( "maxLabelScale", "100000000" ).toFloat() );
-
-  QDomNode editTypesNode = layer_node.namedItem( "edittypes" );
-  if ( !editTypesNode.isNull() )
-  {
-    QDomNodeList editTypeNodes = editTypesNode.childNodes();
-
-    for ( int i = 0; i < editTypeNodes.size(); i++ )
-    {
-      QDomNode editTypeNode = editTypeNodes.at( i );
-      QDomElement editTypeElement = editTypeNode.toElement();
-
-      QString name = editTypeElement.attribute( "name" );
-
-      EditType editType = ( EditType ) editTypeElement.attribute( "type" ).toInt();
-      mEditTypes.insert( name, editType );
-
-      if ( editType == ValueMap && editTypeNode.hasChildNodes() )
-      {
-        mValueMaps.insert( name, QMap<QString, QVariant>() );
-
-        QDomNodeList valueMapNodes = editTypeNode.childNodes();
-        for ( int j = 0; j < valueMapNodes.size(); j++ )
-        {
-          QDomElement value = valueMapNodes.at( j ).toElement();
-          mValueMaps[ name ].insert( value.attribute( "key" ), value.attribute( "value" ) );
-        }
-      }
-      else if ( editType == EditRange || editType == SliderRange )
-      {
-        QVariant min = editTypeElement.attribute( "min" );
-        QVariant max = editTypeElement.attribute( "max" );
-        QVariant step = editTypeElement.attribute( "step" );
-
-        mRanges[ name ] = RangeData( min, max, step );
-      }
-    }
-  }
-
   QString errorMsg;
   if ( !readSymbology( layer_node, errorMsg ) )
   {
     return false;
   }
 
-  // Test if labeling is on or off
-  QDomNode labelnode = layer_node.namedItem( "label" );
-  QDomElement element = labelnode.toElement();
-  int hasLabelsEnabled = element.text().toInt();
-  if ( hasLabelsEnabled < 1 )
-  {
-    enableLabels( false );
-  }
-  else
-  {
-    enableLabels( true );
-  }
-
-  QgsDebugMsg( "Testing if qgsvectorlayer can call label readXML routine" );
-
-
-  QDomNode labelattributesnode = layer_node.namedItem( "labelattributes" );
-
-  if ( !labelattributesnode.isNull() )
-  {
-    QgsDebugMsg( "qgsvectorlayer calling label readXML routine" );
-    mLabel->readXML( labelattributesnode );
-  }
 
   return mValid;               // should be true if read successfully
 
@@ -2239,105 +2233,13 @@ bool QgsVectorLayer::writeXml( QDomNode & layer_node,
   mapLayerNode.setAttribute( "type", "vector" );
 
   // set the geometry type
-  mapLayerNode.setAttribute( "geometry", QGis::qgisVectorGeometryType[type()] );
-
-  // use scale dependent visibility flag
-  mapLayerNode.setAttribute( "scaleBasedLabelVisibilityFlag", label()->scaleBasedVisibility() ? 1 : 0 );
-  mapLayerNode.setAttribute( "minLabelScale", label()->minScale() );
-  mapLayerNode.setAttribute( "maxLabelScale", label()->maxScale() );
+  mapLayerNode.setAttribute( "geometry", QGis::qgisVectorGeometryType[geometryType()] );
 
   // add provider node
-
   QDomElement provider  = document.createElement( "provider" );
   QDomText providerText = document.createTextNode( providerType() );
   provider.appendChild( providerText );
   layer_node.appendChild( provider );
-
-  //provider encoding
-  QDomElement encoding = document.createElement( "encoding" );
-  QDomText encodingText = document.createTextNode( mDataProvider->encoding() );
-  encoding.appendChild( encodingText );
-  layer_node.appendChild( encoding );
-
-  //classification field(s)
-  QgsAttributeList attributes = mRenderer->classificationAttributes();
-  const QgsFieldMap providerFields = mDataProvider->fields();
-  for ( QgsAttributeList::const_iterator it = attributes.begin(); it != attributes.end(); ++it )
-  {
-    QDomElement classificationElement = document.createElement( "classificationattribute" );
-    QDomText classificationText = document.createTextNode( providerFields[*it].name() );
-    classificationElement.appendChild( classificationText );
-    layer_node.appendChild( classificationElement );
-  }
-
-  if ( mEditTypes.size() > 0 )
-  {
-    QDomElement editTypesElement = document.createElement( "edittypes" );
-
-    for ( QMap<QString, EditType>::const_iterator it = mEditTypes.begin(); it != mEditTypes.end(); ++it )
-    {
-      QDomElement editTypeElement = document.createElement( "edittype" );
-      editTypeElement.setAttribute( "name", it.key() );
-      editTypeElement.setAttribute( "type", it.value() );
-
-      if ( it.value() == ValueMap )
-      {
-        if ( mValueMaps.contains( it.key() ) )
-        {
-          const QMap<QString, QVariant> &map = mValueMaps[ it.key()];
-
-          for ( QMap<QString, QVariant>::const_iterator vmit = map.begin(); vmit != map.end(); vmit++ )
-          {
-            QDomElement value = document.createElement( "valuepair" );
-            value.setAttribute( "key", vmit.key() );
-            value.setAttribute( "value", vmit.value().toString() );
-            editTypeElement.appendChild( value );
-          }
-        }
-      }
-      else if ( it.value() == EditRange || it.value() == SliderRange )
-      {
-        if ( mRanges.contains( it.key() ) )
-        {
-          editTypeElement.setAttribute( "min", mRanges[ it.key()].mMin.toString() );
-          editTypeElement.setAttribute( "max", mRanges[ it.key()].mMax.toString() );
-          editTypeElement.setAttribute( "step", mRanges[ it.key()].mStep.toString() );
-        }
-      }
-
-      editTypesElement.appendChild( editTypeElement );
-    }
-
-    layer_node.appendChild( editTypesElement );
-  }
-
-  // add the display field
-
-  QDomElement dField  = document.createElement( "displayfield" );
-  QDomText dFieldText = document.createTextNode( displayField() );
-  dField.appendChild( dFieldText );
-  layer_node.appendChild( dField );
-
-  // add label node
-
-  QDomElement label  = document.createElement( "label" );
-  QDomText labelText = document.createTextNode( "" );
-
-  if ( hasLabelsEnabled() )
-  {
-    labelText.setData( "1" );
-  }
-  else
-  {
-    labelText.setData( "0" );
-  }
-  label.appendChild( labelText );
-
-  layer_node.appendChild( label );
-
-  // add attribute actions
-
-  mActions->writeXML( layer_node, document );
 
   // renderer specific settings
 
@@ -2347,43 +2249,67 @@ bool QgsVectorLayer::writeXml( QDomNode & layer_node,
     return false;
   }
 
-  // Now we get to do all that all over again for QgsLabel
-
-  // XXX Since this is largely a cut-n-paste from the previous, this
-  // XXX therefore becomes a candidate to be generalized into a separate
-  // XXX function.  I think.
-
-  QgsLabel * myLabel = this->label();
-
-  if ( myLabel )
-  {
-    QString fieldname = myLabel->labelField( QgsLabel::Text );
-    if ( fieldname != "" )
-    {
-      dField  = document.createElement( "labelfield" );
-      dFieldText = document.createTextNode( fieldname );
-      dField.appendChild( dFieldText );
-      layer_node.appendChild( dField );
-    }
-
-    myLabel->writeXML( layer_node, document );
-  }
-
-  //save vector overlays (e.g. diagrams)
-  QList<QgsVectorOverlay*>::const_iterator overlay_it = mOverlays.constBegin();
-  for(; overlay_it != mOverlays.constEnd(); ++overlay_it)
-  {
-    if(*overlay_it)
-    {
-      (*overlay_it)->writeXML(layer_node, document);
-    }
-  }
 
   return true;
 } // bool QgsVectorLayer::writeXml
 
 bool QgsVectorLayer::readSymbology( const QDomNode& node, QString& errorMessage )
 {
+  // process the attribute actions
+  mActions->readXML( node );
+
+  // get and set the display field if it exists.
+  QDomNode displayFieldNode = node.namedItem( "displayfield" );
+  if ( !displayFieldNode.isNull() )
+  {
+    QDomElement e = displayFieldNode.toElement();
+    setDisplayField( e.text() );
+  }
+
+  // use scale dependent visibility flag
+  QDomElement e = node.toElement();
+  label()->setScaleBasedVisibility( e.attribute( "scaleBasedLabelVisibilityFlag", "0" ) == "1" );
+  label()->setMinScale( e.attribute( "minLabelScale", "1" ).toFloat() );
+  label()->setMaxScale( e.attribute( "maxLabelScale", "100000000" ).toFloat() );
+
+  mEditTypes.clear();
+  QDomNode editTypesNode = node.namedItem( "edittypes" );
+  if ( !editTypesNode.isNull() )
+  {
+    QDomNodeList editTypeNodes = editTypesNode.childNodes();
+
+    for ( int i = 0; i < editTypeNodes.size(); i++ )
+    {
+      QDomNode editTypeNode = editTypeNodes.at( i );
+      QDomElement editTypeElement = editTypeNode.toElement();
+
+      QString name = editTypeElement.attribute( "name" );
+
+      EditType editType = ( EditType ) editTypeElement.attribute( "type" ).toInt();
+      mEditTypes.insert( name, editType );
+
+      if ( editType == ValueMap && editTypeNode.hasChildNodes() )
+      {
+        mValueMaps.insert( name, QMap<QString, QVariant>() );
+
+        QDomNodeList valueMapNodes = editTypeNode.childNodes();
+        for ( int j = 0; j < valueMapNodes.size(); j++ )
+        {
+          QDomElement value = valueMapNodes.at( j ).toElement();
+          mValueMaps[ name ].insert( value.attribute( "key" ), value.attribute( "value" ) );
+        }
+      }
+      else if ( editType == EditRange || editType == SliderRange )
+      {
+        QVariant min = editTypeElement.attribute( "min" );
+        QVariant max = editTypeElement.attribute( "max" );
+        QVariant step = editTypeElement.attribute( "step" );
+
+        mRanges[ name ] = RangeData( min, max, step );
+      }
+    }
+  }
+
   // create and bind a renderer to this layer
 
   QDomNode singlenode = node.namedItem( "singlesymbol" );
@@ -2417,6 +2343,7 @@ bool QgsVectorLayer::readSymbology( const QDomNode& node, QString& errorMessage 
 
   if ( !renderer )
   {
+    errorMessage = tr( "Unknown renderer" );
     return false;
   }
 
@@ -2430,24 +2357,164 @@ bool QgsVectorLayer::readSymbology( const QDomNode& node, QString& errorMessage 
   }
 
   mRenderer = renderer;
+
+  // Test if labeling is on or off
+  QDomNode labelnode = node.namedItem( "label" );
+  QDomElement element = labelnode.toElement();
+  int hasLabelsEnabled = element.text().toInt();
+  if ( hasLabelsEnabled < 1 )
+  {
+    enableLabels( false );
+  }
+  else
+  {
+    enableLabels( true );
+  }
+
+  QDomNode labelattributesnode = node.namedItem( "labelattributes" );
+
+  if ( !labelattributesnode.isNull() )
+  {
+    QgsDebugMsg( "qgsvectorlayer calling label readXML routine" );
+    mLabel->readXML( labelattributesnode );
+  }
+
   return true;
 }
 
 bool QgsVectorLayer::writeSymbology( QDomNode& node, QDomDocument& doc, QString& errorMessage ) const
 {
+  // use scale dependent visibility flag
+  QDomElement mapLayerNode = node.toElement();
+  mapLayerNode.setAttribute( "scaleBasedLabelVisibilityFlag", label()->scaleBasedVisibility() ? 1 : 0 );
+  mapLayerNode.setAttribute( "minLabelScale", label()->minScale() );
+  mapLayerNode.setAttribute( "maxLabelScale", label()->maxScale() );
+
+  //classification field(s)
+  QgsAttributeList attributes = mRenderer->classificationAttributes();
+  const QgsFieldMap providerFields = mDataProvider->fields();
+  for ( QgsAttributeList::const_iterator it = attributes.begin(); it != attributes.end(); ++it )
+  {
+    QDomElement classificationElement = doc.createElement( "classificationattribute" );
+    QDomText classificationText = doc.createTextNode( providerFields[*it].name() );
+    classificationElement.appendChild( classificationText );
+    node.appendChild( classificationElement );
+  }
+
+  if ( mEditTypes.size() > 0 )
+  {
+    QDomElement editTypesElement = doc.createElement( "edittypes" );
+
+    for ( QMap<QString, EditType>::const_iterator it = mEditTypes.begin(); it != mEditTypes.end(); ++it )
+    {
+      QDomElement editTypeElement = doc.createElement( "edittype" );
+      editTypeElement.setAttribute( "name", it.key() );
+      editTypeElement.setAttribute( "type", it.value() );
+
+      if ( it.value() == ValueMap )
+      {
+        if ( mValueMaps.contains( it.key() ) )
+        {
+          const QMap<QString, QVariant> &map = mValueMaps[ it.key()];
+
+          for ( QMap<QString, QVariant>::const_iterator vmit = map.begin(); vmit != map.end(); vmit++ )
+          {
+            QDomElement value = doc.createElement( "valuepair" );
+            value.setAttribute( "key", vmit.key() );
+            value.setAttribute( "value", vmit.value().toString() );
+            editTypeElement.appendChild( value );
+          }
+        }
+      }
+      else if ( it.value() == EditRange || it.value() == SliderRange )
+      {
+        if ( mRanges.contains( it.key() ) )
+        {
+          editTypeElement.setAttribute( "min", mRanges[ it.key()].mMin.toString() );
+          editTypeElement.setAttribute( "max", mRanges[ it.key()].mMax.toString() );
+          editTypeElement.setAttribute( "step", mRanges[ it.key()].mStep.toString() );
+        }
+      }
+
+      editTypesElement.appendChild( editTypeElement );
+    }
+
+    node.appendChild( editTypesElement );
+  }
+
+  // add the display field
+  QDomElement dField  = doc.createElement( "displayfield" );
+  QDomText dFieldText = doc.createTextNode( displayField() );
+  dField.appendChild( dFieldText );
+  node.appendChild( dField );
+
+  // add label node
+  QDomElement label  = doc.createElement( "label" );
+  QDomText labelText = doc.createTextNode( "" );
+
+  if ( hasLabelsEnabled() )
+  {
+    labelText.setData( "1" );
+  }
+  else
+  {
+    labelText.setData( "0" );
+  }
+  label.appendChild( labelText );
+
+  node.appendChild( label );
+
+  // add attribute actions
+  mActions->writeXML( node, doc );
+
   const QgsRenderer * myRenderer = renderer();
   if ( myRenderer )
   {
     if ( !myRenderer->writeXML( node, doc, *this ) )
     {
+      errorMessage = "renderer failed to save";
       return false;
     }
   }
   else
   {
-    QgsDebugMsg( QString( "%1:%2 no renderer" ).arg( __FILE__ ).arg( __LINE__ ) );
+    QgsDebugMsg( "no renderer" );
+    errorMessage = "no renderer";
     return false;
   }
+
+  // Now we get to do all that all over again for QgsLabel
+
+  // XXX Since this is largely a cut-n-paste from the previous, this
+  // XXX therefore becomes a candidate to be generalized into a separate
+  // XXX function.  I think.
+
+  const QgsLabel *myLabel = this->label();
+
+  if ( myLabel )
+  {
+    QString fieldname = myLabel->labelField( QgsLabel::Text );
+    if ( fieldname != "" )
+    {
+      dField  = doc.createElement( "labelfield" );
+      dFieldText = doc.createTextNode( fieldname );
+      dField.appendChild( dFieldText );
+      node.appendChild( dField );
+    }
+
+    myLabel->writeXML( node, doc );
+  }
+
+  //save vector overlays (e.g. diagrams)
+  QList<QgsVectorOverlay*>::const_iterator overlay_it = mOverlays.constBegin();
+  for(; overlay_it != mOverlays.constEnd(); ++overlay_it)
+  {
+    if(*overlay_it)
+    {
+      (*overlay_it)->writeXML(mapLayerNode, doc);
+    }
+  }
+
   return true;
 }
 
@@ -2526,6 +2593,7 @@ bool QgsVectorLayer::deleteAttribute( int index )
     return false;
 
   mDeletedAttributeIds.insert( index );
+  mUpdatedFields.remove( index );
 
   setModified( true, false );
 
@@ -2552,7 +2620,7 @@ bool QgsVectorLayer::deleteFeature( int fid )
   return true;
 }
 
-const QgsFieldMap &QgsVectorLayer::pendingFields()
+const QgsFieldMap &QgsVectorLayer::pendingFields() const
 {
   return isEditable() ? mUpdatedFields : mDataProvider->fields();
 }
@@ -2590,9 +2658,27 @@ bool QgsVectorLayer::commitChanges()
   int cap = mDataProvider->capabilities();
 
   //
-  // add attributes
+  // delete attributes
   //
   bool attributesChanged = false;
+  if ( mDeletedAttributeIds.size() > 0 )
+  {
+    if (( cap & QgsVectorDataProvider::DeleteAttributes ) && mDataProvider->deleteAttributes( mDeletedAttributeIds ) )
+    {
+      mCommitErrors << tr( "SUCCESS: %n attribute(s) deleted.", "deleted attributes count", mDeletedAttributeIds.size() );
+      mDeletedAttributeIds.clear();
+      attributesChanged = true;
+    }
+    else
+    {
+      mCommitErrors << tr( "ERROR: %n attribute(s) not deleted.", "not deleted attributes count", mDeletedAttributeIds.size() );
+      success = false;
+    }
+  }
+
+  //
+  // add attributes
+  //
   if ( mAddedAttributeIds.size() > 0 )
   {
     QgsNewAttributesMap addedAttributes;
@@ -2601,31 +2687,13 @@ bool QgsVectorLayer::commitChanges()
 
     if (( cap & QgsVectorDataProvider::AddAttributes ) && mDataProvider->addAttributes( addedAttributes ) )
     {
-      mCommitErrors << tr( "SUCCESS: %1 attributes added." ).arg( mAddedAttributeIds.size() );
+      mCommitErrors << tr( "SUCCESS: %n attribute(s) added.", "added attributes count", mAddedAttributeIds.size() );
       mAddedAttributeIds.clear();
       attributesChanged = true;
     }
     else
     {
-      mCommitErrors << tr( "ERROR: %1 new attributes not added" ).arg( mAddedAttributeIds.size() );
-      success = false;
-    }
-  }
-
-  //
-  // delete attributes
-  //
-  if ( mDeletedAttributeIds.size() > 0 )
-  {
-    if (( cap & QgsVectorDataProvider::DeleteAttributes ) && mDataProvider->deleteAttributes( mDeletedAttributeIds ) )
-    {
-      mCommitErrors << tr( "SUCCESS: %1 attributes deleted." ).arg( mDeletedAttributeIds.size() );
-      mDeletedAttributeIds.clear();
-      attributesChanged = true;
-    }
-    else
-    {
-      mCommitErrors << tr( "ERROR: %1 attributes not deleted." ).arg( mDeletedAttributeIds.size() );
+      mCommitErrors << tr( "ERROR: %n new attribute(s) not added", "not added attributes count", mAddedAttributeIds.size() );
       success = false;
     }
   }
@@ -2732,12 +2800,12 @@ bool QgsVectorLayer::commitChanges()
     {
       if (( cap & QgsVectorDataProvider::ChangeAttributeValues ) && mDataProvider->changeAttributeValues( mChangedAttributeValues ) )
       {
-        mCommitErrors << tr( "SUCCESS: %1 attribute values changed." ).arg( mChangedAttributeValues.size() );
+        mCommitErrors << tr( "SUCCESS: %n attribute value(s) changed.", "changed attribute values count", mChangedAttributeValues.size() );
         mChangedAttributeValues.clear();
       }
       else
       {
-        mCommitErrors << tr( "ERROR: %1 attribute value changes not applied." ).arg( mChangedAttributeValues.size() );
+        mCommitErrors << tr( "ERROR: %n attribute value change(s) not applied.", "not changed attribute values count", mChangedAttributeValues.size() );
         success = false;
       }
     }
@@ -2769,12 +2837,12 @@ bool QgsVectorLayer::commitChanges()
 
       if (( cap & QgsVectorDataProvider::AddFeatures ) && mDataProvider->addFeatures( mAddedFeatures ) )
       {
-        mCommitErrors << tr( "SUCCESS: %1 features added." ).arg( mAddedFeatures.size() );
+        mCommitErrors << tr( "SUCCESS: %n feature(s) added.", "added features count", mAddedFeatures.size() );
         mAddedFeatures.clear();
       }
       else
       {
-        mCommitErrors << tr( "ERROR: %1 features not added." ).arg( mAddedFeatures.size() );
+        mCommitErrors << tr( "ERROR: %n feature(s) not added.", "not added features count", mAddedFeatures.size() );
         success = false;
       }
     }
@@ -2787,12 +2855,12 @@ bool QgsVectorLayer::commitChanges()
   {
     if (( cap & QgsVectorDataProvider::ChangeGeometries ) && mDataProvider->changeGeometryValues( mChangedGeometries ) )
     {
-      mCommitErrors << tr( "SUCCESS: %1 geometries were changed." ).arg( mChangedGeometries.size() );
+      mCommitErrors << tr( "SUCCESS: %n geometries were changed.", "changed geometries count", mChangedGeometries.size() );
       mChangedGeometries.clear();
     }
     else
     {
-      mCommitErrors << tr( "ERROR: %1 geometries not changed." ).arg( mChangedGeometries.size() );
+      mCommitErrors << tr( "ERROR: %n geometries not changed.", "not changed geometries count", mChangedGeometries.size() );
       success = false;
     }
   }
@@ -2804,7 +2872,7 @@ bool QgsVectorLayer::commitChanges()
   {
     if (( cap & QgsVectorDataProvider::DeleteFeatures ) && mDataProvider->deleteFeatures( mDeletedFeatureIds ) )
     {
-      mCommitErrors << tr( "SUCCESS: %1 features deleted." ).arg( mDeletedFeatureIds.size() );
+      mCommitErrors << tr( "SUCCESS: %n feature(s) deleted.", "deleted features count", mDeletedFeatureIds.size() );
       for ( QgsFeatureIds::const_iterator it = mDeletedFeatureIds.begin(); it != mDeletedFeatureIds.end(); it++ )
       {
         mChangedAttributeValues.remove( *it );
@@ -2814,7 +2882,7 @@ bool QgsVectorLayer::commitChanges()
     }
     else
     {
-      mCommitErrors << tr( "ERROR: %1 features not deleted." ).arg( mDeletedFeatureIds.size() );
+      mCommitErrors << tr( "ERROR: %n feature(s) not deleted.", "not deleted features count", mDeletedFeatureIds.size() );
       success = false;
     }
   }
@@ -3106,14 +3174,35 @@ int QgsVectorLayer::snapWithContext( const QgsPoint& startPoint, double snapping
                            startPoint.x() + snappingTolerance, startPoint.y() + snappingTolerance );
   double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
 
-  select( QgsAttributeList(), searchRect, true, true );
-
   int n = 0;
   QgsFeature f;
-  while ( nextFeature( f ) )
+
+  if ( mCachedGeometriesRect.contains( searchRect ) )
   {
-    snapToGeometry( startPoint, f.id(), f.geometry(), sqrSnappingTolerance, snappingResults, snap_to );
-    ++n;
+    QgsDebugMsg( "Using cached geometries for snapping." );
+
+    QgsGeometryMap::iterator it = mCachedGeometries.begin();
+    for ( ; it != mCachedGeometries.end() ; ++it )
+    {
+      QgsGeometry* g = &( it.value() );
+      if ( g->boundingBox().intersects( searchRect ) )
+      {
+        snapToGeometry( startPoint, it.key(), g, sqrSnappingTolerance, snappingResults, snap_to );
+        ++n;
+      }
+    }
+  }
+  else
+  {
+    // snapping outside cached area
+
+    select( QgsAttributeList(), searchRect, true, true );
+
+    while ( nextFeature( f ) )
+    {
+      snapToGeometry( startPoint, f.id(), f.geometry(), sqrSnappingTolerance, snappingResults, snap_to );
+      ++n;
+    }
   }
 
   return n == 0 ? 2 : 0;
@@ -3242,9 +3331,13 @@ QgsVectorLayer::VertexMarkerType QgsVectorLayer::currentVertexMarkerType()
   {
     return QgsVectorLayer::Cross;
   }
-  else
+  else if ( markerTypeString == "SemiTransparentCircle" )
   {
     return QgsVectorLayer::SemiTransparentCircle;
+  }
+  else
+  {
+    return QgsVectorLayer::NoMarker;
   }
 }
 

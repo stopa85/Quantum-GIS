@@ -9,7 +9,7 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 /* $Id$ */
-#include "qgsprojectionselector.h"
+#include <qgsprojectionselector.h>
 
 //standard includes
 #include <cassert>
@@ -28,6 +28,7 @@
 #include <QHeaderView>
 #include <QResizeEvent>
 #include <QMessageBox>
+#include <QSettings>
 #include "qgslogger.h"
 
 const int NAME_COLUMN = 0;
@@ -41,8 +42,8 @@ QgsProjectionSelector::QgsProjectionSelector( QWidget* parent,
     mProjListDone( FALSE ),
     mUserProjListDone( FALSE ),
     mCRSNameSelectionPending( FALSE ),
-    mCRSIDSelectionPending( FALSE )
-
+    mCRSIDSelectionPending( FALSE ),
+    mEPSGIDSelectionPending( FALSE )
 {
   setupUi( this );
   connect( lstCoordinateSystems, SIGNAL( currentItemChanged( QTreeWidgetItem*, QTreeWidgetItem* ) ),
@@ -54,11 +55,35 @@ QgsProjectionSelector::QgsProjectionSelector( QWidget* parent,
   lstCoordinateSystems->header()->setResizeMode( EPSG_COLUMN, QHeaderView::Stretch );
   lstCoordinateSystems->header()->resizeSection( QGIS_CRS_ID_COLUMN, 0 );
   lstCoordinateSystems->header()->setResizeMode( QGIS_CRS_ID_COLUMN, QHeaderView::Fixed );
+
+  // Read settings from persistent storage
+  QSettings settings;
+  mRecentProjections = settings.value("/UI/recentProjections").toStringList();
+ 
 }
 
 
 QgsProjectionSelector::~QgsProjectionSelector()
-{}
+{
+  // Save persistent list of projects
+  QSettings settings;
+  long crsId;
+
+  // Push current projection to front, only if set
+  crsId = selectedCrsId();
+  if ( crsId )
+  {
+    mRecentProjections.removeAll( QString::number( crsId ) );
+    mRecentProjections.prepend( QString::number( crsId ) );
+    // Prunse size of list
+    while ( mRecentProjections.size() > 4 )
+    {
+      mRecentProjections.removeLast();
+    }
+    // Save to file
+    settings.setValue( "/UI/recentProjections", mRecentProjections);
+  }
+}
 
 
 void QgsProjectionSelector::resizeEvent( QResizeEvent * theEvent )
@@ -93,6 +118,44 @@ void QgsProjectionSelector::showEvent( QShowEvent * theEvent )
   if ( mCRSIDSelectionPending )
   {
     applyCRSIDSelection();
+  }
+  if ( mEPSGIDSelectionPending )
+  {
+    applyEPSGIDSelection();
+  }
+
+  // Update buttons
+  pbnPopular1->setDisabled(true);
+  pbnPopular2->setDisabled(true);
+  pbnPopular3->setDisabled(true);
+  pbnPopular4->setDisabled(true);
+  pbnPopular1->hide();
+  pbnPopular2->hide();
+  pbnPopular3->hide();
+  pbnPopular4->hide();
+
+  if ( mRecentProjections.size() > 0) {
+    pbnPopular1->setText( getCrsIdName( mRecentProjections.at(0).toLong() ) );
+    pbnPopular1->setDisabled(false);
+    pbnPopular1->show();
+  }
+
+  if ( mRecentProjections.size() > 1) {
+    pbnPopular2->setText( getCrsIdName( mRecentProjections.at(1).toLong() ) );
+    pbnPopular2->setDisabled(false);
+    pbnPopular2->show();
+  }
+
+  if ( mRecentProjections.size() > 2) {
+    pbnPopular3->setText( getCrsIdName( mRecentProjections.at(2).toLong() ) );
+    pbnPopular3->setDisabled(false);
+    pbnPopular3->show();
+  }
+
+  if ( mRecentProjections.size() > 3) {
+    pbnPopular4->setText( getCrsIdName( mRecentProjections.at(3).toLong() ) );
+    pbnPopular4->setDisabled(false);
+    pbnPopular4->show();
   }
 
   // Pass up the inheritance heirarchy
@@ -132,7 +195,7 @@ QString QgsProjectionSelector::ogcWmsCrsFilterAsSqlExpression( QSet<QString> * c
   {
     QStringList parts = i->split( ":" );
 
-    if ( parts.at( 0 ) == "EPSG" && parts.size()>=2 )
+    if ( parts.at( 0 ) == "EPSG" && parts.size() >= 2 )
     {
       epsgParts.push_back( parts.at( 1 ) );
     }
@@ -168,6 +231,7 @@ void QgsProjectionSelector::setSelectedCrsName( QString theCRSName )
   mCRSNameSelection = theCRSName;
   mCRSNameSelectionPending = TRUE;
   mCRSIDSelectionPending = FALSE;  // only one type can be pending at a time
+  mEPSGIDSelectionPending = TRUE;
 
   if ( isVisible() )
   {
@@ -184,6 +248,7 @@ void QgsProjectionSelector::setSelectedCrsId( long theCRSID )
   mCRSIDSelection = theCRSID;
   mCRSIDSelectionPending = TRUE;
   mCRSNameSelectionPending = FALSE;  // only one type can be pending at a time
+  mEPSGIDSelectionPending = FALSE;
 
   if ( isVisible() )
   {
@@ -196,7 +261,10 @@ void QgsProjectionSelector::setSelectedCrsId( long theCRSID )
 
 void QgsProjectionSelector::setSelectedEpsg( long epsg )
 {
-  //QgsSpatial
+  mEPSGIDSelection = epsg;
+  mCRSIDSelectionPending = FALSE;
+  mEPSGIDSelectionPending = TRUE;
+  mCRSNameSelectionPending = FALSE;  // only one type can be pending at a time
 }
 
 void QgsProjectionSelector::applyCRSNameSelection()
@@ -223,6 +291,58 @@ void QgsProjectionSelector::applyCRSNameSelection()
     }
 
     mCRSNameSelectionPending = FALSE;
+  }
+}
+
+QString QgsProjectionSelector::getCrsIdName( long theCrsId )
+{
+  QString retvalue("");
+  if (
+    ( mProjListDone ) &&
+    ( mUserProjListDone )
+  )
+  {
+    QString myCRSIDString = QString::number( theCrsId );
+
+    QList<QTreeWidgetItem*> nodes = lstCoordinateSystems->findItems( myCRSIDString, Qt::MatchExactly | Qt::MatchRecursive, QGIS_CRS_ID_COLUMN );
+
+    if ( nodes.count() > 0 )
+    {
+      retvalue = nodes.first()->text(NAME_COLUMN);
+      if (nodes.first()->text(EPSG_COLUMN) != "" )
+      {
+        retvalue += QString(" (EPSG : %1)").arg(nodes.first()->text(EPSG_COLUMN));
+      }
+    }
+  }
+  return retvalue;
+
+}
+
+void QgsProjectionSelector::applyEPSGIDSelection()
+{
+  if (
+    ( mEPSGIDSelectionPending ) &&
+    ( mProjListDone ) &&
+    ( mUserProjListDone )
+  )
+  {
+    //get the srid given the wkt so we can pick the correct list item
+    QgsDebugMsg( "called with " + QString::number( mEPSGIDSelection ) );
+    QList<QTreeWidgetItem*> nodes = lstCoordinateSystems->findItems( QString::number( mEPSGIDSelection ), Qt::MatchExactly | Qt::MatchRecursive, EPSG_COLUMN );
+
+    if ( nodes.count() > 0 )
+    {
+      lstCoordinateSystems->setCurrentItem( nodes.first() );
+      lstCoordinateSystems->scrollToItem( nodes.first() );
+    }
+    else // unselect the selected item to avoid confusing the user
+    {
+      lstCoordinateSystems->clearSelection();
+      teProjection->setText( "" );
+    }
+
+    mEPSGIDSelectionPending = FALSE;
   }
 }
 
@@ -725,6 +845,24 @@ void QgsProjectionSelector::coordinateSystemSelected( QTreeWidgetItem * theItem 
   }
 }
 
+void QgsProjectionSelector::on_pbnPopular1_clicked()
+{
+      setSelectedCrsId( mRecentProjections.at(0).toLong() );
+}
+
+void QgsProjectionSelector::on_pbnPopular2_clicked()
+{
+      setSelectedCrsId(  mRecentProjections.at(1).toLong() );
+}
+void QgsProjectionSelector::on_pbnPopular3_clicked()
+{
+      setSelectedCrsId(  mRecentProjections.at(2).toLong() );
+}
+void QgsProjectionSelector::on_pbnPopular4_clicked()
+{
+      setSelectedCrsId( mRecentProjections.at(3).toLong() );
+}
+
 void QgsProjectionSelector::on_pbnFind_clicked()
 {
 
@@ -803,8 +941,7 @@ void QgsProjectionSelector::on_pbnFind_clicked()
   myFileInfo.setFile( myDatabaseFileName );
   if ( !myFileInfo.exists( ) ) //its not critical if this happens
   {
-    qDebug( myDatabaseFileName.toUtf8() );
-    qDebug( "User db does not exist" );
+    qDebug( "%s\nUser db does not exist", myDatabaseFileName.toUtf8().constData() );
     return ;
   }
   myResult = sqlite3_open( myDatabaseFileName.toUtf8().data(), &myDatabase );

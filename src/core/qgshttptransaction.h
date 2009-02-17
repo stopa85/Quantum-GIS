@@ -23,6 +23,7 @@
 #define QGSHTTPTRANSACTION_H
 
 #include <QHttp>
+#include <QNetworkProxy>
 #include <QString>
 
 class QTimer;
@@ -46,7 +47,8 @@ class CORE_EXPORT QgsHttpTransaction : public QObject
                         QString proxyHost = QString(),
                         int     proxyPort = 80,
                         QString proxyUser = QString(),
-                        QString proxyPass = QString() );
+                        QString proxyPass = QString(),
+                        QNetworkProxy::ProxyType proxyType = QNetworkProxy::NoProxy );
 
     //! Destructor
     virtual ~QgsHttpTransaction();
@@ -80,6 +82,10 @@ class CORE_EXPORT QgsHttpTransaction : public QObject
      */
     QString errorString();
 
+    /**Apply proxy settings from QSettings to a http object
+    @param return true if proxy settings was applied, false else*/
+    static bool applyProxySettings( QHttp& http, const QString& url );
+
 
   public slots:
 
@@ -99,10 +105,18 @@ class CORE_EXPORT QgsHttpTransaction : public QObject
 
     void networkTimedOut();
 
+    /**Aborts the current transaction*/
+    void abort();
+
   signals:
 
-    /** \brief emit a signal to notify of a progress event */
-    void setProgress( int theProgress, int theTotalSteps );
+    /**legacy code. This signal is currently not emitted and only kept for API compatibility*/
+    void setProgress( int done, int total );
+
+    /**Signal for progress update */
+    void dataReadProgress( int theProgress );
+    /**Signal for adjusted number of steps*/
+    void totalSteps( int theTotalSteps );
 
     /** \brief emit a signal to be caught by qgisapp and display a msg on status bar */
     void statusChanged( QString theStatusQString );
@@ -148,21 +162,6 @@ class CORE_EXPORT QgsHttpTransaction : public QObject
      * The host being used for this transaction
      */
     QString httphost;
-
-    /**
-     * The port being used for this transaction
-     */
-    int httpport;
-
-    /**
-     * The username being used for this transaction
-     */
-    QString httpuser;
-
-    /**
-     * The password being used for this transaction
-     */
-    QString httppass;
 
     /**
      * If not empty, indicates that the QHttp is a redirect

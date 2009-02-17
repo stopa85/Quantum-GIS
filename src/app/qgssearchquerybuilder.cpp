@@ -162,12 +162,7 @@ void QgsSearchQueryBuilder::on_btnTest_clicked()
   if ( count == -1 )
     return;
 
-  QString str;
-  if ( count )
-    str.sprintf( tr( "Found %d matching features.", "", count ).toUtf8(), count );
-  else
-    str = tr( "No matching features found." );
-  QMessageBox::information( this, tr( "Search results" ), str );
+  QMessageBox::information( this, tr( "Search results" ), tr( "Found %n matching feature(s).", "test result", count ) );
 }
 
 // This method tests the number of records that would be returned

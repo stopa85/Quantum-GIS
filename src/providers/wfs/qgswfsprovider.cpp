@@ -296,10 +296,8 @@ int QgsWFSProvider::getFeatureGET( const QString& uri, const QString& geometryAt
     return 1;
   }
 
-  qWarning( "feature count after request is:" );
-  qWarning( QString::number( mFeatures.size() ).toLocal8Bit().data() );
-  qWarning( "mExtent after request is:" );
-  qWarning( mExtent.toString().toLocal8Bit().data() );
+  qWarning( "feature count after request is: %d", mFeatures.size() );
+  qWarning( "mExtent after request is: %s",  mExtent.toString().toLocal8Bit().data() );
 
   for ( QList<QgsFeature*>::iterator it = mFeatures.begin(); it != mFeatures.end(); ++it )
   {
@@ -1374,7 +1372,7 @@ void QgsWFSProvider::handleWFSProgressMessage( int done, int total )
   {
     totalString = QString::number( total );
   }
-  QString message( tr( "received %1 bytes from %2" ).arg( QString::number( done ) ).arg( totalString ) );
+  QString message( tr( "received %1 bytes from %2" ).arg( done ).arg( totalString ) );
   emit dataReadProgressMessage( message );
 }
 

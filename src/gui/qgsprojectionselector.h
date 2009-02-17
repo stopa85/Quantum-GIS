@@ -11,9 +11,10 @@
 #ifndef QGSCRSSELECTOR_H
 #define QGSCRSSELECTOR_H
 
-#include "ui_qgsprojectionselectorbase.h"
+#include <ui_qgsprojectionselectorbase.h>
 
 #include <QSet>
+#include <QStringList>
 
 class QResizeEvent;
 
@@ -104,6 +105,11 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
 
     void on_pbnFind_clicked();
 
+    void on_pbnPopular1_clicked();
+    void on_pbnPopular2_clicked();
+    void on_pbnPopular3_clicked();
+    void on_pbnPopular4_clicked();
+
   protected:
     /** Used to ensure the projection list view is actually populated */
     void showEvent( QShowEvent * theEvent );
@@ -151,10 +157,22 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
     void applyCRSIDSelection();
 
     /**
-     * \brief gets an arbitrary sqlite3 attribute of type "long" from the selection
+     * \brief does the legwork of applying the EPSG ID Selection
      *
-     * \param attributeName   The sqlite3 column name, typically "srid" or "epsg"
+     * \warning This function does nothing unless getUserList() and getUserProjList()
+     *          Have already been called
+     *
+     * \warning This function only expands the parents of the selection and
+     *          does not scroll the list to the selection if the widget is not visible.
+     *          Therefore you will typically want to use this in a showEvent().
      */
+    void applyEPSGIDSelection();
+
+    /**
+       * \brief gets an arbitrary sqlite3 attribute of type "long" from the selection
+       *
+       * \param attributeName   The sqlite3 column name, typically "srid" or "epsg"
+       */
     long getSelectedLongAttribute( QString attributeName );
 
     /** Show the user a warning if the srs database could not be found */
@@ -177,6 +195,9 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
      */
     long getLargestCRSIDMatch( QString theSql );
 
+    //! Returns name from CRS Id
+    QString getCrsIdName( long theCrsId );
+
     //! Has the Projection List been populated?
     bool mProjListDone;
 
@@ -189,14 +210,23 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
     //! Is there a pending selection to be made by CRS ID?
     bool mCRSIDSelectionPending;
 
+    //! Is there a pending selection to be made by EPSG ID?
+    bool mEPSGIDSelectionPending;
+
     //! The CRS Name that wants to be selected on this widget
     QString mCRSNameSelection;
 
     //! The CRS ID that wants to be selected on this widget
     long mCRSIDSelection;
 
+    //! The EPSG ID that wants to be selected on this widget
+    long mEPSGIDSelection;
+
     //! The set of OGC WMS CRSs that want to be applied to this widget
     QSet<QString> mCrsFilter;
+
+    //! Most recently used projections (trimmed at 25 entries)
+    QStringList mRecentProjections;
 
   private slots:
     /**private handler for when user selects a cs

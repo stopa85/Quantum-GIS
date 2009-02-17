@@ -117,9 +117,15 @@ QgsVectorFileWriter::QgsVectorFileWriter( const QString& shapefileName,
     int ogrPrecision = -1;
     switch ( attrField.type() )
     {
+      case QVariant::LongLong:
+        ogrType = OFTString;
+        ogrWidth = 21;
+        break;
+
       case QVariant::String:
         ogrType = OFTString;
         break;
+
       case QVariant::Int:
         ogrType = OFTInteger;
         ogrWidth = 10;
@@ -211,6 +217,7 @@ bool QgsVectorFileWriter::addFeature( QgsFeature& feature )
       case QVariant::Double:
         OGR_F_SetFieldDouble( poFeature, ogrField, attrValue.toDouble() );
         break;
+      case QVariant::LongLong:
       case QVariant::String:
         OGR_F_SetFieldString( poFeature, ogrField, mCodec->fromUnicode( attrValue.toString() ).data() );
         break;

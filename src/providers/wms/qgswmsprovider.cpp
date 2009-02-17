@@ -32,6 +32,7 @@
 #include <QUrl>
 #include <QImage>
 #include <QSet>
+#include <QSettings>
 
 #ifdef _MSC_VER
 #include <float.h>
@@ -59,7 +60,8 @@ QgsWmsProvider::QgsWmsProvider( QString const & uri )
     cachedPixelHeight( 0 ),
     mCoordinateTransform( 0 ),
     extentDirty( TRUE ),
-    mGetFeatureInfoUrlBase( 0 )
+    mGetFeatureInfoUrlBase( 0 ),
+    mLayerCount( -1 )
 {
   QgsDebugMsg( "QgsWmsProvider: constructing with uri '" + uri + "'." );
 
@@ -134,7 +136,7 @@ QgsWmsProvider::~QgsWmsProvider()
 
 
 
-bool QgsWmsProvider::supportedLayers( std::vector<QgsWmsLayerProperty> & layers )
+bool QgsWmsProvider::supportedLayers( QVector<QgsWmsLayerProperty> &layers )
 {
   QgsDebugMsg( "Entering." );
 
@@ -159,11 +161,11 @@ QSet<QString> QgsWmsProvider::supportedCrsForLayers( QStringList const & layers 
   QStringList::const_iterator i;
   for ( i = layers.constBegin(); i != layers.constEnd(); ++i )
   {
-    std::vector<QString> crsVector = crsForLayer[*i];
+    QVector<QString> crsVector = crsForLayer[*i];
     QSet<QString>    crsSet;
 
     // convert std::vector to std::set for set comparisons
-    for ( uint j = 0; j < crsVector.size(); j++ )
+    for ( int j = 0; j < crsVector.size(); j++ )
     {
       crsSet.insert( crsVector[j] );
     }
@@ -192,8 +194,8 @@ size_t QgsWmsProvider::layerCount() const
 } // QgsWmsProvider::layerCount()
 
 
-void QgsWmsProvider::addLayers( QStringList const &  layers,
-                                QStringList const &  styles )
+void QgsWmsProvider::addLayers( QStringList const &layers,
+                                QStringList const &styles )
 {
   QgsDebugMsg( "Entering with layer list of " + layers.join( ", " )
                + " and style list of " + styles.join( ", " ) );
@@ -220,7 +222,7 @@ void QgsWmsProvider::addLayers( QStringList const &  layers,
 }
 
 
-void QgsWmsProvider::setLayerOrder( QStringList const &  layers )
+void QgsWmsProvider::setLayerOrder( QStringList const &layers )
 {
   QgsDebugMsg( "Entering." );
 
@@ -271,7 +273,6 @@ void QgsWmsProvider::setImageCrs( QString const & crs )
   }
 
 }
-
 
 QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, int pixelHeight )
 {
@@ -340,12 +341,10 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
   QString height;
   height = height.setNum( pixelHeight );
 
-
   // Calculate active layers that are also visible.
 
   QgsDebugMsg( "Active layer list of "  + activeSubLayers.join( ", " )
                + " and style list of "  + activeSubStyles.join( ", " ) );
-
 
   QStringList visibleLayers = QStringList();
   QStringList visibleStyles = QStringList();
@@ -356,7 +355,7 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
         it != activeSubLayers.end();
         ++it )
   {
-    if ( TRUE == activeSubLayerVisibility.find( *it )->second )
+    if ( activeSubLayerVisibility.find( *it ).value() )
     {
       visibleLayers += *it;
       visibleStyles += *it2;
@@ -379,7 +378,16 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
     crsKey = "CRS";
   }
 
-  QString url = prepareUri( mCapabilities.capability.request.getMap.dcpType.front().http.get.onlineResource.xlinkHref );
+  QString url;
+  QVector<QgsWmsDcpTypeProperty> dcpType = mCapabilities.capability.request.getMap.dcpType;
+  if ( dcpType.size() < 1 )
+  {
+    url = baseUrl;
+  }
+  else
+  {
+    url = prepareUri( dcpType.front().http.get.onlineResource.xlinkHref );
+  }
 
   url += "SERVICE=WMS";
   url += "&";
@@ -400,16 +408,25 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
   url += "STYLES=" + styles;
   url += "&";
   url += "FORMAT=" + imageMimeType;
-  if ( !imageMimeType.contains( "jpeg", Qt::CaseInsensitive ) && !imageMimeType.contains( "jpg", Qt::CaseInsensitive ) ) //MH: jpeg does not support transparency and some servers complain if jpg and transparent=true
+
+  //MH: jpeg does not support transparency and some servers complain if jpg and transparent=true
+  if ( !imageMimeType.contains( "jpeg", Qt::CaseInsensitive ) && !imageMimeType.contains( "jpg", Qt::CaseInsensitive ) )
   {
     url += "&";
     url += "TRANSPARENT=TRUE";
   }
 
-  qWarning( url.toUtf8() );
+  dcpType = mCapabilities.capability.request.getFeatureInfo.dcpType;
+  if ( dcpType.size() < 1 )
+  {
+    mGetFeatureInfoUrlBase = baseUrl;
+  }
+  else
+  {
+    mGetFeatureInfoUrlBase = prepareUri( dcpType.front().http.get.onlineResource.xlinkHref );
+  }
 
   // cache some details for if the user wants to do an identifyAsHtml() later
-  mGetFeatureInfoUrlBase = baseUrl;
   mGetFeatureInfoUrlBase += "SERVICE=WMS";
   mGetFeatureInfoUrlBase += "&";
   mGetFeatureInfoUrlBase += "VERSION=" + mCapabilities.version;
@@ -429,12 +446,12 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
   mGetFeatureInfoUrlBase += "STYLES=" + styles;
   mGetFeatureInfoUrlBase += "&";
   mGetFeatureInfoUrlBase += "FORMAT=" + imageMimeType;
+
   if ( !imageMimeType.contains( "jpeg", Qt::CaseInsensitive ) && !imageMimeType.contains( "jpg", Qt::CaseInsensitive ) )
   {
     mGetFeatureInfoUrlBase += "&";
     mGetFeatureInfoUrlBase += "TRANSPARENT=TRUE";
   }
-
 
   QByteArray imagesource;
   imagesource = retrieveUrl( url );
@@ -444,50 +461,49 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
     return 0;
   }
 
-  /*
-    QgsHttpTransaction http(url, httpproxyhost, httpproxyport);
+#if 0
+  QgsHttpTransaction http( url, httpproxyhost, httpproxyport );
 
-    // Do a passthrough for the status bar text
-    connect(
-            &http, SIGNAL( statusChanged        (QString)),
-             this,   SLOT(showStatusMessage(QString))
-           );
+  // Do a passthrough for the status bar text
+  connect(
+    &http, SIGNAL( statusChanged( QString ) ),
+    this,   SLOT( showStatusMessage( QString ) )
+  );
 
-    bool httpOk;
+  bool httpOk;
 
-    httpOk = http.getSynchronously(imagesource);
+  httpOk = http.getSynchronously( imagesource );
 
-    if (!httpOk)
-    {
-      // We had an HTTP exception
+  if ( !httpOk )
+  {
+    // We had an HTTP exception
 
-      mErrorCaption = tr("HTTP Exception");
-      mError = http.errorString();
+    mErrorCaption = tr( "HTTP Exception" );
+    mError = http.errorString();
 
-      mError += "\n" + tr("Tried URL: ") + url;
+    mError += "\n" + tr( "Tried URL: " ) + url;
 
-      return 0;
-    }
+    return 0;
+  }
 
-    if (http.responseContentType() == "application/vnd.ogc.se_xml")
-    {
-      // We had a Service Exception from the WMS
+  if ( http.responseContentType() == "application/vnd.ogc.se_xml" )
+  {
+    // We had a Service Exception from the WMS
 
-      QgsDebugMsg("got Service Exception as:\n"  + QString(imagesource) );
+    QgsDebugMsg( "got Service Exception as:\n"  + QString( imagesource ) );
 
-      mErrorCaption = tr("WMS Service Exception");
+    mErrorCaption = tr( "WMS Service Exception" );
 
-      // set mError with the following:
-      parseServiceExceptionReportDom(imagesource);
+    // set mError with the following:
+    parseServiceExceptionReportDom( imagesource );
 
-      mError += "\n" + tr("Tried URL: ") + url;
+    mError += "\n" + tr( "Tried URL: " ) + url;
 
-      QgsDebugMsg("composed error message '" + mError + "'.");
-  #endif
+    QgsDebugMsg( "composed error message '" + mError + "'." );
 
-      return 0;
-    }
-  */
+    return 0;
+  }
+#endif
 
   QgsDebugMsg( "Response received." );
 
@@ -507,8 +523,10 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
   {
     delete cachedImage;
   }
-  cachedImage = new QImage();
-  *cachedImage = QImage::fromData( imagesource );
+
+  //Create a local image from source then convert it to RGBA, so we can set the transparency later
+  QImage myLocalImage = QImage::fromData( imagesource );
+  cachedImage = new QImage( myLocalImage.convertToFormat( QImage::Format_ARGB32 ) );
 
   // Remember settings for useful caching next time.
   cachedViewExtent = viewExtent;
@@ -534,19 +552,19 @@ QImage* QgsWmsProvider::draw( QgsRectangle  const & viewExtent, int pixelWidth, 
 
 }
 
-/*
+#if 0
 void QgsWmsProvider::getServerCapabilities()
 {
-  QgsDebugMsg("entering.");
+  QgsDebugMsg( "entering." );
 
   retrieveServerCapabilities();
 
   // TODO: Return generic server capabilities here
 
-  QgsDebugMsg("exiting.");
+  QgsDebugMsg( "exiting." );
 
 }
-*/
+#endif
 
 bool QgsWmsProvider::retrieveServerCapabilities( bool forceRefresh )
 {
@@ -564,32 +582,33 @@ bool QgsWmsProvider::retrieveServerCapabilities( bool forceRefresh )
     {
       return FALSE;
     }
-    /*
-        QgsHttpTransaction http(url, httpproxyhost, httpproxyport);
 
-        // Do a passthrough for the status bar text
-        connect(
-                &http, SIGNAL( statusChanged        (QString)),
-                 this,   SLOT(showStatusMessage(QString))
-               );
+#if 0
+    QgsHttpTransaction http( url, httpproxyhost, httpproxyport );
 
-        bool httpOk;
-        httpOk = http.getSynchronously(httpcapabilitiesresponse);
+    // Do a passthrough for the status bar text
+    connect(
+      &http, SIGNAL( statusChanged( QString ) ),
+      this,   SLOT( showStatusMessage( QString ) )
+    );
 
-        if (!httpOk)
-        {
-          // We had an HTTP exception
+    bool httpOk;
+    httpOk = http.getSynchronously( httpcapabilitiesresponse );
 
-          mErrorCaption = tr("HTTP Exception");
-          mError = http.errorString();
+    if ( !httpOk )
+    {
+      // We had an HTTP exception
 
-          mError += "\n" + tr("Tried URL: ") + url;
+      mErrorCaption = tr( "HTTP Exception" );
+      mError = http.errorString();
 
-        QgsDebugMsg("!httpOK: "  + mError );
+      mError += "\n" + tr( "Tried URL: " ) + url;
 
-          return FALSE;
-        }
-    */
+      QgsDebugMsg( "!httpOK: "  + mError );
+
+      return FALSE;
+    }
+#endif
 
     QgsDebugMsg( "Converting to Dom." );
 
@@ -601,7 +620,7 @@ bool QgsWmsProvider::retrieveServerCapabilities( bool forceRefresh )
       // We had an Dom exception -
       // mErrorCaption and mError are pre-filled by parseCapabilitiesDom
 
-      mError += "\n" + tr( "Tried URL: " ) + url;
+      mError += tr( "\nTried URL: %1" ).arg( url );
 
       QgsDebugMsg( "!domOK: " + mError );
 
@@ -620,8 +639,7 @@ bool QgsWmsProvider::retrieveServerCapabilities( bool forceRefresh )
 QByteArray QgsWmsProvider::retrieveUrl( QString url )
 {
   QgsDebugMsg( "WMS request Url: " + url );
-  QgsHttpTransaction http(
-    url );
+  QgsHttpTransaction http( url );
 
   // Do a passthrough for the status bar text
   connect(
@@ -641,7 +659,7 @@ QByteArray QgsWmsProvider::retrieveUrl( QString url )
     mErrorCaption = tr( "HTTP Exception" );
     mError = http.errorString();
 
-    mError += "\n" + tr( "Tried URL: " ) + url;
+    mError += tr( "\nTried URL: %1" ).arg( url );
 
     return QByteArray( "" );
   }
@@ -657,7 +675,7 @@ QByteArray QgsWmsProvider::retrieveUrl( QString url )
     // set mError with the following:
     parseServiceExceptionReportDom( httpResponse );
 
-    mError += "\n" + tr( "Tried URL: " ) + url;
+    mError += tr( "\nTried URL: %1" ).arg( url );
 
     QgsDebugMsg( "composed error message '" + mError + "'." );
 
@@ -666,62 +684,6 @@ QByteArray QgsWmsProvider::retrieveUrl( QString url )
 
   return httpResponse;
 }
-
-#if 0
-// deprecated
-bool QgsWmsProvider::downloadCapabilitiesURI( QString const & uri )
-{
-
-  QgsDebugMsg( "Entered with '"  + uri  + "'" );
-
-  QgsHttpTransaction http( uri, httpproxyhost, httpproxyport );
-
-  // Do a passthrough for the status bar text
-  connect(
-    &http, SIGNAL( statusChanged( QString ) ),
-    this,   SLOT( showStatusMessage( QString ) )
-  );
-
-  bool httpOk;
-  httpOk = http.getSynchronously( httpcapabilitiesresponse );
-
-  if ( !httpOk )
-  {
-    // We had an HTTP exception
-
-    mErrorCaption = tr( "HTTP Exception" );
-    mError = http.errorString();
-
-    mError += "\n" + tr( "Tried URL: " ) + uri;
-
-    QgsDebugMsg( "!httpOK: "  + mError );
-
-    return FALSE;
-  }
-
-  QgsDebugMsg( "Converting to Dom." );
-
-  bool domOK;
-  domOK = parseCapabilitiesDom( httpcapabilitiesresponse, capabilities );
-
-  if ( !domOK )
-  {
-    // We had an Dom exception -
-    // mErrorCaption and mError are pre-filled by parseCapabilitiesDom
-
-    mError += "\n" + tr( "Tried URL: " ) + uri;
-
-    QgsDebugMsg( "!domOK: " + mError );
-
-    return FALSE;
-  }
-
-  QgsDebugMsg( "exiting." );
-
-  return TRUE;
-
-}
-#endif
 
 bool QgsWmsProvider::parseCapabilitiesDom( QByteArray const & xml, QgsWmsCapabilitiesProperty& capabilitiesProperty )
 {
@@ -762,12 +724,9 @@ bool QgsWmsProvider::parseCapabilitiesDom( QByteArray const & xml, QgsWmsCapabil
   if ( !contentSuccess )
   {
     mErrorCaption = tr( "Dom Exception" );
-    mError = QString( tr( "Could not get WMS capabilities: %1 at line %2 column %3" )
-                      .arg( errorMsg )
-                      .arg( errorLine )
-                      .arg( errorColumn ) );
-
-    mError += "\n" + tr( "This is probably due to an incorrect WMS Server URL." );
+    mError = tr( "Could not get WMS capabilities: %1 at line %2 column %3\n" )
+             .arg( errorMsg ).arg( errorLine ).arg( errorColumn )
+             + tr( "This is probably due to an incorrect WMS Server URL." );
 
     QgsLogger::debug( "Dom Exception: " + mError );
 
@@ -788,13 +747,10 @@ bool QgsWmsProvider::parseCapabilitiesDom( QByteArray const & xml, QgsWmsCapabil
      )
   {
     mErrorCaption = tr( "Dom Exception" );
-    mError = QString( tr( "Could not get WMS capabilities in the "
-                          "expected format (DTD): no %1 or %2 found" )
-                      .arg( "WMS_Capabilities" )
-                      .arg( "WMT_MS_Capabilities" )
-                    );
-
-    mError += "\n" + tr( "This is probably due to an incorrect WMS Server URL." );
+    mError = tr( "Could not get WMS capabilities in the "
+                 "expected format (DTD): no %1 or %2 found\n" )
+             .arg( "WMS_Capabilities" ).arg( "WMT_MS_Capabilities" )
+             + tr( "This is probably due to an incorrect WMS Server URL." );
 
     QgsLogger::debug( "Dom Exception: " + mError );
 
@@ -844,7 +800,7 @@ void QgsWmsProvider::parseService( QDomElement const & e, QgsWmsServiceProperty&
     QDomElement e1 = n1.toElement(); // try to convert the node to an element.
     if ( !e1.isNull() )
     {
-      //QgsDebugMsg("  "  + e1.tagName() ); // the node really is an element.
+      // QgsDebugMsg( "  "  + e1.tagName() ); // the node really is an element.
 
       if ( e1.tagName() == "Title" )
       {
@@ -904,7 +860,7 @@ void QgsWmsProvider::parseCapability( QDomElement const & e, QgsWmsCapabilityPro
     QDomElement e1 = n1.toElement(); // try to convert the node to an element.
     if ( !e1.isNull() )
     {
-      //QgsDebugMsg("  "  + e1.tagName() ); // the node really is an element.
+      QgsDebugMsg( "  "  + e1.tagName() ); // the node really is an element.
 
       if ( e1.tagName() == "Request" )
       {
@@ -1303,10 +1259,7 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
 //  layerProperty.title =       QString::null;
 //  layerProperty.abstract =    QString::null;
 //  layerProperty.keywordList.clear();
-
-  // assume true until we find a child layer
-  bool atleaf = TRUE;
-
+  layerProperty.orderId     = ++mLayerCount;
   layerProperty.queryable   = e.attribute( "queryable" ).toUInt();
   layerProperty.cascaded    = e.attribute( "cascaded" ).toUInt();
   layerProperty.opaque      = e.attribute( "opaque" ).toUInt();
@@ -1320,11 +1273,11 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
     QDomElement e1 = n1.toElement(); // try to convert the node to an element.
     if ( !e1.isNull() )
     {
-      //QgsDebugMsg("    "  + e1.tagName() ); // the node really is an element.
+      QgsDebugMsg( "    "  + e1.tagName() ); // the node really is an element.
 
       if ( e1.tagName() == "Layer" )
       {
-//            QgsDebugMsg("      Nested layer.");
+        QgsDebugMsg( "      Nested layer." );
 
         QgsWmsLayerProperty subLayerProperty;
 
@@ -1339,8 +1292,6 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
         parseLayer( e1, subLayerProperty, &layerProperty );
 
         layerProperty.layer.push_back( subLayerProperty );
-
-        atleaf = FALSE;
       }
       else if ( e1.tagName() == "Name" )
       {
@@ -1469,7 +1420,12 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
     n1 = n1.nextSibling();
   }
 
-  if ( atleaf )
+  if ( parentProperty )
+  {
+    mLayerParents[ layerProperty.orderId ] = parentProperty->orderId;
+  }
+
+  if ( layerProperty.layer.empty() )
   {
     // We have all the information we need to properly evaluate a layer definition
     // TODO: Save this somewhere
@@ -1488,7 +1444,7 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
     extentForLayer[ layerProperty.name ] = layerProperty.ex_GeographicBoundingBox;
 
     // see if we can refine the bounding box with the CRS-specific bounding boxes
-    for ( uint i = 0; i < layerProperty.boundingBox.size(); i++ )
+    for ( int i = 0; i < layerProperty.boundingBox.size(); i++ )
     {
       QgsDebugMsg( "testing bounding box CRS which is "
                    + layerProperty.boundingBox[i].crs + "." );
@@ -1508,15 +1464,24 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
     layersSupported.push_back( layerProperty );
 
     //if there are several <Layer> elements without a parent layer, the style list needs to be cleared
-    if ( atleaf )
+    if ( layerProperty.layer.empty() )
     {
       layerProperty.style.clear();
     }
+  }
+  else
+  {
+    mLayerParentNames[ layerProperty.orderId ] = QStringList() << layerProperty.name << layerProperty.title << layerProperty.abstract;
   }
 
 //  QgsDebugMsg("exiting.");
 }
 
+void QgsWmsProvider::layerParents( QMap<int, int> &parents, QMap<int, QStringList> &parentNames ) const
+{
+  parents = mLayerParents;
+  parentNames = mLayerParentNames;
+}
 
 bool QgsWmsProvider::parseServiceExceptionReportDom( QByteArray const & xml )
 {
@@ -1537,11 +1502,11 @@ bool QgsWmsProvider::parseServiceExceptionReportDom( QByteArray const & xml )
   if ( !contentSuccess )
   {
     mErrorCaption = tr( "Dom Exception" );
-    mError = QString( tr( "Could not get WMS Service Exception at %1: %2 at line %3 column %4" )
-                      .arg( baseUrl )
-                      .arg( errorMsg )
-                      .arg( errorLine )
-                      .arg( errorColumn ) );
+    mError = tr( "Could not get WMS Service Exception at %1: %2 at line %3 column %4" )
+             .arg( baseUrl )
+             .arg( errorMsg )
+             .arg( errorLine )
+             .arg( errorColumn );
 
     QgsLogger::debug( "Dom Exception: " + mError );
 
@@ -1640,9 +1605,13 @@ void QgsWmsProvider::parseServiceException( QDomElement const & e )
   {
     mError = tr( "Request is for an optional operation that is not supported by the server." );
   }
+  else if ( seCode.isEmpty() )
+  {
+    mError = tr( "(No error code was reported)" );
+  }
   else
   {
-    mError = tr( "(Unknown error code from a post-1.3 WMS server)" );
+    mError = seCode + " " + tr( "(Unknown error code)" );
   }
 
   mError += "\n" + tr( "The WMS vendor also reported: " );
@@ -1744,7 +1713,7 @@ bool QgsWmsProvider::calculateExtent()
   {
     QgsDebugMsg( "Sublayer Iterator: " + *it );
     // This is the extent for the layer name in *it
-    QgsRectangle extent = extentForLayer.find( *it )->second;
+    QgsRectangle extent = extentForLayer.find( *it ).value();
 
     // Convert to the user's CRS as required
     try
@@ -1800,10 +1769,10 @@ int QgsWmsProvider::capabilities() const
         ++it )
   {
     // Is sublayer visible?
-    if ( TRUE == activeSubLayerVisibility.find( *it )->second )
+    if ( activeSubLayerVisibility.find( *it ).value() )
     {
       // Is sublayer queryable?
-      if ( TRUE == mQueryableForLayer.find( *it )->second )
+      if ( mQueryableForLayer.find( *it ).value() )
       {
         QgsDebugMsg( "'"  + ( *it )  + "' is queryable." );
         canIdentify = TRUE;
@@ -1843,7 +1812,7 @@ QString QgsWmsProvider::metadata()
   myMetadataQString += "</th>";
   myMetadataQString += "<th bgcolor=\"black\">";
   myMetadataQString += "<font color=\"white\">" + tr( "Value" ) + "</font>";
-  myMetadataQString += "</th><tr>";
+  myMetadataQString += "</th></tr>";
 
   // WMS Version
   myMetadataQString += "<tr><td bgcolor=\"gray\">";
@@ -1937,21 +1906,33 @@ QString QgsWmsProvider::metadata()
   myMetadataQString += QString::number( layersSupported.size() );
   myMetadataQString += "</td></tr>";
 
+  // Base URL
+  myMetadataQString += "<tr><td bgcolor=\"gray\">";
+  myMetadataQString += tr( "GetFeatureInfoUrl" );
+  myMetadataQString += "</td>";
+  myMetadataQString += "<td bgcolor=\"gray\">";
+  myMetadataQString += mGetFeatureInfoUrlBase;
+  myMetadataQString += "</td></tr>";
+
   // Close the nested table
   myMetadataQString += "</table>";
   myMetadataQString += "</td></tr>";
 
+  // Layer properties
+  myMetadataQString += "<tr><td bgcolor=\"gray\">";
+  myMetadataQString += tr( "Layer Properties:" );
+  myMetadataQString += "</td></tr>";
+
   // Iterate through layers
 
-  for ( uint i = 0; i < layersSupported.size(); i++ )
+  for ( int i = 0; i < layersSupported.size(); i++ )
   {
 
     // TODO: Handle nested layers
     QString layerName = layersSupported[i].name;   // for aesthetic convenience
 
     // Layer Properties section
-    myMetadataQString += "<tr><td bgcolor=\"gray\">";
-    myMetadataQString += tr( "Layer Properties: " );
+    myMetadataQString += "<tr><td bgcolor=\"white\">";
     myMetadataQString += layerName;
     myMetadataQString += "</td></tr>";
 
@@ -1965,7 +1946,7 @@ QString QgsWmsProvider::metadata()
     myMetadataQString += "</th>";
     myMetadataQString += "<th bgcolor=\"black\">";
     myMetadataQString += "<font color=\"white\">" + tr( "Value" ) + "</font>";
-    myMetadataQString += "</th><tr>";
+    myMetadataQString += "</th></tr>";
 
     // Layer Selectivity (as managed by this provider)
     myMetadataQString += "<tr><td bgcolor=\"gray\">";
@@ -1983,7 +1964,7 @@ QString QgsWmsProvider::metadata()
     myMetadataQString += "<td bgcolor=\"gray\">";
     myMetadataQString += ( activeSubLayers.indexOf( layerName ) >= 0 ) ?
                          (
-                           ( activeSubLayerVisibility.find( layerName )->second ) ?
+                           ( activeSubLayerVisibility.find( layerName ).value() ) ?
                            tr( "Visible" ) : tr( "Hidden" )
                          ) :
                              tr( "n/a" );
@@ -2062,8 +2043,8 @@ QString QgsWmsProvider::metadata()
     myMetadataQString += "</td></tr>";
 
     // Layer Coordinate Reference Systems
-    for ( uint j = 0; j < layersSupported[i].crs.size(); j++ )
-{
+    for ( int j = 0; j < layersSupported[i].crs.size(); j++ )
+    {
       myMetadataQString += "<tr><td bgcolor=\"gray\">";
       myMetadataQString += tr( "Available in CRS" );
       myMetadataQString += "</td>";
@@ -2073,7 +2054,7 @@ QString QgsWmsProvider::metadata()
     }
 
     // Layer Styles
-    for ( uint j = 0; j < layersSupported[i].style.size(); j++ )
+    for ( int j = 0; j < layersSupported[i].style.size(); j++ )
     {
       myMetadataQString += "<tr><td bgcolor=\"gray\">";
       myMetadataQString += tr( "Available in style" );
@@ -2140,10 +2121,10 @@ QString QgsWmsProvider::identifyAsText( const QgsPoint& point )
         ++it )
   {
     // Is sublayer visible?
-    if ( TRUE == activeSubLayerVisibility.find( *it )->second )
+    if ( activeSubLayerVisibility.find( *it ).value() )
     {
       // Is sublayer queryable?
-      if ( TRUE == mQueryableForLayer.find( *it )->second )
+      if ( mQueryableForLayer.find( *it ).value() )
       {
         QgsDebugMsg( "Layer '" + *it + "' is queryable." );
         // Compose request to WMS server
@@ -2151,28 +2132,12 @@ QString QgsWmsProvider::identifyAsText( const QgsPoint& point )
         QString requestUrl = mGetFeatureInfoUrlBase;
         QString layer = QUrl::toPercentEncoding( *it );
 
-        requestUrl += "&";
-        requestUrl += "QUERY_LAYERS=" + layer ;
-        requestUrl += "&";
         //! \todo Need to tie this into the options provided by GetCapabilities
-        requestUrl += "INFO_FORMAT=text/plain";
-
+        requestUrl += QString( "&QUERY_LAYERS=%1&INFO_FORMAT=text/plain&X=%2&Y=%3" )
+                      .arg( layer ).arg( point.x() ).arg( point.y() );
 
 // X,Y in WMS 1.1.1; I,J in WMS 1.3.0
-
-//   requestUrl += "&";
-//   requestUrl += QString( "I=%1" )
-//                    .arg( point.x() );
-//   requestUrl += "&";
-//   requestUrl += QString( "J=%1" )
-//                    .arg( point.y() );
-
-        requestUrl += "&";
-        requestUrl += QString( "X=%1" )
-                      .arg( point.x() );
-        requestUrl += "&";
-        requestUrl += QString( "Y=%1" )
-                      .arg( point.y() );
+//   requestUrl += QString( "&I=%1&J=%2" ).arg( point.x() ).arg( point.y() );
 
         text += "---------------\n" + retrieveUrl( requestUrl );
       }

@@ -63,6 +63,7 @@ class QgsVectorLayer;
 #include "qgsconfig.h"
 #include "qgspoint.h"
 
+
 /*! \class QgisApp
  * \brief Main window for the Qgis application
  */
@@ -212,8 +213,8 @@ class QgisApp : public QMainWindow
     QAction *actionMoveFeature() { return mActionMoveFeature; }
     QAction *actionSplitFeatures() { return mActionSplitFeatures; }
     QAction *actionAddVertex() { return mActionAddVertex; }
-    QAction *actionDelerteVertex() { return mActionDeleteVertex; }
-    QAction *actioMoveVertex() { return mActionMoveVertex; }
+    QAction *actionDeleteVertex() { return mActionDeleteVertex; }
+    QAction *actionMoveVertex() { return mActionMoveVertex; }
     QAction *actionAddRing() { return mActionAddRing; }
     QAction *actionAddIsland() { return mActionAddIsland; }
     QAction *actionEditSeparator2() { return mActionEditSeparator2; }
@@ -341,6 +342,8 @@ class QgisApp : public QMainWindow
                                 (defaults to the active layer on the legend)
      */
     void editPaste( QgsMapLayer * destinationLayer = 0 );
+
+    void loadOGRSublayers( QString uri, QStringList list );
 
   protected:
 
@@ -594,6 +597,10 @@ class QgisApp : public QMainWindow
     void bookmarkAdded();
 
   private:
+    /** This method will open a dialog so the user can select the sublayers
+    * to load
+    */
+    void askUserForSublayers( QgsVectorLayer *layer );
     /** Add a raster layer to the map (passed in as a ptr).
      * It won't force a refresh.
      */

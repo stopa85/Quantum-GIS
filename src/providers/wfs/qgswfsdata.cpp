@@ -15,9 +15,11 @@
 #include "qgswfsdata.h"
 #include "qgsrectangle.h"
 #include "qgscoordinatereferencesystem.h"
+#include "qgshttptransaction.h"
 #include <QBuffer>
 #include <QUrl>
 #include <QList>
+#include <QProgressDialog>
 #include <QSet>
 
 //just for a test
@@ -56,8 +58,7 @@ QgsWFSData::QgsWFSData(
     if ( it->startsWith( "TYPENAME", Qt::CaseInsensitive ) )
     {
       mTypeName = it->section( "=", 1, 1 );
-      qWarning( "mTypeName is:" );
-      qWarning( mTypeName.toLocal8Bit().data() );
+      qWarning( "mTypeName is: %s", mTypeName.toLocal8Bit().constData() );
     }
   }
 
@@ -90,6 +91,23 @@ int QgsWFSData::getWFSData()
     mHttp.setHost( requestUrl.host() );
   }
 
+  QgsHttpTransaction::applyProxySettings( mHttp, mUri );
+
+   //find out if there is a QGIS main window. If yes, display a progress dialog
+  QProgressDialog* progressDialog = 0;
+  QWidget* mainWindow = findMainWindow();
+
+  if(mainWindow)
+  {
+      progressDialog = new QProgressDialog(tr("Loading WFS data"), tr("Abort"), 0, 0, mainWindow);
+      progressDialog->setWindowModality(Qt::ApplicationModal);
+      connect(&mHttp, SIGNAL(dataReadProgress(int, int)), this, SLOT(handleProgressEvent(int, int)));
+      connect(this, SIGNAL(dataReadProgress(int)), progressDialog, SLOT(setValue(int)));
+      connect(this, SIGNAL(totalStepsUpdate(int)), progressDialog, SLOT(setMaximum(int)));
+      connect(progressDialog, SIGNAL(canceled()), &mHttp, SLOT(abort()));
+      progressDialog->show();
+  }
+
   //mHttp.get( mUri );
   mHttp.get( requestUrl.path() + "?" + QString( requestUrl.encodedQuery() ) );
 
@@ -109,9 +127,11 @@ int QgsWFSData::getWFSData()
       readData = mHttp.readAll();
       XML_Parse( p, readData.data(), readData.size(), atEnd );
     }
-    qApp->processEvents( QEventLoop::ExcludeUserInputEvents );
+    qApp->processEvents();
   }
-  qWarning( "Left loop" );
+
+ delete progressDialog;
+
   return 0; //soon
 }
 
@@ -127,6 +147,12 @@ void QgsWFSData::setFinished( bool error )
     //qWarning("Finished without error");
   }
   mFinished = true;
+}
+
+void QgsWFSData::handleProgressEvent(int progress, int totalSteps)
+{
+    emit dataReadProgress(progress);
+    emit totalStepsUpdate(totalSteps);
 }
 
 void QgsWFSData::startElement( const XML_Char* el, const XML_Char** attr )
@@ -752,4 +778,21 @@ int QgsWFSData::totalWKBFragmentSize() const
     }
   }
   return result;
+}
+
+QWidget* QgsWFSData::findMainWindow() const
+{
+    QWidget* mainWindow = 0;
+
+    QWidgetList topLevelWidgets = qApp->topLevelWidgets();
+    QWidgetList::iterator it = topLevelWidgets.begin();
+    for ( ; it != topLevelWidgets.end(); ++it )
+    {
+        if (( *it )->objectName() == "QgisApp" )
+        {
+        mainWindow = *it;
+        break;
+        }
+    }
+    return mainWindow;
 }

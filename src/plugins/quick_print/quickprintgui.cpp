@@ -146,13 +146,13 @@ void QuickPrintGui::on_buttonBox_accepted()
       myQuickPrint.setOutputPdf( myOutputFileName );
       QString myPageSizeString = cboPageSize->itemData( cboPageSize->currentIndex() ).toString();
       myQuickPrint.setPageSize( QgsQuickPrint::stringToPageSize( myPageSizeString ) );
-      qDebug( "Page size : " + myPageSizeString.toLocal8Bit() );
+      qDebug( "Page size : %s", myPageSizeString.toLocal8Bit().constData() );
       myQuickPrint.printMap();
     }
     else
     {
-      QMessageBox::warning( this, tr( "quickprint" ), tr( "Unknown format: " ) +
-                            myFileDialog->selectedFilter() );
+      QMessageBox::warning( this, tr( "quickprint" ),
+                            tr( "Unknown format: %1" ).arg( myFileDialog->selectedFilter() ) );
     }
     mySettings.setValue( "quickprint/lastSaveAsPdfDir", myFileDialog->directory().absolutePath() );
   }

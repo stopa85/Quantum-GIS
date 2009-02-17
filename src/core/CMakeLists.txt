@@ -20,7 +20,6 @@ SET(QGIS_CORE_SRCS
   qgshttptransaction.cpp
   qgslabel.cpp
   qgslabelattributes.cpp
-  qgsline.cpp
   qgslogger.cpp
   qgsmaplayer.cpp
   qgsmaplayerregistry.cpp
@@ -60,6 +59,7 @@ SET(QGIS_CORE_SRCS
   composer/qgscomposerscalebar.cpp
   composer/qgslegendmodel.cpp
   composer/qgscomposerlegend.cpp
+  composer/qgspaperitem.cpp
   composer/qgsscalebarstyle.cpp
   composer/qgsdoubleboxscalebarstyle.cpp
   composer/qgsnumericscalebarstyle.cpp
@@ -133,6 +133,7 @@ SET_SOURCE_FILES_PROPERTIES(
 ENDIF (MSVC AND PEDANTIC)
 
 SET(QGIS_CORE_MOC_HDRS
+qgsapplication.h
 qgscontexthelp.h
 qgscoordinatetransform.h
 qgsdataprovider.h
@@ -275,7 +276,6 @@ qgsgeometry.h
 qgshttptransaction.h
 qgslabel.h
 qgslabelattributes.h
-qgsline.h
 qgslogger.h
 qgsmaplayer.h
 qgsmaplayerregistry.h

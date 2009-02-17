@@ -27,6 +27,7 @@
 
 #include <QApplication>
 #include <QUrl>
+#include <QSettings>
 #include <QTimer>
 #include "qgslogger.h"
 
@@ -37,22 +38,13 @@ QgsHttpTransaction::QgsHttpTransaction( QString uri,
                                         QString proxyHost,
                                         int     proxyPort,
                                         QString proxyUser,
-                                        QString proxyPass )
+                                        QString proxyPass,
+                                        QNetworkProxy::ProxyType proxyType )
     : httpresponsecontenttype( 0 ),
     httpurl( uri ),
     httphost( proxyHost ),
-    httpport( proxyPort ),
-    httpuser( proxyUser ),
-    httppass( proxyPass ),
     mError( 0 )
 {
-
-  QgsDebugMsg( "constructing." );
-  QgsDebugMsg( "  proxyHost = " + proxyHost + "." );
-  QgsDebugMsg( "  proxyPort = " + QString::number( proxyPort ) + "." );
-  QgsDebugMsg( "  proxyUser = " + proxyUser + "." );
-  QgsDebugMsg( "  proxyPass = " + proxyPass + "." );
-  QgsDebugMsg( "exiting constructor." );
 }
 
 QgsHttpTransaction::~QgsHttpTransaction()
@@ -76,29 +68,38 @@ bool QgsHttpTransaction::getSynchronously( QByteArray &respondedContent, int red
   QgsDebugMsg( "Entered." );
   QgsDebugMsg( "Using '" + httpurl + "'." );
 
+  int httpport;
+
   QUrl qurl( httpurl );
 
   http = new QHttp( );
   // Create a header so we can set the user agent (Per WMS RFC).
   QHttpRequestHeader header( "GET", qurl.host() );
   // Set host in the header
-  header.setValue( "Host", qurl.host() );
+  if ( qurl.port( HTTP_PORT_DEFAULT ) == HTTP_PORT_DEFAULT )
+  {
+    header.setValue( "Host", qurl.host() );
+  }
+  else
+  {
+    header.setValue( "Host", QString( "%1:%2" ).arg( qurl.host() ).arg( qurl.port() ) );
+  }
   // Set the user agent to Quantum GIS plus the version name
   header.setValue( "User-agent", QString( "Quantum GIS - " ) + VERSION );
   // Set the host in the QHttp object
   http->setHost( qurl.host(), qurl.port( HTTP_PORT_DEFAULT ) );
 
-  if ( httphost.isEmpty() )
+  if ( !QgsHttpTransaction::applyProxySettings( *http, httpurl ) )
   {
-    // No proxy was specified - connect directly to host in URI
     httphost = qurl.host();
     httpport = qurl.port( HTTP_PORT_DEFAULT );
-
   }
   else
   {
-    // Insert proxy username and password authentication
-    http->setProxy( httphost, httpport, httpuser, httppass );
+    //proxy enabled, read httphost and httpport from settings
+    QSettings settings;
+    httphost = settings.value( "proxy/proxyHost", "" ).toString();
+    httpport = settings.value( "proxy/proxyPort", "" ).toString().toInt();
   }
 
 //  int httpid1 = http->setHost( qurl.host(), qurl.port() );
@@ -113,22 +114,19 @@ bool QgsHttpTransaction::getSynchronously( QByteArray &respondedContent, int red
   // includes the scheme, host and port (the
   // http://www.address.bit:80), so remove that from the url before
   // executing an http GET.
-  //
-  // gsherman 2008-10-24 - Not sure if the above still holds true. Commenting
-  // out the removal for testing purposes
-  // QString pathAndQuery = httpurl.remove( 0,
-  //                                       httpurl.indexOf( qurl.path() ) );
+
+  QString pathAndQuery = httpurl.remove( 0, httpurl.indexOf( qurl.path() ) );
 
 
   if ( !postData ) //do request with HTTP GET
   {
-    header.setRequest( "GET", httpurl );
+    header.setRequest( "GET", pathAndQuery );
     // do GET using header containing user-agent
     httpid = http->request( header );
   }
   else //do request with HTTP POST
   {
-    header.setRequest( "POST", httpurl );
+    header.setRequest( "POST", pathAndQuery );
     // do POST using header containing user-agent
     httpid = http->request( header, *postData );
   }
@@ -181,6 +179,7 @@ bool QgsHttpTransaction::getSynchronously( QByteArray &respondedContent, int red
 #endif
 
   delete http;
+  http = 0;
 
   // Did we get an error? If so, bail early
   if ( !mError.isNull() )
@@ -248,7 +247,7 @@ void QgsHttpTransaction::dataHeaderReceived( const QHttpResponseHeader& resp )
   }
   else
   {
-    mError = QString( tr( "WMS Server responded unexpectedly with HTTP Status Code %1 (%2)" ) )
+    mError = tr( "WMS Server responded unexpectedly with HTTP Status Code %1 (%2)" )
              .arg( resp.statusCode() )
              .arg( resp.reasonPhrase() );
   }
@@ -283,18 +282,18 @@ void QgsHttpTransaction::dataProgress( int done, int total )
   // We saw something come back, therefore restart the watchdog timer
   mWatchdogTimer->start( NETWORK_TIMEOUT_MSEC );
 
+  emit dataReadProgress( done );
+  emit totalSteps( total );
+
   QString status;
 
   if ( total )
   {
-    status = QString( QObject::tr( "Received %1 of %2 bytes" ) )
-             .arg( done )
-             .arg( total );
+    status = tr( "Received %1 of %2 bytes" ).arg( done ).arg( total );
   }
   else
   {
-    status = QString( QObject::tr( "Received %1 bytes (total unknown)" ) )
-             .arg( done );
+    status = tr( "Received %1 bytes (total unknown)" ).arg( done );
   }
 
   emit statusChanged( status );
@@ -327,8 +326,7 @@ void QgsHttpTransaction::dataFinished( int id, bool error )
     QgsDebugMsg( "however there was an error." );
     QgsDebugMsg( "error: " + http->errorString() );
 
-    mError = QString( tr( "HTTP response completed, however there was an error: %1" ) )
-             .arg( http->errorString() );
+    mError = tr( "HTTP response completed, however there was an error: %1" ).arg( http->errorString() );
   }
   else
   {
@@ -377,8 +375,7 @@ void QgsHttpTransaction::transactionFinished( bool error )
     QgsDebugMsg( "however there was an error." );
     QgsDebugMsg( "error: " + http->errorString() );
 
-    mError = QString( tr( "HTTP transaction completed, however there was an error: %1" ) )
-             .arg( http->errorString() );
+    mError = tr( "HTTP transaction completed, however there was an error: %1" ).arg( http->errorString() );
   }
   else
   {
@@ -405,49 +402,45 @@ void QgsHttpTransaction::dataStateChanged( int state )
   {
     case QHttp::Unconnected:
       QgsDebugMsg( "There is no connection to the host." );
-      emit statusChanged( QString( QObject::tr( "Not connected" ) ) );
+      emit statusChanged( tr( "Not connected" ) );
       break;
 
     case QHttp::HostLookup:
       QgsDebugMsg( "A host name lookup is in progress." );
 
-      emit statusChanged( QString( QObject::tr( "Looking up '%1'" ) )
-                          .arg( httphost ) );
+      emit statusChanged( tr( "Looking up '%1'" ).arg( httphost ) );
       break;
 
     case QHttp::Connecting:
       QgsDebugMsg( "An attempt to connect to the host is in progress." );
 
-      emit statusChanged( QString( QObject::tr( "Connecting to '%1'" ) )
-                          .arg( httphost ) );
+      emit statusChanged( tr( "Connecting to '%1'" ).arg( httphost ) );
       break;
 
     case QHttp::Sending:
       QgsDebugMsg( "The client is sending its request to the server." );
 
-      emit statusChanged( QString( QObject::tr( "Sending request '%1'" ) )
-                          .arg( httpurl ) );
+      emit statusChanged( tr( "Sending request '%1'" ).arg( httpurl ) );
       break;
 
     case QHttp::Reading:
       QgsDebugMsg( "The client's request has been sent and the client is reading the server's response." );
 
-      emit statusChanged( QString( QObject::tr( "Receiving reply" ) ) );
+      emit statusChanged( tr( "Receiving reply" ) );
       break;
 
     case QHttp::Connected:
       QgsDebugMsg( "The connection to the host is open, but the client is neither sending a request, nor waiting for a response." );
 
-      emit statusChanged( QString( QObject::tr( "Response is complete" ) ) );
+      emit statusChanged( tr( "Response is complete" ) );
       break;
 
     case QHttp::Closing:
       QgsDebugMsg( "The connection is closing down, but is not yet closed. (The state will be Unconnected when the connection is closed.)" );
 
-      emit statusChanged( QString( QObject::tr( "Closing down connection" ) ) );
+      emit statusChanged( tr( "Closing down connection" ) );
       break;
   }
-
 }
 
 
@@ -455,9 +448,8 @@ void QgsHttpTransaction::networkTimedOut()
 {
   QgsDebugMsg( "entering." );
 
-  mError = QString( tr( "Network timed out after %1 seconds of inactivity.\n"
-                        "This may be a problem in your network connection or at the WMS server.", "", NETWORK_TIMEOUT_MSEC / 1000 )
-                  ).arg( NETWORK_TIMEOUT_MSEC / 1000 );
+  mError = tr( "Network timed out after %n second(s) of inactivity.\n"
+               "This may be a problem in your network connection or at the WMS server.", "inactivity timeout", NETWORK_TIMEOUT_MSEC / 1000 );
 
   QgsDebugMsg( "Setting httpactive = FALSE" );
   httpactive = FALSE;
@@ -468,6 +460,73 @@ void QgsHttpTransaction::networkTimedOut()
 QString QgsHttpTransaction::errorString()
 {
   return mError;
+}
+
+bool QgsHttpTransaction::applyProxySettings( QHttp& http, const QString& url )
+{
+  QSettings settings;
+  //check if proxy is enabled
+  bool proxyEnabled = settings.value( "proxy/proxyEnabled", false ).toBool();
+  if ( !proxyEnabled )
+  {
+    return false;
+  }
+
+  //check if the url should go through proxy
+  QString  proxyExcludedURLs = settings.value( "proxy/proxyExcludedUrls", "" ).toString();
+  if ( !proxyExcludedURLs.isEmpty() )
+  {
+    QStringList excludedURLs = proxyExcludedURLs.split( "|" );
+    QStringList::const_iterator exclIt = excludedURLs.constBegin();
+    for ( ; exclIt != excludedURLs.constEnd(); ++exclIt )
+    {
+      if ( url.startsWith( *exclIt ) )
+      {
+        return false; //url does not go through proxy
+      }
+    }
+  }
+
+  //read type, host, port, user, passw from settings
+  QString proxyHost = settings.value( "proxy/proxyHost", "" ).toString();
+  int proxyPort = settings.value( "proxy/proxyPort", "" ).toString().toInt();
+  QString proxyUser = settings.value( "proxy/proxyUser", "" ).toString();
+  QString proxyPassword = settings.value( "proxy/proxyPassword", "" ).toString();
+
+  QString proxyTypeString =  settings.value( "proxy/proxyType", "" ).toString();
+  QNetworkProxy::ProxyType proxyType = QNetworkProxy::NoProxy;
+  if ( proxyTypeString == "DefaultProxy" )
+  {
+    proxyType = QNetworkProxy::DefaultProxy;
+  }
+  else if ( proxyTypeString == "Socks5Proxy" )
+  {
+    proxyType = QNetworkProxy::Socks5Proxy;
+  }
+  else if ( proxyTypeString == "HttpProxy" )
+  {
+    proxyType = QNetworkProxy::HttpProxy;
+  }
+#if QT_VERSION >= 0x040400
+  else if ( proxyTypeString == "HttpCachingProxy" )
+  {
+    proxyType = QNetworkProxy::HttpCachingProxy;
+  }
+  else if ( proxyTypeString == "FtpCachingProxy" )
+  {
+    proxyType = QNetworkProxy::FtpCachingProxy;
+  }
+#endif
+  http.setProxy( QNetworkProxy( proxyType, proxyHost, proxyPort, proxyUser, proxyPassword ) );
+  return true;
+}
+
+void QgsHttpTransaction::abort()
+{
+  if ( http )
+  {
+    http->abort();
+  }
 }
 
 // ENDS

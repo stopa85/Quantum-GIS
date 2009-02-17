@@ -31,6 +31,7 @@ email                : morb at ozemail dot com dot au
 #define CATCH_GEOS(r) \
   catch (GEOSException &e) \
   { \
+    Q_UNUSED(e); \
     QgsDebugMsg("GEOS: " + QString( e.what() ) ); \
     return r; \
   }
@@ -1537,6 +1538,7 @@ bool QgsGeometry::deleteVertex( int atVertex )
     case QGis::WKBMultiPoint:
     {
       //todo
+      break;
     }
     case QGis::WKBLineString25D:
       hasZValue = true;
@@ -2628,14 +2630,14 @@ int QgsGeometry::addRing( const QList<QgsPoint>& ring )
   //Fill GEOS Polygons of the feature into list
   QVector<const GEOSGeometry*> polygonList;
 
-  if ( this->wkbType() == QGis::WKBPolygon )
+  if ( wkbType() == QGis::WKBPolygon )
   {
     if ( type != GEOS_POLYGON )
       return 1;
 
     polygonList << mGeos;
   }
-  else if ( this->wkbType() == QGis::WKBMultiPolygon )
+  else if ( wkbType() == QGis::WKBMultiPolygon )
   {
     if ( type != GEOS_MULTIPOLYGON )
       return 1;
@@ -2766,12 +2768,12 @@ int QgsGeometry::addRing( const QList<QgsPoint>& ring )
 
   GEOSGeometry *newPolygon = createGeosPolygon( rings );
 
-  if ( this->wkbType() == QGis::WKBPolygon )
+  if ( wkbType() == QGis::WKBPolygon )
   {
     GEOSGeom_destroy( mGeos );
     mGeos = newPolygon;
   }
-  else if ( this->wkbType() == QGis::WKBMultiPolygon )
+  else if ( wkbType() == QGis::WKBMultiPolygon )
   {
     QVector<GEOSGeometry*> newPolygons;
 
@@ -3333,6 +3335,7 @@ QgsRectangle QgsGeometry::boundingBox()
     {
       ptr = mGeometry + 1 + sizeof( int );
       nPoints = ( int * ) ptr;
+      ptr += sizeof( int );
       for ( idx = 0; idx < *nPoints; idx++ )
       {
         ptr += ( 1 + sizeof( int ) );
@@ -4844,7 +4847,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
   GEOSGeometry *cutEdges = GEOSPolygonizer_getCutEdges( &nodedGeometry, 1 );
   if ( cutEdges )
   {
-    if ( GEOSGetNumGeometries( cutEdges ) > 0 )
+    if ( numberOfGeometries( cutEdges ) > 0 )
     {
       GEOSGeom_destroy( cutEdges );
       GEOSGeom_destroy( nodedGeometry );
@@ -4856,7 +4859,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
 #endif
 
   GEOSGeometry *polygons = GEOSPolygonize( &nodedGeometry, 1 );
-  if ( !polygons || GEOSGetNumGeometries( polygons ) == 0 )
+  if ( !polygons || numberOfGeometries( polygons ) == 0 )
   {
     if ( polygons )
       GEOSGeom_destroy( polygons );
@@ -4876,7 +4879,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
   //ratio intersect geometry / geometry. This should be close to 1
   //if the polygon belongs to the input geometry
 
-  for ( int i = 0; i < GEOSGetNumGeometries( polygons ); i++ )
+  for ( int i = 0; i < numberOfGeometries( polygons ); i++ )
   {
     const GEOSGeometry *polygon = GEOSGetGeometryN( polygons, i );
     intersectGeometry = GEOSIntersection( mGeos, polygon );
@@ -4895,7 +4898,7 @@ int QgsGeometry::splitPolygonGeometry( GEOSGeometry* splitLine, QList<QgsGeometr
   }
 
   bool splitDone = true;
-  int nGeometriesThis = GEOSGetNumGeometries( mGeos ); //original number of geometries
+  int nGeometriesThis = numberOfGeometries( mGeos ); //original number of geometries
   if ( testedGeometries.size() == nGeometriesThis )
   {
     splitDone = false;
@@ -5013,6 +5016,23 @@ GEOSGeometry *QgsGeometry::nodeGeometries( const GEOSGeometry *splitLine, GEOSGe
     GEOSGeom_destroy( geometryBoundary );
 
   return unionGeometry;
+}
+
+int QgsGeometry::numberOfGeometries( GEOSGeometry* g ) const
+{
+  if ( !g )
+  {
+    return 0;
+  }
+  int geometryType = GEOSGeomTypeId( g );
+  if ( geometryType == GEOS_POINT || geometryType == GEOS_LINESTRING || geometryType == GEOS_LINEARRING
+       || geometryType == GEOS_POLYGON )
+  {
+    return 1;
+  }
+
+  //calling GEOSGetNumGeometries is save for multi types and collections also in geos2
+  return GEOSGetNumGeometries( g );
 }
 
 int QgsGeometry::mergeGeometriesMultiTypeSplit( QVector<GEOSGeometry*>& splitResult )
@@ -5435,4 +5455,41 @@ QgsGeometry* QgsGeometry::symDifference( QgsGeometry* geometry )
     return fromGeosGeom( GEOSSymDifference( mGeos, geometry->mGeos ) );
   }
   CATCH_GEOS( 0 )
+}
+
+
+QList<QgsGeometry*> QgsGeometry::asGeometryCollection()
+{
+  if ( mGeos == NULL )
+  {
+    exportWkbToGeos();
+    if ( mGeos == NULL )
+      return QList<QgsGeometry*>();
+  }
+
+  int type = GEOSGeomTypeId( mGeos );
+  QgsDebugMsg( "geom type: " + QString::number( type ) );
+
+  QList<QgsGeometry*> geomCollection;
+
+  if ( type != GEOS_MULTIPOINT &&
+       type != GEOS_MULTILINESTRING &&
+       type != GEOS_MULTIPOLYGON &&
+       type != GEOS_GEOMETRYCOLLECTION )
+  {
+    // we have a single-part geometry - put there a copy of this one
+    geomCollection.append( new QgsGeometry( *this ) );
+    return geomCollection;
+  }
+
+  int count = GEOSGetNumGeometries( mGeos );
+  QgsDebugMsg( "geom count: " + QString::number( count ) );
+
+  for ( int i = 0; i < count; ++i )
+  {
+    const GEOSGeometry * geometry = GEOSGetGeometryN( mGeos, i );
+    geomCollection.append( fromGeosGeom( GEOSGeom_clone( geometry ) ) );
+  }
+
+  return geomCollection;
 }

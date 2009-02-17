@@ -70,6 +70,9 @@ public:
   /** Select not selected features and deselect selected ones */
   void invertSelection();
 
+  /** Invert selection of features found within the search rectangle (in layer's coordinates) */
+  void invertSelectionInRectangle( QgsRectangle & rect);
+
   /** Get a copy of the user-selected features */  
   QList<QgsFeature> selectedFeatures();
   
@@ -367,6 +370,9 @@ public slots:
   /** Select feature by its ID, optionally emit signal selectionChanged() */
   void select(int featureId, bool emitSignal = TRUE);
   
+  /** Deselect feature by its ID, optionally emit signal selectionChanged() */
+  void deselect( int featureId, bool emitSignal = TRUE );
+
   /** Clear selection */
   void removeSelection(bool emitSignal = TRUE);
 

@@ -62,6 +62,31 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   leProxyPort->setText( settings.value( "proxy/proxyPort", "" ).toString() );
   leProxyUser->setText( settings.value( "proxy/proxyUser", "" ).toString() );
   leProxyPassword->setText( settings.value( "proxy/proxyPassword", "" ).toString() );
+
+  //available proxy types
+  mProxyTypeComboBox->insertItem( 0, "DefaultProxy" );
+  mProxyTypeComboBox->insertItem( 1, "Socks5Proxy" );
+  mProxyTypeComboBox->insertItem( 2, "HttpProxy" );
+  mProxyTypeComboBox->insertItem( 3, "HttpCachingProxy" );
+  mProxyTypeComboBox->insertItem( 4, "FtpCachingProxy" );
+  QString settingProxyType = settings.value( "proxy/proxyType", "DefaultProxy" ).toString();
+  mProxyTypeComboBox->setCurrentIndex( mProxyTypeComboBox->findText( settingProxyType ) );
+
+  //URLs excluded not going through proxies
+  QString proxyExcludedURLs = settings.value( "proxy/proxyExcludedUrls", "" ).toString();
+  if ( !proxyExcludedURLs.isEmpty() )
+  {
+    QStringList splittedUrls = proxyExcludedURLs.split( "|" );
+    QStringList::const_iterator urlIt = splittedUrls.constBegin();
+    for ( ; urlIt != splittedUrls.constEnd(); ++urlIt )
+    {
+      QListWidgetItem* newItem = new QListWidgetItem( mExcludeUrlListWidget );
+      newItem->setText( *urlIt );
+      newItem->setFlags( Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable );
+      mExcludeUrlListWidget->addItem( newItem );
+    }
+  }
+
   // set the current theme
   cmbTheme->setItemText( cmbTheme->currentIndex(), settings.value( "/Themes" ).toString() );
 
@@ -147,13 +172,11 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   cmbWheelAction->setCurrentIndex( settings.value( "/qgis/wheel_action", 0 ).toInt() );
   spinZoomFactor->setValue( settings.value( "/qgis/zoom_factor", 2 ).toDouble() );
 
-  cbxSplitterRedraw->setChecked( settings.value( "/qgis/splitterRedraw", QVariant( true ) ).toBool() );
-
   //
   // Locale settings
   //
   QString mySystemLocale = QLocale::system().name();
-  lblSystemLocale->setText( tr( "Detected active locale on your system: " ) + mySystemLocale );
+  lblSystemLocale->setText( tr( "Detected active locale on your system: %1" ).arg( mySystemLocale ) );
   QString myUserLocale = settings.value( "locale/userLocale", "" ).toString();
   QStringList myI18nList = i18nList();
   cboLocale->addItems( myI18nList );
@@ -184,6 +207,7 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   //vertex marker
   mMarkerStyleComboBox->addItem( tr( "Semi transparent circle" ) );
   mMarkerStyleComboBox->addItem( tr( "Cross" ) );
+  mMarkerStyleComboBox->addItem( tr( "None" ) );
 
   QString markerStyle = settings.value( "/qgis/digitizing/marker_style", "SemiTransparentCircle" ).toString();
   if ( markerStyle == "SemiTransparentCircle" )
@@ -194,6 +218,12 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   {
     mMarkerStyleComboBox->setCurrentIndex( mMarkerStyleComboBox->findText( tr( "Cross" ) ) );
   }
+  else if (markerStyle == "None" )
+  {
+    mMarkerStyleComboBox->setCurrentIndex( mMarkerStyleComboBox->findText( tr( "None" ) ) );
+  }
+
+  chkDisableAttributeValuesDlg->setChecked( settings.value( "/qgis/digitizing/disable_enter_attribute_values_dialog", false ).toBool() );
 
 #ifdef Q_WS_MAC //MH: disable incremental update on Mac for now to avoid problems with resizing 
   groupBox_5->setEnabled( false );
@@ -259,6 +289,7 @@ void QgsOptions::themeChanged( const QString &newThemeName )
   QString newt = newThemeName;
   QgisApp::instance()->setTheme( newt );
 }
+
 QString QgsOptions::theme()
 {
   // returns the current theme (as selected in the cmbTheme combo box)
@@ -274,6 +305,20 @@ void QgsOptions::saveOptions()
   settings.setValue( "proxy/proxyPort", leProxyPort->text() );
   settings.setValue( "proxy/proxyUser", leProxyUser->text() );
   settings.setValue( "proxy/proxyPassword", leProxyPassword->text() );
+  settings.setValue( "proxy/proxyType", mProxyTypeComboBox->currentText() );
+
+  //url to exclude from proxys
+  QString proxyExcludeString;
+  for ( int i = 0; i < mExcludeUrlListWidget->count(); ++i )
+  {
+    if ( i != 0 )
+    {
+      proxyExcludeString += "|";
+    }
+    proxyExcludeString += mExcludeUrlListWidget->item( i )->text();
+  }
+  settings.setValue( "proxy/proxyExcludedUrls", proxyExcludeString );
+
   //general settings
   settings.setValue( "/Map/identifyRadius", spinBoxIdentifyValue->value() );
   settings.setValue( "/qgis/showLegendClassifiers", cbxLegendClassifiers->isChecked() );
@@ -362,8 +407,6 @@ void QgsOptions::saveOptions()
   settings.setValue( "/qgis/wheel_action", cmbWheelAction->currentIndex() );
   settings.setValue( "/qgis/zoom_factor", spinZoomFactor->value() );
 
-  settings.setValue( "/qgis/splitterRedraw", cbxSplitterRedraw->isChecked() );
-
   //digitizing
   settings.setValue( "/qgis/digitizing/line_width", mLineWidthSpinBox->value() );
   QColor digitizingColor = mLineColourToolButton->color();
@@ -386,6 +429,12 @@ void QgsOptions::saveOptions()
   {
     settings.setValue( "/qgis/digitizing/marker_style", "Cross" );
   }
+  else if ( markerComboText == tr( "None" ) )
+  {
+    settings.setValue( "/qgis/digitizing/marker_style", "None" );
+  }
+
+  settings.setValue( "/qgis/digitizing/disable_enter_attribute_values_dialog", chkDisableAttributeValuesDlg->isChecked() );
 
   //
   // Locale settings
@@ -566,4 +615,20 @@ QStringList QgsOptions::i18nList()
     myList << myFileName.replace( "qgis_", "" ).replace( ".qm", "" );
   }
   return myList;
+}
+
+void QgsOptions::on_mAddUrlPushButton_clicked()
+{
+  QListWidgetItem* newItem = new QListWidgetItem( mExcludeUrlListWidget );
+  newItem->setText( "URL" );
+  newItem->setFlags( Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable );
+  mExcludeUrlListWidget->addItem( newItem );
+  mExcludeUrlListWidget->setCurrentItem( newItem );
+}
+
+void QgsOptions::on_mRemoveUrlPushButton_clicked()
+{
+  int currentRow = mExcludeUrlListWidget->currentRow();
+  QListWidgetItem* itemToRemove = mExcludeUrlListWidget->takeItem( currentRow );
+  delete itemToRemove;
 }

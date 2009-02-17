@@ -83,7 +83,7 @@ class CORE_EXPORT QgsComposerScaleBar: public QObject, public QgsComposerItem
     void applyDefaultSettings();
 
     /**Sets style by name
-     possibilities are: */
+     @param styleName (untranslated) style name. Possibilities are: 'Single Box', 'Double Box', 'Line Ticks Middle', 'Line Ticks Down', 'Line Ticks Up', 'Numeric'*/
     void setStyle( const QString& styleName );
 
     /**Returns style name*/
@@ -106,7 +106,7 @@ class CORE_EXPORT QgsComposerScaleBar: public QObject, public QgsComposerItem
        * @param elem is Dom element corresponding to 'Composer' tag
        * @param temp write template file
        */
-    bool writeXML( QDomElement& elem, QDomDocument & doc );
+    bool writeXML( QDomElement& elem, QDomDocument & doc ) const;
 
     /** sets state from Dom document
        * @param itemElem is Dom node corresponding to item tag

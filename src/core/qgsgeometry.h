@@ -321,6 +321,10 @@ class CORE_EXPORT QgsGeometry
         if wkbType is WKBPolygon, otherwise an empty list */
     QgsMultiPolygon asMultiPolygon();
 
+    /** return contents of the geometry as a list of geometries
+     @note added in version 1.1 */
+    QList<QgsGeometry*> asGeometryCollection();
+
   private:
     // Private variables
 
@@ -419,6 +423,9 @@ class CORE_EXPORT QgsGeometry
     /**Nodes together a split line and a (multi-) polygon geometry in a multilinestring
      @return the noded multiline geometry or 0 in case of error. The calling function takes ownership of the node geometry*/
     GEOSGeometry* nodeGeometries( const GEOSGeometry *splitLine, GEOSGeometry *poly ) const;
+
+    /**Returns number of single geometry in a geos geometry. Is save for geos 2 and 3*/
+    int numberOfGeometries( GEOSGeometry* g ) const;
 
     int mergeGeometriesMultiTypeSplit( QVector<GEOSGeometry*>& splitResult );
 

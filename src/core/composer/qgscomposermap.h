@@ -125,7 +125,7 @@ class CORE_EXPORT QgsComposerMap : /*public QWidget, private Ui::QgsComposerMapB
      * @param elem is Dom element corresponding to 'Composer' tag
      * @param temp write template file
      */
-    bool writeXML( QDomElement& elem, QDomDocument & doc );
+    bool writeXML( QDomElement& elem, QDomDocument & doc ) const;
 
     /** sets state from Dom document
      * @param itemElem is Dom node corresponding to 'ComposerMap' tag
@@ -134,8 +134,10 @@ class CORE_EXPORT QgsComposerMap : /*public QWidget, private Ui::QgsComposerMapB
 
   public slots:
 
-    // Called if map canvas has changed
-    void mapCanvasChanged( );
+    /**Called if map canvas has changed*/
+    void updateCachedImage( );
+    /**Call updateCachedImage if item is in render mode*/
+    void renderModeUpdateCachedImage();
 
   signals:
     /**Is emitted when width/height is changed as a result of user interaction*/
