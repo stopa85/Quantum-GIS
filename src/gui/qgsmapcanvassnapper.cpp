@@ -243,8 +243,8 @@ int QgsMapCanvasSnapper::snapToBackgroundLayers( const QPoint& p, QList<QgsSnapp
 
       //default snapping tolerance
       snapLayer.mTolerance = settings.value( "/qgis/digitizing/default_snapping_tolerance", 0 ).toDouble();
-
-      snapLayers.append( snapLayer );
+    
+      snapLayers.append(snapLayer);
     }
 
     mSnapper->setSnapLayers( snapLayers );
