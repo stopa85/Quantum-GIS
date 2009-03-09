@@ -250,9 +250,7 @@ namespace pal {
 
 
     bool obstacleCallback (PointSet *feat, void *ctx) {
-
         LabelPosition::PolygonCostCalculator *pCost = (LabelPosition::PolygonCostCalculator*) ctx;
-
 
         LabelPosition *lp = pCost->getLabel();
         if ( (feat == lp->feature) || (feat->holeOf && feat->holeOf != lp->feature)) {
@@ -261,8 +259,6 @@ namespace pal {
 
         // if the feature is not a hole we have to fetch corrdinates
         // otherwise holes coordinates are still in memory (feature->selfObs)
-        // If the feature is not a hole, we have to fetch its coordinates
-        // Otherwise the feat is ahole of this polygone, oordinates have already been fetched
         if (feat->holeOf == NULL) {
             ( (Feature*) feat)->fetchCoordinates();
         }
@@ -293,7 +289,6 @@ namespace pal {
         feature->fetchCoordinates();
         pCost->update(feature);
 
-        // TODO Make a constructor
         PointSet *extent = new PointSet(4, bbx, bby);
 
         pCost->update(extent);
@@ -301,18 +296,18 @@ namespace pal {
         delete extent;
 
         // TODO Comment
-        if (cost > (w*w + h*h) / 4.0) {
+        /*if (cost > (w*w + h*h) / 4.0) {
             double dist = sqrt (cost);
             amin[0] = (x[0] + x[2]) / 2.0 - dist;
             amin[1] = (y[0] + y[2]) / 2.0 - dist;
             amax[0] = amin[0] + 2 * dist;
             amax[1] = amin[1] + 2 * dist;
-        } else {
+        } else {*/
             amin[0] = feature->xmin;
             amin[1] = feature->ymin;
             amax[0] = feature->xmax;
             amax[1] = feature->ymax;
-        }
+        //}
 
         //std::cout << amin[0] << " " << amin[1] << " " << amax[0] << " " <<  amax[1] << std::endl;
         obstacles->Search (amin, amax, obstacleCallback, pCost);

@@ -522,9 +522,9 @@ namespace pal {
         int i;
 
         if (nbPoints > 1) {
-            out << "  <path style=\"fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1\" d=\"M " << convert (x[0], scale, dpi) - xmin << "," << ymax - convert (y[0], scale, dpi) << " ";
+            out << "  <path style=\"fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1\" d=\"M " << convert2pt (x[0], scale, dpi) - xmin << "," << ymax - convert2pt (y[0], scale, dpi) << " ";
             for (i = 1;i < nbPoints;i++) {
-                out << "L " << convert (x[i], scale, dpi) - xmin  << ", " << ymax - convert (y[i], scale, dpi) << " ";
+                out << "L " << convert2pt (x[i], scale, dpi) - xmin  << ", " << ymax - convert2pt (y[i], scale, dpi) << " ";
             }
 
             if (geomType == GEOS_POLYGON) {
@@ -535,8 +535,8 @@ namespace pal {
             out << "id=\"" << layername << "-" << objectID << "\" ";
             out << "inkscape:label=\"#path-" << layername << "-" << objectID << "\"/>\n";
         } else {
-            int cx = convert (x[0], scale, dpi) - xmin;
-            int cy = ymax - convert (y[0], scale, dpi);
+            int cx = convert2pt (x[0], scale, dpi) - xmin;
+            int cy = ymax - convert2pt (y[0], scale, dpi);
             out << "   <path ";
             out << "      sodipodi:type=\"arc\" ";
             out << "      style=\"opacity:1;fill:#bcbcbc;fill-opacity:l;stroke:#000000;stroke-opacity:1;stroke-width:0.5;stroke-linejoin:miter;stroke-dasharray:none;display:inline\"";

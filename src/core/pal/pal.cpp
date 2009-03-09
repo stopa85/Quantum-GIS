@@ -62,8 +62,9 @@ namespace pal {
 
     typedef struct {
         //LabelPosition *lp;
-        PointSet *obstacle;
         double scale;
+        Pal* pal;
+        PointSet *obstacle;
     } PruneCtx;
 
     void geosError (const char *fmt, ...) {
@@ -78,12 +79,9 @@ namespace pal {
         vfprintf (stdout, fmt, list);
     }
 
-
-
-
     Pal::Pal() {
-
         initGEOS (geosNotice, geosError);
+
         layers = new std::list<Layer*>();
 
         lyrsMutex = new SimpleMutex();
@@ -105,6 +103,8 @@ namespace pal {
         point_p = 8;
         line_p = 8;
         poly_p = 8;
+
+        this->map_unit = pal::METER;
 
         std::cout.precision (12);
         std::cerr.precision (12);
@@ -303,8 +303,8 @@ namespace pal {
                         if (!svged) {
                             toSVGPath (shape->nbPoints, shape->type, shape->x, shape->y,
                                        dpi , context->scale,
-                                       convert (context->bbox_min[0], context->scale, dpi),
-                                       convert (context->bbox_max[1], context->scale, dpi),
+                                       convert2pt (context->bbox_min[0], context->scale, dpi),
+                                       convert2pt (context->bbox_max[1], context->scale, dpi),
                                        context->layer->name, ft_ptr->uid, *context->svgmap);
                         }
 #endif
@@ -322,6 +322,9 @@ namespace pal {
                 while (feats->size() > 0) {
                     Feats *ft = feats->pop_front();
 
+#ifdef _DEBUG_
+                    std::cout << "Compute candidates for feat " <<  ft->feature->layer->name << "/" << ft->feature->uid << std::endl;
+#endif
                     ft->nblp = ft->feature->setPosition (context->scale, & (ft->lPos), context->bbox_min, context->bbox_max, ft->shape, context->candidates
 #ifdef _EXPORT_MAP_
                                                          , *context->svgmap
@@ -335,9 +338,12 @@ namespace pal {
                         // valid features are added to fFeats
                         ft->priority = context->priority;
                         context->fFeats->push_back (ft);
+#ifdef _DEBUG_
+                        std::cout << ft->nblp << " labelPositions for feature : " << ft->feature->layer->name << "/" << ft->feature->uid << std::endl;
+#endif
                     } else {
                         // Others are deleted
-#ifndef _VERBOSE_
+#ifdef _VERBOSE_
                         std::cout << "Unable to generate labelPosition for feature : " << ft->feature->layer->name << "/" << ft->feature->uid << std::endl;
 #endif
                         delete[] ft->lPos;
@@ -410,6 +416,7 @@ namespace pal {
 
         PointSet *feat = ( (PruneCtx*) ctx)->obstacle;
         double scale = ( (PruneCtx*) ctx)->scale;
+        Pal* pal = ( (PruneCtx*) ctx)->pal;
 
         if ( (feat == lp->feature) || (feat->holeOf && feat->holeOf != lp->feature)) {
             return true;
@@ -426,7 +433,12 @@ namespace pal {
         //((Feature*)feat)->fetchCoordinates();
 
         double dist;
-        double distlabel = px2meters (double (lp->feature->distlabel), lp->feature->layer->pal->dpi, scale);
+
+        double distlabel = unit_convert(double(lp->feature->distlabel),
+                pal::PIXEL, 
+                pal->map_unit, 
+                pal->dpi, scale, 1);
+
 
 
         switch (feat->type) {
@@ -528,12 +540,14 @@ namespace pal {
     typedef struct _filterContext {
         RTree<LabelPosition*, double, 2, double> *cdtsIndex;
         double scale;
+        Pal* pal;
     } FilterContext;
 
     bool filteringCallback (PointSet *pset, void *ctx) {
 
         RTree<LabelPosition*, double, 2, double> *cdtsIndex = ( (FilterContext*) ctx)->cdtsIndex;
         double scale = ( (FilterContext*) ctx)->scale;
+        Pal* pal = ((FilterContext*)ctx)->pal;
 
         if (pset->holeOf == NULL) {
             ( (Feature*) pset)->fetchCoordinates();
@@ -552,6 +566,7 @@ namespace pal {
 
         pruneContext.scale = scale;
         pruneContext.obstacle = pset;
+        pruneContext.pal = pal;
         cdtsIndex->Search (amin, amax, pruneLabelPositionCallback, (void*) &pruneContext);
 
         if (pset->holeOf == NULL) {
@@ -727,6 +742,7 @@ namespace pal {
         FilterContext filterCtx;
         filterCtx.cdtsIndex = prob->candidates;
         filterCtx.scale = prob->scale;
+        filterCtx.pal = this;
         obstacles->Search (amin, amax, filteringCallback, (void*) &filterCtx);
 
 
@@ -960,8 +976,8 @@ namespace pal {
         << "xmlns=\"http://www.w3.org/2000/svg\"" << std::endl
         << "xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\"" << std::endl
         << "xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\"" << std::endl
-        << "width=\"" << convert (bbox[2] - bbox[0], scale, dpi)  << "\"" << std::endl
-        << "height=\"" << convert (bbox[3] - bbox[1], scale, dpi)  << "\">" << std::endl; // TODO xmax ymax
+        << "width=\"" << convert2pt (bbox[2] - bbox[0], scale, dpi)  << "\"" << std::endl
+        << "height=\"" << convert2pt (bbox[3] - bbox[1], scale, dpi)  << "\">" << std::endl; // TODO xmax ymax
 #endif
 
         // First, extract the problem
@@ -1152,6 +1168,26 @@ namespace pal {
             std::cerr << "Unknown search method..." << std::endl;
         }
     }
+
+
+    /**
+     * \brief get current map unit
+     */
+    Units Pal::getMapUnit(){
+       return map_unit;
+    }
+
+    /**
+     * \brief set map unit
+     */
+    void Pal::setMapUnit(Units map_unit){
+       if (map_unit == pal::PIXEL || map_unit == pal::METER
+            || map_unit == pal::FOOT || map_unit == pal::DEGREE){
+          this->map_unit = map_unit;
+       }
+    }
+
+
 
 } // namespace pal
 

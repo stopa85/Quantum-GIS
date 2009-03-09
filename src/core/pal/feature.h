@@ -103,7 +103,7 @@ namespace pal {
          * \param lPos pointer to an array of candidates, will be filled by generated candidates
          * \return the number of generated cadidates
          */
-        int setPositionForPoint (double x, double y, double scale, LabelPosition ***lPos);
+        int setPositionForPoint (double x, double y, double scale, LabelPosition ***lPos, double delta_width);
 
         /**
          * \brief generate candidates for line feature
@@ -113,7 +113,7 @@ namespace pal {
          * \param mapShape a pointer to the line
          * \return the number of generated cadidates
          */
-        int setPositionForLine (double scale, LabelPosition ***lPos, PointSet *mapShape);
+        int setPositionForLine (double scale, LabelPosition ***lPos, PointSet *mapShape, double delta_width);
 
         /**
          * \brief generate candidates for point feature
@@ -123,7 +123,7 @@ namespace pal {
          * \param mapShape a pointer to the polygon
          * \return the number of generated cadidates
          */
-        int setPositionForPolygon (double scale, LabelPosition ***lPos, PointSet *mapShape);
+        int setPositionForPolygon (double scale, LabelPosition ***lPos, PointSet *mapShape, double delta_width);
 
 
 

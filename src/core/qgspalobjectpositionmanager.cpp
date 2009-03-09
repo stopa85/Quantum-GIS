@@ -92,12 +92,31 @@ void QgsPALObjectPositionManager::addLayer(QgsVectorLayer* vl, QList<QgsVectorOv
   }
 }
 
-void QgsPALObjectPositionManager::findObjectPositions(const QgsRenderContext& renderContext)
+void QgsPALObjectPositionManager::findObjectPositions(const QgsRenderContext& renderContext, QGis::UnitType unitType)
 {
   //trigger label placement
   QgsRectangle viewExtent = renderContext.extent();
   double bbox[4]; bbox[0] = viewExtent.xMinimum(); bbox[1] = viewExtent.yMinimum(); bbox[2] = viewExtent.xMaximum(); bbox[3] = viewExtent.yMaximum();
   pal::PalStat* stat = 0;
+
+  //set map units
+  pal::Units mapUnits;
+  switch (unitType)
+  {
+    case QGis::Meters:
+      mapUnits = pal::METER;
+      break;
+
+    case QGis::Feet:
+      mapUnits = pal::FOOT;
+      break;
+
+    case QGis::Degrees:
+      mapUnits = pal::DEGREE;
+      break;
+  }
+  mPositionEngine.setMapUnit(mapUnits);
+
   qWarning("**********************************starting calculation of overlay positions*****************************");
   std::list<pal::Label*>* resultLabelList = mPositionEngine.labeller(renderContext.rendererScale(), bbox, &stat, true);
   qWarning("**********************************calculation of overlay positions finished*****************************");

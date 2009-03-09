@@ -491,7 +491,7 @@ double Layer::getFeatureLabelWidth (const char *geom_id) {
 }
 
     void Layer::setLabelUnit (Units label_unit) {
-        if (label_unit == PIXEL || label_unit == METERS)
+        if (label_unit == PIXEL || label_unit == METER)
             this->label_unit = label_unit;
     }
 

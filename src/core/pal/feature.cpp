@@ -139,7 +139,7 @@ namespace pal {
         return uid;
     }
 
-    int Feature::setPositionForPoint (double x, double y, double scale, LabelPosition ***lPos) {
+    int Feature::setPositionForPoint (double x, double y, double scale, LabelPosition ***lPos, double delta_width) {
 
 #ifdef _DEBUG_
         std::cout << "SetPosition (point) : " << layer->name << "/" << uid << std::endl;
@@ -151,13 +151,15 @@ namespace pal {
         double xrm;
         double yrm;
 
-        if (layer->label_unit == PIXEL) {
-            xrm = px2meters (label_x, dpi, scale);
-            yrm = px2meters (label_y, dpi, scale);
-        } else {
-            xrm = label_x;
-            yrm = label_y;
-        }
+        xrm = unit_convert(label_x, 
+                layer->label_unit, 
+                layer->pal->map_unit, 
+                dpi, scale, delta_width);
+
+        yrm = unit_convert(label_y,
+                layer->label_unit, 
+                layer->pal->map_unit, 
+                dpi, scale, delta_width);
 
         int nbp = layer->pal->point_p;
 
@@ -174,7 +176,10 @@ namespace pal {
         //if (nbp==2)
         //   beta = M_PI/2;
 
-        double distlabel = px2meters (double (this->distlabel), layer->pal->dpi, scale);
+        double distlabel = unit_convert(this->distlabel,
+                pal::PIXEL, 
+                layer->pal->map_unit, 
+                dpi, scale, delta_width);
 
         double lx, ly; /* label pos */
 
@@ -274,22 +279,31 @@ namespace pal {
     }
 
 // TODO work with squared distance by remonving call to sqrt or dist_euc2d
-    int Feature::setPositionForLine (double scale, LabelPosition ***lPos, PointSet *mapShape) {
+    int Feature::setPositionForLine (double scale, LabelPosition ***lPos, PointSet *mapShape, double delta_width) {
 #ifdef _DEBUG_
         std::cout << "SetPosition (line) : " << layer->name << "/" << uid << std::endl;
 #endif
         int i;
         int dpi = layer->pal->dpi;
         double xrm, yrm;
-        if (layer->label_unit == PIXEL) {
-            xrm = px2meters (label_x, dpi, scale);
-            yrm = px2meters (label_y, dpi, scale);
-        } else {
-            xrm = label_x;
-            yrm = label_y;
-        }
 
-        double distlabel = px2meters (double (this->distlabel), layer->pal->dpi, scale);
+        xrm = unit_convert(label_x, 
+                layer->label_unit, 
+                layer->pal->map_unit, 
+                dpi, scale, delta_width);
+
+        yrm = unit_convert(label_y,
+                layer->label_unit, 
+                layer->pal->map_unit, 
+                dpi, scale, delta_width);
+
+
+        double distlabel = unit_convert(this->distlabel,
+                pal::PIXEL, 
+                layer->pal->map_unit, 
+                dpi, scale, delta_width);
+
+
         double *d; // segments lengths distance bw pt[i] && pt[i+1]
         double *ad;  // absolute distance bw pt[0] and pt[i] along the line
         double ll; // line length
@@ -311,7 +325,7 @@ namespace pal {
 
         PointSet * line = mapShape;
 #ifdef _DEBUG_FULL_
-        std::cout << "New line of " << line->nbPoints << " points" << std::endl;
+        std::cout << "New line of " << line->nbPoints << " points with label " << xrm << "x" << yrm << std::endl;
 #endif
 
         nbPoints = line->nbPoints;
@@ -447,7 +461,7 @@ namespace pal {
      *
      */
 
-    int Feature::setPositionForPolygon (double scale, LabelPosition ***lPos, PointSet *mapShape) {
+    int Feature::setPositionForPolygon (double scale, LabelPosition ***lPos, PointSet *mapShape, double delta_width) {
 
 #ifdef _DEBUG_
         std::cout << "SetPosition (polygon) : " << layer->name << "/" << uid << std::endl;
@@ -459,13 +473,15 @@ namespace pal {
         double xrm;
         double yrm;
 
-        if (layer->label_unit == PIXEL) {
-            xrm = px2meters (label_x, layer->pal->dpi, scale);
-            yrm = px2meters (label_y, layer->pal->dpi, scale);
-        } else {
-            xrm = label_x;
-            yrm = label_y;
-        }
+        xrm = unit_convert(label_x, 
+                layer->label_unit, 
+                layer->pal->map_unit, 
+                layer->pal->dpi, scale, delta_width);
+
+        yrm = unit_convert(label_y,
+                layer->label_unit, 
+                layer->pal->map_unit, 
+                layer->pal->dpi, scale, delta_width);
 
         //print();
 
@@ -687,20 +703,23 @@ namespace pal {
         bbox[1] = bbox_min[1];
         bbox[2] = bbox_max[0];
         bbox[3] = bbox_max[1];
+
+        double delta = bbox_max[0] - bbox_min[0];
+
         switch (type) {
         case GEOS_POINT:
             fetchCoordinates ();
-            nbp = setPositionForPoint (x[0], y[0], scale, lPos);
+            nbp = setPositionForPoint (x[0], y[0], scale, lPos, delta);
 #ifdef _EXPORT_MAP_
             toSVGPath (nbPoints, type, x, y, dpi , scale,
-                       convert (bbox_min[0], scale, dpi),
-                       convert (bbox_max[1], scale, dpi),
+                       convert2pt (bbox_min[0], scale, dpi),
+                       convert2pt (bbox_max[1], scale, dpi),
                        layer->name, uid, svgmap);
 #endif
             releaseCoordinates();
             break;
         case GEOS_LINESTRING:
-            nbp = setPositionForLine (scale, lPos, mapShape);
+            nbp = setPositionForLine (scale, lPos, mapShape, delta);
             break;
 
         case GEOS_POLYGON:
@@ -708,14 +727,14 @@ namespace pal {
             case P_POINT:
                 double cx, cy;
                 mapShape->getCentroid (cx, cy);
-                nbp = setPositionForPoint (cx, cy, scale, lPos);
+                nbp = setPositionForPoint (cx, cy, scale, lPos, delta);
                 break;
             case P_LINE:
             case P_LINE_AROUND:
-                nbp = setPositionForLine (scale, lPos, mapShape);
+                nbp = setPositionForLine (scale, lPos, mapShape, delta);
                 break;
             default:
-                nbp = setPositionForPolygon (scale, lPos, mapShape);
+                nbp = setPositionForPolygon (scale, lPos, mapShape, delta);
                 break;
             }
         }

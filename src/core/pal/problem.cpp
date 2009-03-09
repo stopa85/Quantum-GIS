@@ -43,6 +43,7 @@
 #include <cfloat>
 #include <ctime>
 #include <list>
+#include <limits.h> //for INT_MAX
 
 #include <pal/pal.h>
 #include <pal/palstat.h>
@@ -58,7 +59,7 @@
 #include "util.h"
 #include "priorityqueue.h"
 
-#include <limits.h>
+
 
 namespace pal {
 
@@ -3044,7 +3045,7 @@ namespace pal {
         for (i = 0;i < nbft;i++) {
             if (sol->s[i] >= 0) {
                 LabelPosition *lp = labelpositions[sol->s[i]];
-                toSVGPath (4, 3, lp->x, lp->y, pal->getDpi(), scale, convert (bbox[0], scale, pal->getDpi()), convert (bbox[3], scale, pal->getDpi()), "label", lp->feature->uid, svgmap);
+                toSVGPath (4, 3, lp->x, lp->y, pal->getDpi(), scale, convert2pt (bbox[0], scale, pal->getDpi()), convert2pt (bbox[3], scale, pal->getDpi()), "label", lp->feature->uid, svgmap);
             }
         }
 

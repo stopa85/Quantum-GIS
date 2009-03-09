@@ -64,8 +64,10 @@ namespace pal {
 
     /** Units for label sizes and distlabel */
     enum _Units {
-        PIXEL = 0, /**< pixel*/
-        METERS = 1 /**< meters [m]*/
+        PIXEL = 0, /**< pixel [px]*/
+        METER, /**< meter [m]*/
+        FOOT, /**< foot [ft]*/
+        DEGREE /**< degree [°] */
     };
 
     /** Typedef for _Units enumeration */
@@ -120,6 +122,8 @@ namespace pal {
 
         // TODO remove after tests !!!
         clock_t tmpTime;
+
+        Units map_unit;
 
         /**
          * \brief maximum # candidates for a point
@@ -235,7 +239,6 @@ namespace pal {
          * \brief delete an instance
          */
         ~Pal();
-
 
         /**
          * \brief add a new layer
@@ -374,6 +377,15 @@ namespace pal {
          */
         int getPolyP ();
 
+        /**
+         * \brief get current map unit
+         */
+        Units getMapUnit();
+
+        /**
+         * \brief set map unit
+         */
+        void setMapUnit(Units map_unit);
 
         /**
          * \brief Select the search method to use.

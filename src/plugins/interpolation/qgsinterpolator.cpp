@@ -18,6 +18,7 @@
 #include "qgsinterpolator.h"
 #include "qgsvectordataprovider.h"
 #include "qgsgeometry.h"
+#include <cmath>
 
 QgsInterpolator::QgsInterpolator( const QList<QgsVectorLayer*>& vlayers ): mDataIsCached( false ), mVectorLayers( vlayers ), zCoordInterpolation( false ), mValueAttribute( -1 )
 {
@@ -76,6 +77,7 @@ int QgsInterpolator::cacheBaseData()
 
     QgsFeature theFeature;
     double attributeValue = 0.0;
+    bool attributeConversionOk = false;
     while ( provider->nextFeature( theFeature ) )
     {
       if ( !zCoordInterpolation )
@@ -86,7 +88,11 @@ int QgsInterpolator::cacheBaseData()
         {
           return 3;
         }
-        attributeValue = att_it.value().toDouble();
+        attributeValue = att_it.value().toDouble(&attributeConversionOk);
+	if(!attributeConversionOk || isnan(attributeValue)) //don't consider vertices with attributes like 'nan' for the interpolation
+        {
+          continue;
+        }
       }
 
       if ( addVerticesToCache( theFeature.geometry(), attributeValue ) != 0 )

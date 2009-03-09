@@ -461,7 +461,7 @@ void QgsMapRenderer::render( QPainter* painter )
   //find overlay positions and draw the vector overlays
   if(overlayManager && allOverlayList.size() > 0)
   {
-    overlayManager->findObjectPositions(mRenderContext);
+    overlayManager->findObjectPositions(mRenderContext, mScaleCalculator->mapUnits());
     //draw all the overlays
     QList<QgsVectorOverlay*>::iterator allOverlayIt = allOverlayList.begin();
     for(; allOverlayIt != allOverlayList.end(); ++allOverlayIt)

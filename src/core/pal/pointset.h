@@ -90,6 +90,7 @@ namespace pal {
         friend class Pal;
         friend class Layer;
         friend class LabelPosition;
+        friend class PolygonCostCalculator;
         friend class Problem;
         friend bool pruneLabelPositionCallback (LabelPosition *lp, void *ctx);
         //friend Feat *splitButterflyPolygon (Feat *f, int pt_a, int pt_b, double cx, double cy);
@@ -100,30 +101,28 @@ namespace pal {
         friend void releaseAllInIndex (RTree<PointSet*, double, 2, double> *obstacles);
         friend bool releaseCallback (PointSet *pset, void *ctx);
         friend bool filteringCallback (PointSet*, void*);
-    public:
+    protected:
         int nbPoints;
         double *x;
         double *y;   // points order is counterclockwise
-		int type;
-
-	protected:
 
         int *status;   // -1 means inside the bbox, +1 means outside and 0 is either in either out
         int *cHull;
         int cHullSize;
 
-        
+        int type;
 
         //PointSet *parent;
 
         PointSet* holeOf;
         PointSet* parent;
 
-public:
         PointSet (double x, double y);
 
         PointSet (PointSet &ps);
 
+
+//public:
         double xmin;
         double xmax;
         double ymin;

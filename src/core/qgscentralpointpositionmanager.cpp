@@ -41,7 +41,7 @@ void QgsCentralPointPositionManager::removeLayers()
   mOverlays.clear();
 }
 
-void QgsCentralPointPositionManager::findObjectPositions(const QgsRenderContext& context)
+void QgsCentralPointPositionManager::findObjectPositions(const QgsRenderContext& context, QGis::UnitType unitType)
 {
   QList<QgsVectorOverlay*>::iterator overlay_it = mOverlays.begin();
   QgsVectorOverlay* currentOverlay = 0;

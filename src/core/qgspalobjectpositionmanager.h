@@ -27,7 +27,7 @@ class QgsPALObjectPositionManager: public QgsOverlayObjectPositionManager
     QgsPALObjectPositionManager();
     ~QgsPALObjectPositionManager();
     void addLayer(QgsVectorLayer* vl, QList<QgsVectorOverlay*>& overlays);
-    void findObjectPositions(const QgsRenderContext& renderContext);
+    void findObjectPositions(const QgsRenderContext& renderContext, QGis::UnitType unitType);
     void removeLayers();
 
     /**Sets algorithm used for object placements. Possibilities are:

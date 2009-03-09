@@ -33,7 +33,7 @@ class QgsCentralPointPositionManager: public QgsOverlayObjectPositionManager
   void addLayer(QgsVectorLayer* vl, QList<QgsVectorOverlay*>& overlays);
   /**Removes all the overlays*/
   void removeLayers();
-  void findObjectPositions(const QgsRenderContext& context);
+  void findObjectPositions(const QgsRenderContext& context, QGis::UnitType unitType);
 
  private:
   /**Calculates the central point for points/lines/polygons. Returns 0 in case of success*/

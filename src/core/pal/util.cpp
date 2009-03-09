@@ -352,6 +352,7 @@ namespace pal {
         f->minmax[3] = ymax;
 
 
+        // TODO make a function with that and add simplify() process
         int new_nbPoints = f->nbPoints;
         bool *ok = new bool[new_nbPoints];
 

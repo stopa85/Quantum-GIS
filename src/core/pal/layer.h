@@ -174,6 +174,7 @@ namespace pal {
 
         /**
          * \brief set unit for label size
+         * 
          */
         void setLabelUnit (Units label_unit);
 

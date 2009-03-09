@@ -39,6 +39,8 @@
 #include <stddef.h>
 #include <geos_c.h>
 
+#include <pal/pal.h>
+
 #include "rtree.hpp"
 #include "pointset.h"
 
@@ -78,9 +80,6 @@ namespace pal {
      */
     LinkedList<Feat*> * splitGeom (GEOSGeometry *the_geom, const char *geom_id);
 
-
-
-
     typedef struct _feats {
         Feature *feature;
         PointSet *shape;
@@ -116,18 +115,91 @@ namespace pal {
     inline double vabs (double x)
     { return x >= 0 ? x : -x; }
 
-    inline double px2meters (double x, int dpi, double scale)
-    { return ( (x / double (dpi)) * 0.0254) * scale; }
 
+
+      
+    inline double degree2meter (double delta_deg){
+        double lat = delta_deg*0.5;
+        const static double rads = (4.0*atan(1.0))/180.0;
+        double a = cos(lat*rads);
+        a = a*a;
+        double c = 2.0*atan2(sqrt(a), sqrt(1.0 - a));
+        const static double ra = 6378000; // [m]
+        const static double e = 0.0810820288;
+        double radius = ra*(1.0 - e*e) / pow(1.0 - e*e*sin(lat*rads)*sin(lat*rads ), 1.5 );
+        double meters = (delta_deg) / 180.0 * radius * c; // [m]
+
+        return meters;
+    }
+
+    inline double unit_convert (double x, Units from, Units to, int dpi, double scale, double delta_canvas_width)
+    { 
+        /* nothing to convert */
+        if (from == to){
+            return x;
+        }
+
+        switch (from){
+            case pal::PIXEL:
+                switch (to){
+                    case pal::METER:
+                        return ((x / double (dpi)) * 0.0254) * scale;
+                    case pal::FOOT:
+                        return ((x / double (dpi))*12) * scale;
+                    case pal::DEGREE:
+                        double iw = degree2meter(delta_canvas_width)*39.3700787;
+                        return (x * delta_canvas_width * scale) / (iw * dpi);
+                }
+                break;
+            case pal::METER:
+                switch (to){
+                    case pal::PIXEL:
+                        return (x*dpi)/(2.54*scale);
+                    case pal::FOOT:
+                        return x/0.3048;
+                    case pal::DEGREE:
+                        double mw = degree2meter(delta_canvas_width);
+                        return (x * delta_canvas_width) / mw;
+                }
+                break;
+            case pal::FOOT:
+                switch (to){
+                    case pal::PIXEL:
+                        return (x*dpi)/(12*scale);
+                    case pal::METER:
+                        return x*0.3048;
+                    case pal::DEGREE:
+                        double iw = degree2meter(delta_canvas_width)*39.3700787;
+                        return (x * delta_canvas_width) / iw;
+                }
+                break;
+            case pal::DEGREE:
+                switch (to){
+                    case pal::PIXEL:
+                        fprintf (stderr, "Degree to pixel not yet implemented");
+                        break;
+                    case pal::METER:
+                        fprintf (stderr, "Degree to meter not yet implemented");
+                        break;
+                    case pal::FOOT:
+                        fprintf (stderr, "Degree to foot not yet implemented");
+                        break;
+                }
+                break;
+        }
+
+        fprintf (stderr, "Unable to convert. Unknown units");
+        return 0.0;
+    }
 
 
     /* From meters to PostScript Point */
-    inline void convert (int *x, double scale, int dpi) {
+    inline void convert2pt (int *x, double scale, int dpi) {
         *x = (int) ( ( (double) * x / scale) * 39.3700787402 * dpi + 0.5);
     }
 
 
-    inline int convert (double x, double scale, int dpi) {
+    inline int convert2pt (double x, double scale, int dpi) {
         return (int) ( (x / scale) * 39.3700787402 * dpi + 0.5);
     }
 

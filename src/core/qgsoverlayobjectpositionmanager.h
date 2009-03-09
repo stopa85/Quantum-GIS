@@ -19,6 +19,7 @@
 #define QGSOVERLAYOBJECTPOSITIONMANAGER_H
 
 #include <QList>
+#include "qgis.h"
 
 class QgsRenderContext;
 class QgsVectorLayer;
@@ -34,8 +35,10 @@ class QgsOverlayObjectPositionManager
   virtual void addLayer(QgsVectorLayer* vl, QList<QgsVectorOverlay*>& overlays) = 0;
   /**Removes all the layers*/
   virtual void removeLayers() = 0;
-  /**Calculate positions for the overlay objects*/
-  virtual void findObjectPositions(const QgsRenderContext& context) = 0;
+  /**Calculate positions for the overlay objects
+    @param context Context of rendering operation (Painter, scale factor)
+    @param unitType meters, feet, degrees*/
+  virtual void findObjectPositions(const QgsRenderContext& context, QGis::UnitType unitType) = 0;
 };
 
 #endif
