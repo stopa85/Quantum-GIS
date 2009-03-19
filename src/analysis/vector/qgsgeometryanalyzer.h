@@ -16,36 +16,37 @@
  ***************************************************************************/
 /* $Id: qgis.h 9774 2008-12-12 05:41:24Z timlinux $ */
 
-#ifndef QGSGEOMETRYANALYZER_H
-#define QGSGEOMETRYANALYZER_H
+#ifndef QGSGEOMETRYANALYZERH
+#define QGSGEOMETRYANALYZERH
 /** \ingroup analysis
  * The QGis class provides vector geometry analysis functions
  */
 
-class ANALYSIS_EXPORT QgsAnalysisExport
+class ANALYSISEXPORT QgsAnalysisExport
 {
   public:
 
-bool single_to_multi(  );
-bool multi_to_single(  );
-bool extract_nodes(  );
-bool polygons_to_lines(  );
-bool export_geometry_info(  );
-bool simplify_geometry(  );
-bool polygon_centroids(  );
-bool delaunay_triangulation(  );
-bool layer_extent(  );
-bool extractAsSimple(  geom, tolerance );
-bool simplifyLine(  ln, typ, tol );
-bool recursiveDouglasPeucker(  line, tol, j, k );
-bool shortestDistance(  tline, point);
-bool simpleMeasure(  inGeom );
-bool perimMeasure(  inGeom, measure );
-bool checkForField(  L, e );
-bool checkGeometryFields(  vlayer );
-bool extractAsLine(  geom );
-bool extractAsSingle(  geom );
-bool extractAsMulti(  geom );
-bool convertGeometry(  geom_list, vType );
+    bool singleToMulti(  );
+    bool multiToSingle(  );
+    bool extractNodes(  );
+    bool polygonsToLines(  );
+    bool exportGeometryInfo(  );
+    bool simplifyGeometry(  );
+    bool polygonCentroids(  );
+    bool delaunayTriangulation(  );
+    bool layerExtent(  );
+    bool extractAsSimple(  geom, tolerance );
+    bool simplifyLine(  ln, typ, tol );
+    bool recursiveDouglasPeucker(  line, tol, j, k );
+    bool shortestDistance(  tline, point);
+    bool simpleMeasure(  inGeom );
+    bool perimMeasure(  inGeom, measure );
+    bool checkForField(  L, e );
+    bool checkGeometryFields(  vlayer );
+    bool extractAsLine(  geom );
+    bool extractAsSingle(  geom );
+    bool extractAsMulti(  geom );
+    bool convertGeometry(  geomlist, vType );
 
-}
+};
+#endif //QGSVECTORANALYZER
