@@ -20,7 +20,7 @@
 
 #include "qgsinterpolator.h"
 
-class QgsIDWInterpolator: public QgsInterpolator
+class ANALYSIS_EXPORT QgsIDWInterpolator: public QgsInterpolator
 {
   public:
     QgsIDWInterpolator( const QList<QgsVectorLayer*>& vlayers );
