@@ -65,7 +65,6 @@ int QgsGridFileWriter::writeFile( bool showProgressDialog )
     progressDialog = new QProgressDialog( QObject::tr( "Interpolating..." ), QObject::tr( "Abort" ), 0, mNumRows, 0 );
     progressDialog->setWindowModality( Qt::WindowModal );
   }
-
   for ( int i = 0; i < mNumRows; ++i )
   {
     currentXValue = mInterpolationExtent.xMinimum();

@@ -19,7 +19,7 @@
 #include "DualEdgeTriangulation.h"
 #include "LinTriangleInterpolator.h"
 #include "Point3D.h"
-#include "qgssinglesymbolrenderer.h"
+//#include "qgssinglesymbolrenderer.h"
 #include "qgsvectorlayer.h"
 
 QgsTINInterpolator::QgsTINInterpolator( const QList<QgsVectorLayer*>& inputData ): QgsInterpolator( inputData ), mTriangulation( 0 ), mTriangleInterpolator( 0 ), mIsInitialized( false )
