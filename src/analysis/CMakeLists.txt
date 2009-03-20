@@ -18,6 +18,7 @@ SET(QGIS_ANALYSIS_SRCS
   interpolation/TriangleInterpolator.cc
   interpolation/Triangulation.cc
   interpolation/Vector3D.cc
+  vector/qgsgeometryanalyzer.cpp
 )
 
 SET(QGIS_ANALYSIS_MOC_HDRS
