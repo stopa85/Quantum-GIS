@@ -21,7 +21,6 @@
 #include "qgsapplication.h"
 #include "qgsfield.h"
 #include "qgsfeature.h"
-#include "qgsgeometry.h"
 #include "qgslogger.h"
 #include "qgscoordinatereferencesystem.h"
 #include "qgsvectorfilewriter.h"
@@ -405,7 +404,7 @@ bool QgsGeometryAnalyzer::layerExtent( QgsVectorLayer* layer,
   
 }
 
-bool QgsGeometryAnalyzer::simpleMeasure( QgsGeometry& geometry )
+QList<double> QgsGeometryAnalyzer::simpleMeasure( QgsGeometry& geometry )
 {
   /*
     if inGeom.wkbType() == QGis.WKBPoint:
@@ -424,7 +423,7 @@ bool QgsGeometryAnalyzer::simpleMeasure( QgsGeometry& geometry )
 
  */ 
 }
-bool QgsGeometryAnalyzer::perimeterMeasure( QgsGeometry& geometry )
+double QgsGeometryAnalyzer::perimeterMeasure( QgsGeometry& geometry )
 {
   /*
     value = 0.00
@@ -442,7 +441,7 @@ bool QgsGeometryAnalyzer::perimeterMeasure( QgsGeometry& geometry )
   
 }
 
-bool QgsGeometryAnalyzer::checkGeometryFields( QgsGeometry& geometry )
+QgsFieldMap QgsGeometryAnalyzer::checkGeometryFields( QgsGeometry& geometry, int index1, int index2 )
 {
   /*
     vprovider = vlayer.dataProvider()
@@ -486,10 +485,9 @@ bool QgsGeometryAnalyzer::checkGeometryFields( QgsGeometry& geometry )
         fieldList[index2] = field
     return (fieldList, index1, index2)
 */
-
   
 }
-bool QgsGeometryAnalyzer::extractAsLine( QgsGeometry& geometry )
+QgsPolyline QgsGeometryAnalyzer::extractAsLine( QgsGeometry& geometry )
 {
   /*
     multi_geom = QgsGeometry()
@@ -509,7 +507,7 @@ bool QgsGeometryAnalyzer::extractAsLine( QgsGeometry& geometry )
   */
 
 }
-bool QgsGeometryAnalyzer::extractAsSingle( QgsGeometry& geometry )
+QgsGeometry QgsGeometryAnalyzer::extractAsSingle( QgsGeometry& geometry )
 {
 /*
     multi_geom = QgsGeometry()
@@ -540,7 +538,8 @@ bool QgsGeometryAnalyzer::extractAsSingle( QgsGeometry& geometry )
 */
   
 }
-bool QgsGeometryAnalyzer::extractAsMulti( QgsGeometry& geometry )
+
+QgsGeometry QgsGeometryAnalyzer::extractAsMulti( QgsGeometry& geometry )
 {
 /*
   if ( geometry->mGeos == NULL )
@@ -592,7 +591,8 @@ bool QgsGeometryAnalyzer::extractAsMulti( QgsGeometry& geometry )
 */
   
 }
-bool QgsGeometryAnalyzer::convertGeometry( QgsGeometry& geometry )
+
+QgsGeometry QgsGeometryAnalyzer::convertGeometry( QgsGeometry& geometry )
 {
   /*
     if vType == 0:
@@ -604,7 +604,7 @@ bool QgsGeometryAnalyzer::convertGeometry( QgsGeometry& geometry )
   */
 }
 
-bool QgsGeometryAnalyzer::extractPoints( QgsGeometry& geometry )
+QList<QPoint> QgsGeometryAnalyzer::extractPoints( QgsGeometry& geometry )
 {
 /*
 	QList multi_geom;

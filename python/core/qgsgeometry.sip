@@ -224,6 +224,9 @@ not disjoint with existing polygons of the feature*/
         of segments used to approximate curves */
     QgsGeometry* buffer(double distance, int segments) /Factory/;
 
+    /** Returns a simplified version of this geometry using a specified tolerance value */
+    QgsGeometry* simplify(double tolerance) /Factory/;
+
     /** Returns the smallest convex polygon that contains all the points in the geometry. */
     QgsGeometry* convexHull() /Factory/;
     

@@ -21,6 +21,9 @@
 
 #include "qgsvectorlayer.h"
 #include "qgsfield.h"
+#include "qgsfeature.h"
+#include "qgsgeometry.h"
+#include "qgsfield.h"
 
 
 /** \ingroup analysis
@@ -65,7 +68,7 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
     bool polygonsToLines( QgsVectorLayer* layer,
         const QString& shapefileName,
         const QString& fileEncoding );
-
+        
     /**
      * Add vector layer geometry info to point (XCOORD, YCOORD), line (LENGTH),
      * or polygon (AREA, PERIMETER) layer.
@@ -98,16 +101,17 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
     bool layerExtent( QgsVectorLayer* layer,
         const QString& shapefileName,
         const QString& fileEncoding );
-
+                             
   private:
-    bool simpleMeasure( QgsGeometry& geometry );
-    bool perimeterMeasure( QgsGeometry& geometry );
-    bool checkGeometryFields( QgsGeometry& geometry );
-    bool extractAsLine( QgsGeometry& geometry );
-    bool extractAsSingle( QgsGeometry& geometry );
-    bool extractAsMulti( QgsGeometry& geometry );
-    bool convertGeometry( QgsGeometry& geometry );
-    bool extractPoints( QgsGeometry& geometry );
+
+    QList<double> simpleMeasure( QgsGeometry& geometry );
+    double perimeterMeasure( QgsGeometry& geometry );
+    QgsFieldMap checkGeometryFields( QgsGeometry& geometry, int index1, int index2 );
+    QgsPolyline extractAsLine( QgsGeometry& geometry );
+    QgsGeometry extractAsSingle( QgsGeometry& geometry );
+    QgsGeometry extractAsMulti( QgsGeometry& geometry );
+    QgsGeometry convertGeometry( QgsGeometry& geometry );
+    QList<QPoint> extractPoints( QgsGeometry& geometry );
 
 };
 #endif //QGSVECTORANALYZER

@@ -269,6 +269,9 @@ class CORE_EXPORT QgsGeometry
     /** Returns a buffer region around this geometry having the given width and with a specified number
         of segments used to approximate curves */
     QgsGeometry* buffer( double distance, int segments );
+    
+    /** Returns a simplified version of this geometry using a specified tolerance value */
+    QgsGeometry* simplify( double tolerance );
 
     /** Returns the smallest convex polygon that contains all the points in the geometry. */
     QgsGeometry* convexHull();
