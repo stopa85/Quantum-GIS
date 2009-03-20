@@ -7,6 +7,7 @@ SET (util_SRCS ../core/qgsrenderchecker.cpp)
 # the UI file won't be wrapped!
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} 
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../src/core/
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../src/analysis/vector
   ${QT_INCLUDE_DIR}
   ${GDAL_INCLUDE_DIR}

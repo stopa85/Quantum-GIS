@@ -31,57 +31,83 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
 {
   public:
 
-bool singlepartsToMultipart( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding,
-                             const int fieldIndex );
-                      
-bool multipartToSingleparts( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding );
-                      
-bool extractNodes( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding );
-                      
-bool polygonsToLines( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding );
+    /** 
+     * Convert a vector layer from single part geometry 
+     * to multipart geometry for a given field 
+     *
+     * */
+    bool singlepartsToMultipart( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding,
+        const int fieldIndex );
 
-bool exportGeometryInformation( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding );
-                      
-bool simplifyGeometry( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding,
-                             const double tolerance );
-                      
-bool polygonCentroids( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding );
-                      
-bool layerExtent( QgsVectorLayer* layer,
-                             const QString& shapefileName,
-                             const QString& fileEncoding );
-                             
+    /** 
+     * Convert multipart features to multiple singlepart features. Creates
+     * simple polygons and lines.
+     */
+    bool multipartToSingleparts( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding );
+
+    /** 
+     * Extract nodes from line and polygon vector layers and output them as
+     * points.
+     *
+     * */
+    bool extractNodes( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding );
+
+    /**
+     * Convert polygon features to line features. Multipart polygons are
+     * converted to multiple singlepart lines.
+     */
+    bool polygonsToLines( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding );
+
+    /**
+     * Add vector layer geometry info to point (XCOORD, YCOORD), line (LENGTH),
+     * or polygon (AREA, PERIMETER) layer.
+     */
+    bool exportGeometryInformation( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding );
+    
+    /**
+     * Simplify (generalise) line or polygon vector layers using (a modified)
+     * Douglas-Peucker algorithm.
+     */
+    bool simplifyGeometry( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding,
+        const double tolerance );
+
+    /**
+     * Calculate the true centroids, or 'center of mass' for each polygon in an
+     * input polygon layer.
+     */
+    bool polygonCentroids( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding );
+
+    /**
+     * Create a polygon based on the extents of all features (or all 
+     * selected features if applicable) and write it out to a shp.
+     */
+    bool layerExtent( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding );
+
   private:
-                      
-bool simpleMeasure( QgsGeometry& geometry );
-
-bool perimeterMeasure( QgsGeometry& geometry );
-
-bool checkGeometryFields( QgsGeometry& geometry );
-
-bool extractAsLine( QgsGeometry& geometry );
-
-bool extractAsSingle( QgsGeometry& geometry );
-
-bool extractAsMulti( QgsGeometry& geometry );
-
-bool convertGeometry( QgsGeometry& geometry );
-
-bool extractPoints( QgsGeometry& geometry );
+    bool simpleMeasure( QgsGeometry& geometry );
+    bool perimeterMeasure( QgsGeometry& geometry );
+    bool checkGeometryFields( QgsGeometry& geometry );
+    bool extractAsLine( QgsGeometry& geometry );
+    bool extractAsSingle( QgsGeometry& geometry );
+    bool extractAsMulti( QgsGeometry& geometry );
+    bool convertGeometry( QgsGeometry& geometry );
+    bool extractPoints( QgsGeometry& geometry );
 
 };
 #endif //QGSVECTORANALYZER
