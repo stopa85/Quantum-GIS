@@ -15,55 +15,133 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id: qgis.h 9774 2008-12-12 05:41:24Z timlinux $ */
-bool QgsGeometryAnalyzer::single_to_multi( self )
-{
-/*    vprovider = self.vlayer.dataProvider()
-    allAttrs = vprovider.attributeIndexes()
-    vprovider.select( allAttrs )
-    fields = vprovider.fields()
-    writer = QgsVectorFileWriter( self.myName, self.myEncoding, 
-    fields, vprovider.geometryType(), vprovider.crs() )
-    inFeat = QgsFeature()
-    outFeat = QgsFeature()
-    inGeom = QgsGeometry()
-    outGeom = QgsGeometry()
-    index = vprovider.fieldNameIndex( self.myField )
-    if not index == -1:
-      unique = ftools_utils.getUniqueValues( vprovider, int( index ) )
-    else:
-      unique = range( 0, self.vlayer.featureCount() )
-    nFeat = vprovider.featureCount() * len( unique )
-    nElement = 0
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
-    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
-    if not len( unique ) == self.vlayer.featureCount()
-      for i in unique:
-        vprovider.rewind()
-        multi_feature= []
-        first = True
-        while vprovider.nextFeature( inFeat )
-          atMap = inFeat.attributeMap()
-          idVar = atMap[ index ]
-          if idVar.toString().trimmed() == i.toString().trimmed()
-            if first:
-              atts = atMap
-              first = False
-            inGeom = QgsGeometry( inFeat.geometry() )
-            vType = inGeom.type()
-            feature_list = self.extractAsMulti( inGeom )
-            multi_feature.extend( feature_list )
-          nElement += 1
-          self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
-        outFeat.setAttributeMap( atts )
-        outGeom = QgsGeometry( self.convertGeometry( multi_feature, vType ) )
-        outFeat.setGeometry( outGeom )
-        writer.addFeature( outFeat )
-      del writer
-    return True
 
- */ 
+#include "qgsgeometryanalyzer.h"
+
+#include "qgsapplication.h"
+#include "qgsfield.h"
+#include "qgsfeature.h"
+#include "qgsgeometry.h"
+#include "qgslogger.h"
+#include "qgscoordinatereferencesystem.h"
+#include "qgsvectorfilewriter.h"
+#include "qgsvectordataprovider.h"
+
+
+
+bool QgsGeometryAnalyzer::singlepartsToMultipart( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding,
+                             const int fieldIndex )
+{
+/*
+//    vprovider = self.vlayer.dataProvider()
+  QgsVectorDataProvider* provider = layer->dataProvider();
+//    allAttrs = vprovider.attributeIndexes()
+  QgsAttributeList allAttrs = provider->attributeIndexes();
+//    vprovider.select( allAttrs )
+  provider->select( allAttr, QgsRectangle(), true );
+//    fields = vprovider.fields()
+//  const QgsFieldsList& fields = provider->fields();
+//    writer = QgsVectorFileWriter( self.myName, self.myEncoding, 
+//    fields, vprovider.geometryType(), vprovider.crs() )
+  QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
+      fileEncoding, provider->fields(), provider->geometryType(), provider->crs() );
+
+  // check whether file creation was successful
+  WriterError err = writer->hasError();
+  if ( err != NoError )
+  {
+    delete writer;
+    return err;
+  }
+//    inFeat = QgsFeature()
+  QgsFeature inFeat;
+//    outFeat = QgsFeature()
+  QgsFeature outFeat;
+//    inGeom = QgsGeometry()
+  QgsGeometry inGeom;
+//    outGeom = QgsGeometry()
+  QgsGeometry outGeom;
+//    index = vprovider.fieldNameIndex( self.myField )
+  int index = provider->fieldNameIndex( fieldName );
+//    if not index == -1:
+
+  if ( index == -1 )
+  {
+    return false;
+  }
+
+  QList<QVariant> unique;
+  provider->uniqueValues( index, unique )
+//      unique = ftools_utils.getUniqueValues( vprovider, int( index ) )
+//    else:
+//      unique = range( 0, self.vlayer.featureCount() )
+
+//    nFeat = vprovider.featureCount() * len( unique )
+//    nElement = 0
+//    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
+//    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
+  if ( unique->size() < layer->featureCount() )
+  {
+//    if not len( unique ) == self.vlayer.featureCount()
+//      for i in unique:
+    QList<QgsGeometry> multiGeom;
+    bool first;
+    QgsAttributeMap atMap;
+
+    for ( int it = unique.begin(); it != unique.end(); ++it )
+    {
+      provider->select( allAttr, QgsRectangle(), true );
+//        vprovider.rewind()
+//        multi_feature= []
+//        first = True
+      first = true;
+      while ( provider->nextFeature( inFeat ) )
+      {
+//        while vprovider.nextFeature( inFeat )
+
+//          atMap = inFeat.attributeMap()
+
+//          idVar = atMap[ index ]
+//          if idVar.toString().trimmed() == i.toString().trimmed()
+         if ( inFeat.attributeMap()[ index ].toString().trimmed() == it.toString().trimmed() )
+         {
+//            if first:
+//              atts = atMap
+//              first = False
+           if (first)
+           {
+             atMap = inFeat.attributeMap();
+             first = false;
+           }
+//            inGeom = QgsGeometry( inFeat.geometry() )
+         inGeom = inFeat.geometry();
+//            vType = inGeom.type()
+         multiGeom << inGeom.asGeometryCollection()
+//            feature_list = self.extractAsMulti( inGeom )
+//            multi_feature.extend( feature_list )
+         }
+//          nElement += 1
+//          self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
+//        outFeat.setAttributeMap( atts )
+          outFeat.setAttributeMap( atMap );
+//        outGeom = QgsGeometry( self.convertGeometry( multi_feature, vType ) )
+          outGeom = convertGeometry( multifeature, vtype );
+          outFeat.setGeometry( outGeom );
+          writer.addFeature( outFeat );
+//        outFeat.setGeometry( outGeom )
+//        writer.addFeature( outFeat )
+      }
+  }
+//      del writer
+//    return True
+*/
 }
-bool QgsGeometryAnalyzer::multi_to_single( self )
+
+bool QgsGeometryAnalyzer::multipartToSingleparts( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding )
 {
   /*
     vprovider = self.vlayer.dataProvider()
@@ -95,39 +173,43 @@ bool QgsGeometryAnalyzer::multi_to_single( self )
 
  */ 
 }
-bool QgsGeometryAnalyzer::extract_nodes( self )
+bool QgsGeometryAnalyzer::extractNodes( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding )
 {
-  /*
-    vprovider = self.vlayer.dataProvider()
-    allAttrs = vprovider.attributeIndexes()
-    vprovider.select( allAttrs )
-    fields = vprovider.fields()
-    writer = QgsVectorFileWriter( self.myName, self.myEncoding, 
-    fields, QGis.WKBPoint, vprovider.crs() )
-    inFeat = QgsFeature()
-    outFeat = QgsFeature()
-    inGeom = QgsGeometry()
-    outGeom = QgsGeometry()
-    nFeat = vprovider.featureCount()
-    nElement = 0
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
-    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
-    while vprovider.nextFeature( inFeat )
-      nElement += 1  
-      self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
-      inGeom = inFeat.geometry()
-      atMap = inFeat.attributeMap()
-      pointList = ftools_utils.extractPoints( inGeom )
-      outFeat.setAttributeMap( atMap )
+/*
+  QgsVectorDataProvider* provider = layer->dataProvider();
+  QgsAttributeList allAttrs = provider->attributeIndexes();
+  provider->select( allAttr, QgsRectangle(), true );
+  QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
+      fileEncoding, provider->fields(), QGis::WKBPoint, provider->crs() );
+
+  WriterError err = writer->hasError();
+  if ( err != NoError )
+  {
+    delete writer;
+    return err;
+  }
+  QgsFeature inFeat;
+  QgsFeature outFeat;
+  QgsGeometry inGeom;
+  QgsGeometry outGeom;
+  QList< QgsPoint > pointList;
+
+  while ( provider->nextFeature( inFeat ) )
+  {
+      pointList = extractPoints( inFeat.geometry() )
+      outFeat.setAttributeMap( inFeat.attributeMap() )
       for i in pointList:
         outFeat.setGeometry( outGeom.fromPoint( i ) )
         writer.addFeature( outFeat )
     del writer
     return True
-
- */ 
+*/
 }
-bool QgsGeometryAnalyzer::polygons_to_lines( self )
+bool QgsGeometryAnalyzer::polygonsToLines( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding )
 {
   /*
     vprovider = self.vlayer.dataProvider()
@@ -162,7 +244,9 @@ bool QgsGeometryAnalyzer::polygons_to_lines( self )
 
  */ 
 }
-bool QgsGeometryAnalyzer::export_geometry_info( self )
+bool QgsGeometryAnalyzer::exportGeometryInformation( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding )
 {
   /*
     vprovider = self.vlayer.dataProvider()
@@ -194,40 +278,46 @@ bool QgsGeometryAnalyzer::export_geometry_info( self )
 
  */ 
 }
-bool QgsGeometryAnalyzer::simplify_geometry( self )
+bool QgsGeometryAnalyzer::simplifyGeometry( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding,
+                             const double tolerance )
 {
-  /*
-    vprovider = self.vlayer.dataProvider()
-    tolerance = self.myParam
-    allAttrs = vprovider.attributeIndexes()
-    vprovider.select( allAttrs )
-    fields = vprovider.fields()
-    writer = QgsVectorFileWriter( self.myName, self.myEncoding, 
-    fields, vprovider.geometryType(), vprovider.crs() )
-    inFeat = QgsFeature()
-    outFeat = QgsFeature()
-    nFeat = vprovider.featureCount()
-    nElement = 0
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  0 )
-    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
-    self.measure = QgsDistanceArea()
-    while vprovider.nextFeature( inFeat )
-      nElement += 1  
-      self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
-      inGeom = inFeat.geometry()
-      atMap = inFeat.attributeMap()
-      outGeom = self.extractAsSimple( inGeom, tolerance )
-      if outGeom is None:
-        return "math_error"
-      outFeat.setAttributeMap( atMap )
-      outFeat.setGeometry( outGeom )
-      writer.addFeature( outFeat )
-    del writer
-    return True
+/*  QgsVectorDataProvider* provider = layer->dataProvider();
+  QgsAttributeList allAttrs = provider->attributeIndexes();
+  provider->select( allAttr, QgsRectangle(), true );
+  QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
+      fileEncoding, provider->fields(), provider->geometryType(), provider->crs() );
 
- */ 
+  WriterError err = writer->hasError();
+  if ( err != NoError )
+  {
+    delete writer;
+    return err;
+  }
+  QgsFeature inFeat;
+  QgsFeature outFeat;
+  QgsGeometry inGeom;
+  QgsGeometry outGeom;
+  QList< QgsPoint > pointList;
+
+  measure = QgsDistanceArea()
+  
+  while ( provider->nextFeature( inFeat ) )
+  {
+    inGeom = inFeat.geometry()
+    outFeat.setAttributeMap( inFeat.attributeMap() )
+    outFeat.setGeometry( outGeom )
+    writer.addFeature( outFeat )
+  del writer
+  return True
+*/
+
 }
-bool QgsGeometryAnalyzer::polygon_centroids( self )
+
+bool QgsGeometryAnalyzer::polygonCentroids( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding )
 {
   /*
     vprovider = self.vlayer.dataProvider()
@@ -244,48 +334,8 @@ bool QgsGeometryAnalyzer::polygon_centroids( self )
     self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
     while vprovider.nextFeature( inFeat )
       geom = inFeat.geometry()
-      area = QgsDistanceArea()
-      A = area.measure( geom )
-      multi_geom = QgsGeometry()
-      bounding = inFeat.geometry().boundingBox()
-      xmin = bounding.xMinimum()
-      ymin = bounding.yMinimum() 
-      xmax = bounding.xMaximum()
-      ymax = bounding.yMaximum()
-      if geom.type() == 2:
-        cx = 0
-        cy = 0
-        area2 = 0
-        if geom.isMultipart()
-          multi_geom = geom.asMultiPolygon()
-          for k in multi_geom:
-            for h in k: 
-              for i in range(0, len(h) - 1)
-                j = (i + 1) % len(h)
-                factor = ((h[i].x()) * (h[j].y()) - (h[j].x()) * (h[i].y()))
-                cx = cx + ((h[i].x()) + (h[j].x())) * factor
-                cy = cy + ((h[i].y()) + (h[j].y())) * factor
-        else:
-          multi_geom = geom.asPolygon()
-          for k in multi_geom:
-            for i in range(0, len(k) - 1)
-              j = (i + 1) % len(k)
-              factor = (k[i].x()) * (k[j].y()) - (k[j].x()) * (k[i].y())
-              cx = cx + ((k[i].x()) + (k[j].x())) * factor
-              cy = cy + ((k[i].y()) + (k[j].y())) * factor
-        A = A * 6
-        factor = 1/A
-        cx = cx * factor
-        cy = cy * factor
-        if cx < xmin:
-          cx = cx * -1
-        if cy < ymin:
-          cy = cy * -1
-        if cx > xmax:
-          cx = cx * -1
-        if cy > ymax:
-          cy = cy * -1
-        outfeat.setGeometry( QgsGeometry.fromPoint( QgsPoint( cx, cy ) ) )
+      centroid = geom.centroid()
+        outfeat.setGeometry( centroid )
         atMap = inFeat.attributeMap()
         outfeat.setAttributeMap( atMap )
         writer.addFeature( outfeat )
@@ -293,65 +343,14 @@ bool QgsGeometryAnalyzer::polygon_centroids( self )
       self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
     del writer
     return True
-    
  */ 
 }
-bool QgsGeometryAnalyzer::delaunay_triangulation( self )
+
+bool QgsGeometryAnalyzer::layerExtent( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding )
 {
   /*
-    import voronoi
-    vprovider = self.vlayer.dataProvider()
-    allAttrs = vprovider.attributeIndexes()
-    vprovider.select( allAttrs )
-    fields = {
-    0 : QgsField( "POINTA", QVariant.Double ),
-    1 : QgsField( "POINTB", QVariant.Double ),
-    2 : QgsField( "POINTC", QVariant.Double ) }
-    writer = QgsVectorFileWriter( self.myName, self.myEncoding,
-    fields, QGis.WKBPolygon, vprovider.crs() )
-    inFeat = QgsFeature()
-    points = []
-    print "here"
-    while vprovider.nextFeature( inFeat )
-      inGeom = QgsGeometry( inFeat.geometry() )
-      point = inGeom.asPoint()
-      points.append( point )
-    print "or here"
-    vprovider.rewind()
-    vprovider.select( allAttrs )
-    triangles = voronoi.computeDelaunayTriangulation( points )
-    feat = QgsFeature()
-    nFeat = len( triangles )
-    nElement = 0
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
-    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
-    for triangle in triangles:
-      indicies = list( triangle )
-      indicies.append( indicies[ 0 ] )
-      polygon = []
-      step = 0
-      for index in indicies:
-        vprovider.featureAtId( index, feat, True,  allAttrs )
-        geom = QgsGeometry( feat.geometry() )
-        point = QgsPoint( geom.asPoint() )
-        polygon.append( point )
-        feat.addAttribute( step, QVariant( index ) )
-        step += 1
-      geometry = QgsGeometry().fromPolygon( [ polygon ] )
-      feat.setGeometry( geometry )      
-      writer.addFeature( feat )
-      nElement += 1
-      self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
-    del writer
-    return True
-    
- */ 
-}
-bool QgsGeometryAnalyzer::layer_extent( self )
-{
-  /*
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
-    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, 0 ) )
     fields = {
     0 : QgsField( "MINX", QVariant.Double ),
     1 : QgsField( "MINY", QVariant.Double ),
@@ -401,165 +400,12 @@ bool QgsGeometryAnalyzer::layer_extent( self )
     self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, 100 ) )
     self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  0 )
     del writer
-
     return True
 */
   
 }
-bool QgsGeometryAnalyzer::extractAsSimple( self, geom, tolerance )
-{
-  /*
-    temp_geom1 = []
-    temp_geom2 = []
-    if geom.type() == 1:
-      if geom.isMultipart()
-        multi_geom = geom.asMultiPolyline() 
-        for i in multi_geom:
-          simple = self.simlifyLine( i, 1, tolerance )
-          if simple is None:
-            return None
-          else:
-            temp_geom1.append( simple )
-        return QgsGeometry().fromMultiPolyline(temp_geom1)
-      else:
-        multi_geom = self.simplifyLine( geom.asPolyline(), 1, tolerance )
-        if multi_geom is None:
-          return None
-        else:
-          return QgsGeometry().fromPolyline(multi_geom)
-    elif geom.type() == 2:
-      if geom.isMultipart()
-        multi_geom = geom.asMultiPolygon()
-        for i in multi_geom:
-          temp_geom2 = []
-          for j in i:
-            simple = self.simplifyLine( j, 2, tolerance )
-            if simple is None:
-              return None
-            else:
-              temp_geom2.append( simple )
-          temp_geom1.append( temp_geom2 )
-        return QgsGeometry().fromMultiPolygon( temp_geom1 )
-      else:
-        multi_geom = geom.asPolygon()
-        for i in multi_geom:
-          simple = self.simplifyLine( i, 2, tolerance )
-          if simple is None:
-            return None
-          else:
-            temp_geom1.append( simple )
-        return QgsGeometry().fromPolygon(temp_geom1)
 
- */ 
-}
-bool QgsGeometryAnalyzer::simplifyLine( self, ln, typ, tol )
-{
-  /*
-    newline = []
-    last = len(ln) - 1
-    if typ == 2:
-      tml = 0.00
-      mid = 1
-      for m in range(1 , last)
-        ml = self.measure.measureLine(ln[0], ln[m])
-        if ml > tml:
-          tml = ml
-          mid = m
-      keep = [0, mid, last]
-      try:
-        keep.extend( self.recursiveDouglasPeucker( ln, tol, 0, mid) )
-        keep.extend( self.recursiveDouglasPeucker( ln, tol, mid, last) )
-      except:
-        return None
-      if len(keep) <= 3:
-        return ln
-    else:
-      keep = [0, last]
-      keep.extend( self.recursiveDouglasPeucker( ln, tol, 0, last) )
-    keep.sort()
-    for i in keep:
-      newline.append(ln[i])
-    return newline
-
- */ 
-}
-bool QgsGeometryAnalyzer::recursiveDouglasPeucker( self, line, tol, j, k )
-{
-  /*
-  # recursiveDouglasPeucker based on function
-  # by Schuyler Erle <schuyler@nocat.net> 
-  # Copyright (c) 2005, Frank Warmerdam <warmerdam@pobox.com>
-    keep = []
-    if k <= j+1: # there is nothing to simplify
-      return keep
-    # degenerate case
-    if self.measure.measureLine( line[ j ], line[ k ]) < tol:
-      return keep
-    # check for adequate approximation by segment S from v[j] to v[k]
-    maxi = j  # index of vertex farthest from S
-    maxd = 0  # distance squared of farthest vertex
-    tline = [ line[ j ], line[ k ] ]
-    # test each vertex v[i] for max distance from S
-    for i in range( j + 1, k )
-        # compute distance
-      #dv = seg.Distance( pts[i] )
-      dv = self.shortestDistance( tline, line[ i ] )
-      if dv is None:
-        return None
-        # test with current max distance
-      if dv > maxd: 
-        # v[i] is a new max vertex
-        maxi = i
-        maxd = dv
-    if maxd > tol:         # error is worse than the tolerance
-        # split the polyline at the farthest vertex from S
-      keep.append( maxi ) # mark v[maxi] for the simplified polyline
-        # recursively simplify the two subpolylines at v[maxi]
-      keep.extend( self.recursiveDouglasPeucker( line, tol, j, maxi ) )  # v[j] to v[maxi]
-      keep.extend( self.recursiveDouglasPeucker( line, tol, maxi, k ) )  # v[maxi] to v[k]
-
-    # else the approximation is OK, so ignore intermediate vertices
-    return keep
-*/
-  
-}
-bool QgsGeometryAnalyzer::shortestDistance( self, tline, point)
-{
-  /*
-    try:
-      a = self.measure.measureLine( tline[ 1 ], point )
-      b = self.measure.measureLine( tline[ 0 ], point)
-      c = self.measure.measureLine( tline[ 0 ], tline[ 1 ] )
-      if a * b * c == 0.00:
-        return 0.00
-      x = ( ( a * a + b * b - c * c ) / ( 2.00 * b ) )
-      h = math.sqrt( ( a * a ) - ( x * x ) )
-      y = ( b - x )
-      a3 = ( math.atan( h / x ) )
-      if a3 < 0:
-        a3 = a3 + math.pi
-      elif a3 > math.pi:
-        a3 = a3 - math.pi
-      a1 = ( math.atan( h / y ) )
-      if a1 < 0:
-        a1 = a1 + math.pi
-      elif a1 > math.pi:
-        a1 = a1 - math.pi
-      a3 = a3 * ( 180 / math.pi )
-      a1 = a1 * (180 / math.pi)
-      a2 = ( ( math.pi ) * ( 180 / math.pi ) ) - a1 - a3
-      if a3 >= 90.00:
-        length = c
-      elif a2 >= 90.00:
-        length = b
-      length = math.sin( a1 ) * b
-      return math.fabs( length )
-    except:
-      return None
-
- */ 
-}
-bool QgsGeometryAnalyzer::simpleMeasure( self, inGeom )
+bool QgsGeometryAnalyzer::simpleMeasure( QgsGeometry& geometry )
 {
   /*
     if inGeom.wkbType() == QGis.WKBPoint:
@@ -578,7 +424,7 @@ bool QgsGeometryAnalyzer::simpleMeasure( self, inGeom )
 
  */ 
 }
-bool QgsGeometryAnalyzer::perimMeasure( self, inGeom, measure )
+bool QgsGeometryAnalyzer::perimeterMeasure( QgsGeometry& geometry )
 {
   /*
     value = 0.00
@@ -595,19 +441,8 @@ bool QgsGeometryAnalyzer::perimMeasure( self, inGeom, measure )
 */
   
 }
-bool QgsGeometryAnalyzer::checkForField( self, L, e )
-{
-  /*
-    e = QString( e ).toLower()
-    fieldRange = range( 0,len( L ) ) 
-    for item in fieldRange:
-      if L[ item ].toLower() == e:
-        return True, item
-    return False, len( L )
-*/
-  
-}
-bool QgsGeometryAnalyzer::checkGeometryFields( self, vlayer )
+
+bool QgsGeometryAnalyzer::checkGeometryFields( QgsGeometry& geometry )
 {
   /*
     vprovider = vlayer.dataProvider()
@@ -650,11 +485,11 @@ bool QgsGeometryAnalyzer::checkGeometryFields( self, vlayer )
         index2 = len(fieldList.keys())
         fieldList[index2] = field
     return (fieldList, index1, index2)
-
 */
+
   
 }
-bool QgsGeometryAnalyzer::extractAsLine( self, geom )
+bool QgsGeometryAnalyzer::extractAsLine( QgsGeometry& geometry )
 {
   /*
     multi_geom = QgsGeometry()
@@ -671,12 +506,12 @@ bool QgsGeometryAnalyzer::extractAsLine( self, geom )
     else:
       return []
 
-  
-*/
+  */
+
 }
-bool QgsGeometryAnalyzer::extractAsSingle( self, geom )
+bool QgsGeometryAnalyzer::extractAsSingle( QgsGeometry& geometry )
 {
-  /*
+/*
     multi_geom = QgsGeometry()
     temp_geom = []
     if geom.type() == 0:
@@ -705,9 +540,38 @@ bool QgsGeometryAnalyzer::extractAsSingle( self, geom )
 */
   
 }
-bool QgsGeometryAnalyzer::extractAsMulti( self, geom )
+bool QgsGeometryAnalyzer::extractAsMulti( QgsGeometry& geometry )
 {
-  /*
+/*
+  if ( geometry->mGeos == NULL )
+  {
+    geometry->exportWkbToGeos();
+  }
+  if ( !geometry->mGeos )
+  {
+    return 0;
+  }
+    return fromGeosGeom( GEOSIntersection( mGeos, geometry->mGeos ) );
+
+  for ( int i = 0; i < geometry.size(); i++ )
+    geomarr[i] = geometry->mGeos[i];
+
+  GEOSGeometry *geom = 0;
+
+  try
+  {
+    geom = GEOSGeom_createCollection( typeId, geomarr, geoms.size() );
+  }
+  catch ( GEOSException &e )
+  {
+    Q_UNUSED( e );
+  }
+
+  delete [] geomarr;
+
+  return geom;
+}  
+
     temp_geom = []
     if geom.type() == 0:
       if geom.isMultipart()
@@ -728,7 +592,7 @@ bool QgsGeometryAnalyzer::extractAsMulti( self, geom )
 */
   
 }
-bool QgsGeometryAnalyzer::convertGeometry( self, geom_list, vType )
+bool QgsGeometryAnalyzer::convertGeometry( QgsGeometry& geometry )
 {
   /*
     if vType == 0:
@@ -737,5 +601,60 @@ bool QgsGeometryAnalyzer::convertGeometry( self, geom_list, vType )
       return QgsGeometry().fromMultiPolyline(geom_list)
     else:
       return QgsGeometry().fromMultiPolygon(geom_list)
+  */
+}
+
+bool QgsGeometryAnalyzer::extractPoints( QgsGeometry& geometry )
+{
+/*
+	QList multi_geom;
+	QList<QgsPoint> temp_geom;
+	if ( geom.type() == QGis::Point )// it's a point
+	{
+    if ( geom.isMultipart() )
+    {
+		  temp_geom << geom.asMultiPoint();
+    }
+		else
+		{
+      temp_geom << geom.asPoint();
+    }
+  }
+  else if ( geom.type() == QGis::Line ) // it's a line
+	{
+    if ( geom.isMultipart() )
+    {
+      multi_geom << geom.asMultiPolyline(); // multi_geog is a multiline    for ( int it = unique.begin(); it != unique.end(); ++it )
+      for ( QgsPolyline i = multi_geom.begin(); i != multi_geom.end(); ++i ) // i is a line
+      {
+        temp_geom << i;
+      }
+    }
+    else
+    {
+      temp_geom << geom.asPolyline();
+    }
+  }
+  else if ( geom.type() == 2 ) // it's a polygon
+  {
+    if ( geom.isMultipart() )
+    {
+      multi_geom = geom.asMultiPolygon(); // multi_geom is a multipolygon
+      for ( i in multi_geom ) // i is a polygon
+        for ( j in i ) // j is a line
+        {
+          temp_geom << extend( j )
+        }
+    }
+		else
+		{
+      multi_geom = geom.asPolygon() #multi_geom is a polygon
+      for ( i in multi_geom ) // i is a line
+        {
+          temp_geom.extend( i )
+        }
+    }
+  }
+  return temp_geom
   */
 }

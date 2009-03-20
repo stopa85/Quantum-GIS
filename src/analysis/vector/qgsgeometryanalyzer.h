@@ -18,35 +18,70 @@
 
 #ifndef QGSGEOMETRYANALYZERH
 #define QGSGEOMETRYANALYZERH
+
+#include "qgsvectorlayer.h"
+#include "qgsfield.h"
+
+
 /** \ingroup analysis
  * The QGis class provides vector geometry analysis functions
  */
 
-class ANALYSISEXPORT QgsAnalysisExport
+class ANALYSIS_EXPORT QgsGeometryAnalyzer
 {
   public:
 
-    bool singleToMulti(  );
-    bool multiToSingle(  );
-    bool extractNodes(  );
-    bool polygonsToLines(  );
-    bool exportGeometryInfo(  );
-    bool simplifyGeometry(  );
-    bool polygonCentroids(  );
-    bool delaunayTriangulation(  );
-    bool layerExtent(  );
-    bool extractAsSimple(  geom, tolerance );
-    bool simplifyLine(  ln, typ, tol );
-    bool recursiveDouglasPeucker(  line, tol, j, k );
-    bool shortestDistance(  tline, point);
-    bool simpleMeasure(  inGeom );
-    bool perimMeasure(  inGeom, measure );
-    bool checkForField(  L, e );
-    bool checkGeometryFields(  vlayer );
-    bool extractAsLine(  geom );
-    bool extractAsSingle(  geom );
-    bool extractAsMulti(  geom );
-    bool convertGeometry(  geomlist, vType );
+bool singlepartsToMultipart( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding,
+                             const int fieldIndex );
+                      
+bool multipartToSingleparts( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding );
+                      
+bool extractNodes( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding );
+                      
+bool polygonsToLines( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding );
+
+bool exportGeometryInformation( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding );
+                      
+bool simplifyGeometry( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding,
+                             const double tolerance );
+                      
+bool polygonCentroids( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding );
+                      
+bool layerExtent( QgsVectorLayer* layer,
+                             const QString& shapefileName,
+                             const QString& fileEncoding );
+                             
+  private:
+                      
+bool simpleMeasure( QgsGeometry& geometry );
+
+bool perimeterMeasure( QgsGeometry& geometry );
+
+bool checkGeometryFields( QgsGeometry& geometry );
+
+bool extractAsLine( QgsGeometry& geometry );
+
+bool extractAsSingle( QgsGeometry& geometry );
+
+bool extractAsMulti( QgsGeometry& geometry );
+
+bool convertGeometry( QgsGeometry& geometry );
+
+bool extractPoints( QgsGeometry& geometry );
 
 };
 #endif //QGSVECTORANALYZER
