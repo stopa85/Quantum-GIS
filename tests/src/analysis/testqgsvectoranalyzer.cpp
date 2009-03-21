@@ -16,6 +16,8 @@ Email                : sherman at mrcc dot com
 
 //header for class being tested
 #include <qgsgeometryanalyzer.h>
+#include <qgsapplication.h>
+#include <qgsproviderregistry.h>
 
 class TestQgsVectorAnalyzer: public QObject
 {
@@ -35,10 +37,45 @@ class TestQgsVectorAnalyzer: public QObject
     void polygonCentroids(  );
     void layerExtent(  );
   private:
+    QgsGeometryAnalyzer mAnalyzer;
+    QgsVectorLayer * mpLineLayer;
+    QgsVectorLayer * mpPolyLayer;
+    QgsVectorLayer * mpPointLayer;
+    
 };
 
 void  TestQgsVectorAnalyzer::initTestCase()
 {
+  //
+  // Runs once before any tests are run
+  //
+  // init QGIS's paths - true means that all path will be inited from prefix
+  QString qgisPath = QCoreApplication::applicationDirPath ();
+  QgsApplication::setPrefixPath(INSTALL_PREFIX, true);
+  QgsApplication::showSettings();
+  // Instantiate the plugin directory so that providers are loaded
+  QgsProviderRegistry::instance(QgsApplication::pluginPath());
+
+  //create some objects that will be used in all tests...
+  //create a map layer that will be used in all tests...
+  QString myFileName (TEST_DATA_DIR); //defined in CmakeLists.txt
+  QString myEndName = "lines.shp";
+  myFileName = myFileName + QDir::separator() + myEndName;
+  QFileInfo myLineInfo ( myFileName );
+  mpLineLayer = new QgsVectorLayer ( myLineInfo.filePath(),
+            myLineInfo.completeBaseName(), "ogr" );
+
+  myEndName = "polys.shp";
+  myFileName = myFileName + QDir::separator() + myEndName;
+  QFileInfo myPolyInfo ( myFileName );
+  mpPolyLayer = new QgsVectorLayer ( myPolyInfo.filePath(),
+            myPolyInfo.completeBaseName(), "ogr" );
+
+  myEndName = "points.shp";
+  myFileName = myFileName + QDir::separator() + myEndName;
+  QFileInfo myPointInfo ( myFileName );
+  mpPointLayer = new QgsVectorLayer ( myPointInfo.filePath(),
+            myPointInfo.completeBaseName(), "ogr" );
 }
 void  TestQgsVectorAnalyzer::cleanupTestCase()
 {
@@ -71,19 +108,30 @@ void TestQgsVectorAnalyzer::polygonsToLines(  )
 }
 void TestQgsVectorAnalyzer::exportGeometryInfo(  )
 {
-
 }
+
 void TestQgsVectorAnalyzer::simplifyGeometry(  )
 {
-
+  QString myTmpDir = QDir::tempPath() + QDir::separator() ;
+  QString myFileName = myTmpDir +  "simplify_layer.shp";
+  QVERIFY( mAnalyzer.simplifyGeometry( mpLineLayer,
+                             myFileName,
+                             "UTF-8",
+                             1.0 ) );
 }
+
 void TestQgsVectorAnalyzer::polygonCentroids(  )
 {
-
+  QString myTmpDir = QDir::tempPath() + QDir::separator() ;
+  QString myFileName = myTmpDir +  "centroid_layer.shp";
+  QVERIFY( mAnalyzer.polygonCentroids( mpPolyLayer, myFileName, "UTF-8" ) );
 }
+
 void TestQgsVectorAnalyzer::layerExtent(  )
 {
-
+  QString myTmpDir = QDir::tempPath() + QDir::separator() ;
+  QString myFileName = myTmpDir +  "extent_layer.shp";
+  QVERIFY( mAnalyzer.layerExtent( mpPointLayer, myFileName, "UTF-8" ) );
 }
 
 QTEST_MAIN( TestQgsVectorAnalyzer )

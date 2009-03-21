@@ -132,9 +132,10 @@ static GEOSInit geosinit;
 #define GEOSGetInteriorRingN(g,i) GEOSGetInteriorRingN( (GEOSGeometry *)g, i )
 #define GEOSDisjoint(g0,g1) GEOSDisjoint( (GEOSGeometry *)g0, (GEOSGeometry*)g1 )
 #define GEOSIntersection(g0,g1) GEOSIntersection( (GEOSGeometry*) g0, (GEOSGeometry*)g1 )
-#define GEOSBuffer(g, d, s) GEOSBuffer( (GEOSGeometry*) g, d, s)
-#define GEOSArea(g, a) GEOSArea( (GEOSGeometry*) g, a)
-#define GEOSSimplify(g, t) GEOSSimplify( (GEOSGeometry*) g, t)
+#define GEOSBuffer(g, d, s) GEOSBuffer( (GEOSGeometry*) g, d, s )
+#define GEOSArea(g, a) GEOSArea( (GEOSGeometry*) g, a )
+#define GEOSSimplify(g, t) GEOSSimplify( (GEOSGeometry*) g, t )
+#define GEOSGetCentroid(g) GEOSGetCentroid( (GEOSGeometry*) g )
 
 #define GEOSCoordSeq_getSize(cs,n) GEOSCoordSeq_getSize( (GEOSCoordSequence *) cs, n )
 #define GEOSCoordSeq_getX(cs,i,x) GEOSCoordSeq_getX( (GEOSCoordSequence *)cs, i, x )
@@ -5342,6 +5343,23 @@ QgsGeometry* QgsGeometry::simplify( double tolerance )
   try
   {
     return fromGeosGeom( GEOSSimplify( mGeos, tolerance ) );
+  }
+  CATCH_GEOS( 0 )
+}
+
+QgsGeometry* QgsGeometry::centroid()
+{
+  if ( mGeos == NULL )
+  {
+    exportWkbToGeos();
+  }
+  if ( !mGeos )
+  {
+    return 0;
+  }
+  try
+  {
+    return fromGeosGeom( GEOSGetCentroid( mGeos ) );
   }
   CATCH_GEOS( 0 )
 }

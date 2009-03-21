@@ -24,6 +24,7 @@
 #include "qgsfeature.h"
 #include "qgsgeometry.h"
 #include "qgsfield.h"
+#include "qgsdistancearea.h"
 
 
 /** \ingroup analysis
@@ -81,8 +82,8 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
      * Douglas-Peucker algorithm.
      */
     bool simplifyGeometry( QgsVectorLayer* layer,
-        const QString& shapefileName,
-        const QString& fileEncoding,
+        const QString shapefileName,
+        const QString fileEncoding,
         const double tolerance );
 
     /**
@@ -103,14 +104,14 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
                              
   private:
 
-    QList<double> simpleMeasure( QgsGeometry& geometry );
-    double perimeterMeasure( QgsGeometry& geometry );
-    QgsFieldMap checkGeometryFields( QgsGeometry& geometry, int index1, int index2 );
-    QgsGeometry extractLines( QgsGeometry& geometry );
-    QgsGeometry extractAsSingle( QgsGeometry& geometry );
-    QgsGeometry extractAsMulti( QgsGeometry& geometry );
-    QgsGeometry convertGeometry( QgsGeometry& geometry );
-    QList<QgsPoint> extractPoints( QgsGeometry& geometry );
+    QList<double> simpleMeasure( QgsGeometry* geometry );
+    double perimeterMeasure( QgsGeometry* geometry, QgsDistanceArea& measure );
+    QgsFieldMap checkGeometryFields( QgsVectorLayer* layer, int& index1, int& index2 );
+    QgsGeometry* extractLines( QgsGeometry* geometry );
+    QgsGeometry* extractAsSingle( QgsGeometry* geometry );
+    QgsGeometry* extractAsMulti( QgsGeometry* geometry );
+    QgsGeometry* convertGeometry( QgsGeometry* geometry );
+    QList<QgsPoint> extractPoints( QgsGeometry* geometry );
 
 };
 #endif //QGSVECTORANALYZER

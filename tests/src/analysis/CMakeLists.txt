@@ -77,7 +77,7 @@ QT4_WRAP_CPP(qgis_vectoranalyzertest_MOC_SRCS ${qgis_vectoranalyzertest_MOC_CPPS
 ADD_CUSTOM_TARGET(qgis_vectoranalyzertestmoc ALL DEPENDS ${qgis_vectoranalyzertest_MOC_SRCS})
 ADD_EXECUTABLE(qgis_vectoranalyzertest ${qgis_vectoranalyzertest_SRCS})
 ADD_DEPENDENCIES(qgis_vectoranalyzertest qgis_vectoranalyzertestmoc)
-TARGET_LINK_LIBRARIES(qgis_vectoranalyzertest ${QT_LIBRARIES} qgis_core)
+TARGET_LINK_LIBRARIES(qgis_vectoranalyzertest ${QT_LIBRARIES} qgis_core qgis_analysis)
   #No relinking and full RPATH for the install tree
   #See: http://www.cmake.org/Wiki/CMake_RPATH_handling#No_relinking_and_full_RPATH_for_the_install_tree
 SET_TARGET_PROPERTIES(qgis_vectoranalyzertest 
