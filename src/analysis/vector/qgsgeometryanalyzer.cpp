@@ -276,7 +276,7 @@ bool QgsGeometryAnalyzer::simplifyGeometry( QgsVectorLayer* layer,
                              const QString& fileEncoding,
                              const double tolerance )
 {
-  QgsVectorDataProvider* provider = layer->dataProvider();
+/*  QgsVectorDataProvider* provider = layer->dataProvider();
   QgsAttributeList allAttrs = provider->attributeIndexes();
   provider->select( allAttrs, QgsRectangle(), true );
   QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
@@ -295,6 +295,7 @@ bool QgsGeometryAnalyzer::simplifyGeometry( QgsVectorLayer* layer,
   }
   delete writer;
   return true;
+  */
 }
 
 bool QgsGeometryAnalyzer::polygonCentroids( QgsVectorLayer* layer,
@@ -332,6 +333,7 @@ bool QgsGeometryAnalyzer::layerExtent( QgsVectorLayer* layer,
                              const QString& shapefileName,
                              const QString& fileEncoding )
 {
+/*
   QgsFieldMap fields;
   fields.insert( 0 , QgsField( QString( "MINX" ), QVariant.Double ) );
   fields.insert( 1 , QgsField( QString( "MINY" ), QVariant.Double ) );
@@ -380,7 +382,7 @@ bool QgsGeometryAnalyzer::layerExtent( QgsVectorLayer* layer,
   writer.addFeature( feat );
   delete writer;
   return true
-  
+*/
 }
 
 QList<double> QgsGeometryAnalyzer::simpleMeasure( QgsGeometry& geometry )
@@ -466,6 +468,7 @@ QgsFieldMap QgsGeometryAnalyzer::checkGeometryFields( QgsGeometry& geometry, int
 */
   
 }
+
 QgsGeometry QgsGeometryAnalyzer::extractLines( QgsGeometry& geometry )
 {
 /*
@@ -590,7 +593,7 @@ QgsGeometry QgsGeometryAnalyzer::convertGeometry( QgsGeometry& geometry )
   */
 }
 
-QList<QgsPoint> QgsGeometryAnalyzer::extractPoints( QgsGeometry geometry* )
+QList<QgsPoint> QgsGeometryAnalyzer::extractPoints( QgsGeometry& geometry )
 {
 /*  QGis::WkbType wkbType = geometry.wkbType();
   QList<QgsPoint> pointList;

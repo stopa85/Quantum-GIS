@@ -106,11 +106,11 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
     QList<double> simpleMeasure( QgsGeometry& geometry );
     double perimeterMeasure( QgsGeometry& geometry );
     QgsFieldMap checkGeometryFields( QgsGeometry& geometry, int index1, int index2 );
-    QgsPolyline extractAsLine( QgsGeometry& geometry );
+    QgsGeometry extractLines( QgsGeometry& geometry );
     QgsGeometry extractAsSingle( QgsGeometry& geometry );
     QgsGeometry extractAsMulti( QgsGeometry& geometry );
     QgsGeometry convertGeometry( QgsGeometry& geometry );
-    QgsPolyline extractPoints( QgsGeometry* geometry );
+    QList<QgsPoint> extractPoints( QgsGeometry& geometry );
 
 };
 #endif //QGSVECTORANALYZER
