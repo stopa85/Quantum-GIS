@@ -55,7 +55,6 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
     /** 
      * Extract nodes from line and polygon vector layers and output them as
      * points.
-     *
      * */
     bool extractNodes( QgsVectorLayer* layer,
         const QString& shapefileName,
@@ -111,7 +110,7 @@ class ANALYSIS_EXPORT QgsGeometryAnalyzer
     QgsGeometry extractAsSingle( QgsGeometry& geometry );
     QgsGeometry extractAsMulti( QgsGeometry& geometry );
     QgsGeometry convertGeometry( QgsGeometry& geometry );
-    QList<QPoint> extractPoints( QgsGeometry& geometry );
+    QgsPolyline extractPoints( QgsGeometry* geometry );
 
 };
 #endif //QGSVECTORANALYZER
