@@ -226,6 +226,11 @@ not disjoint with existing polygons of the feature*/
 
     /** Returns a simplified version of this geometry using a specified tolerance value */
     QgsGeometry* simplify(double tolerance) /Factory/;
+    
+    /** Returns the center of mass of a geometry
+    * @note for line based geometries, the center point of the line is returned,
+    * and for point based geometries, the point itself is returned */
+    QgsGeometry* centroid() /Factory/;
 
     /** Returns the smallest convex polygon that contains all the points in the geometry. */
     QgsGeometry* convexHull() /Factory/;
