@@ -176,7 +176,6 @@ bool QgsGeometryAnalyzer::extractNodes( QgsVectorLayer* layer,
                              const QString& shapefileName,
                              const QString& fileEncoding )
 {
-/*
   QgsVectorDataProvider* provider = layer->dataProvider();
   QgsAttributeList allAttrs = provider->attributeIndexes();
   provider->select( allAttr, QgsRectangle(), true );
@@ -189,60 +188,64 @@ bool QgsGeometryAnalyzer::extractNodes( QgsVectorLayer* layer,
     delete writer;
     return err;
   }
+  
   QgsFeature inFeat;
   QgsFeature outFeat;
   QgsGeometry inGeom;
   QgsGeometry outGeom;
-  QList< QgsPoint > pointList;
+  QList<QgsPoint> pointList;
 
   while ( provider->nextFeature( inFeat ) )
   {
-      pointList = extractPoints( inFeat.geometry() )
-      outFeat.setAttributeMap( inFeat.attributeMap() )
-      for i in pointList:
-        outFeat.setGeometry( outGeom.fromPoint( i ) )
-        writer.addFeature( outFeat )
-    del writer
-    return True
-*/
+    pointList = extractPoints( inFeat.geometry() );
+    outFeat.setAttributeMap( inFeat.attributeMap() );
+    for ( QList<QgsPoint>::const_iterator point = pointList.constBegin(); point != pointList.constEnd(); ++point )
+    {
+      outFeat.setGeometry( outGeom.fromPoint( point ) )
+      writer.addFeature( outFeat )
+    }
+  }
+  delete writer;
+  return true;
 }
+
 bool QgsGeometryAnalyzer::polygonsToLines( QgsVectorLayer* layer,
                              const QString& shapefileName,
                              const QString& fileEncoding )
 {
-  /*
-    vprovider = self.vlayer.dataProvider()
-    allAttrs = vprovider.attributeIndexes()
-    vprovider.select( allAttrs )
-    fields = vprovider.fields()
-    writer = QgsVectorFileWriter( self.myName, self.myEncoding, 
-    fields, QGis.WKBLineString, vprovider.crs() )
-    inFeat = QgsFeature()
-    outFeat = QgsFeature()
-    inGeom = QgsGeometry()
-    outGeom = QgsGeometry()
-    nFeat = vprovider.featureCount()
-    nElement = 0
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0)
-    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
-    while vprovider.nextFeature(inFeat)
-      multi = False
-      nElement += 1  
-      self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
-      inGeom = inFeat.geometry()
-      if inGeom.isMultipart()
-        multi = True
-      atMap = inFeat.attributeMap()
-      lineList = self.extractAsLine( inGeom )
-      outFeat.setAttributeMap( atMap )
-      for h in lineList:
-        outFeat.setGeometry( outGeom.fromPolyline( h ) )
-        writer.addFeature( outFeat )
-    del writer
-    return True
+  QgsVectorDataProvider* provider = layer->dataProvider();
+  QgsAttributeList allAttrs = provider->attributeIndexes();
+  provider->select( allAttr, QgsRectangle(), true );
+  QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
+      fileEncoding, provider->fields(), QGis::WKBPoint, provider->crs() );
 
- */ 
+  WriterError err = writer->hasError();
+  if ( err != NoError )
+  {
+    delete writer;
+    return err;
+  }
+  
+  QgsFeature inFeat;
+  QgsFeature outFeat;
+  QgsGeometry inGeom;
+  QgsGeometry outGeom;
+  QList<QgsPolyline> linetList;
+
+  while ( provider->nextFeature( inFeat ) )
+  {
+    lineList = extractLines( inFeat.geometry() )
+    outFeat.setAttributeMap( inFeat.attributeMap() )
+    for ( QList<QgsPolyline>::const_iterator line = lineList.constBegin(); line != lineList.constEnd(); ++line )
+    {
+      outFeat.setGeometry( outGeom.fromPolyline( line ) )
+      writer.addFeature( outFeat )
+    }
+  }
+  delete writer;
+  return true;
 }
+
 bool QgsGeometryAnalyzer::exportGeometryInformation( QgsVectorLayer* layer,
                              const QString& shapefileName,
                              const QString& fileEncoding )
@@ -282,7 +285,7 @@ bool QgsGeometryAnalyzer::simplifyGeometry( QgsVectorLayer* layer,
                              const QString& fileEncoding,
                              const double tolerance )
 {
-/*  QgsVectorDataProvider* provider = layer->dataProvider();
+  QgsVectorDataProvider* provider = layer->dataProvider();
   QgsAttributeList allAttrs = provider->attributeIndexes();
   provider->select( allAttr, QgsRectangle(), true );
   QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
@@ -294,24 +297,20 @@ bool QgsGeometryAnalyzer::simplifyGeometry( QgsVectorLayer* layer,
     delete writer;
     return err;
   }
+  
   QgsFeature inFeat;
   QgsFeature outFeat;
   QgsGeometry inGeom;
-  QgsGeometry outGeom;
-  QList< QgsPoint > pointList;
 
-  measure = QgsDistanceArea()
-  
   while ( provider->nextFeature( inFeat ) )
   {
-    inGeom = inFeat.geometry()
-    outFeat.setAttributeMap( inFeat.attributeMap() )
-    outFeat.setGeometry( outGeom )
-    writer.addFeature( outFeat )
-  del writer
-  return True
-*/
-
+    inGeom = inFeat.geometry();
+    outFeat.setAttributeMap( inFeat.attributeMap() );
+    outFeat.setGeometry( inGeom.simplify( tolerance ) );
+    writer.addFeature( outFeat );
+  }
+  delete writer;
+  return true;
 }
 
 bool QgsGeometryAnalyzer::polygonCentroids( QgsVectorLayer* layer,
@@ -349,58 +348,59 @@ bool QgsGeometryAnalyzer::layerExtent( QgsVectorLayer* layer,
                              const QString& shapefileName,
                              const QString& fileEncoding )
 {
-  /*
-    fields = {
-    0 : QgsField( "MINX", QVariant.Double ),
-    1 : QgsField( "MINY", QVariant.Double ),
-    2 : QgsField( "MAXX", QVariant.Double ),
-    3 : QgsField( "MAXY", QVariant.Double ),
-    4 : QgsField( "CNTX", QVariant.Double ),
-    5 : QgsField( "CNTY", QVariant.Double ),
-    6 : QgsField( "AREA", QVariant.Double ),
-    7 : QgsField( "PERIM", QVariant.Double ),
-    8 : QgsField( "HEIGHT", QVariant.Double ),
-    9 : QgsField( "WIDTH", QVariant.Double ) }
+  QgsFieldMap fields;
+  fields.insert( 0 , QgsField( QString( "MINX" ), QVariant.Double ) );
+  fields.insert( 1 , QgsField( QString( "MINY" ), QVariant.Double ) );
+  fields.insert( 2 , QgsField( QString( "MAXX" ), QVariant.Double ) );
+  fields.insert( 3 , QgsField( QString( "MAXY" ), QVariant.Double ) );
+  fields.insert( 4 , QgsField( QString( "CNTX" ), QVariant.Double ) );
+  fields.insert( 5 , QgsField( QString( "CNTY" ), QVariant.Double ) );
+  fields.insert( 6 , QgsField( QString( "AREA" ), QVariant.Double ) );
+  fields.insert( 7 , QgsField( QString( "PERIM" ), QVariant.Double ) );
+  fields.insert( 8 , QgsField( QString( "HEIGHT" ), QVariant.Double ) );
+  fields.insert( 9 , QgsField( QString( "WIDTH" ), QVariant.Double  ) );
+  
+  QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
+      fileEncoding, fields, QGis::WKBPolygon, layer->dataProvider()->crs() );
 
-    writer = QgsVectorFileWriter( self.myName, self.myEncoding, 
-    fields, QGis.WKBPolygon, self.vlayer.srs() )
-    rect = self.vlayer.extent()
-    minx = rect.xMinimum()
-    miny = rect.yMinimum()
-    maxx = rect.xMaximum()
-    maxy = rect.yMaximum()
-    height = rect.height()
-    width = rect.width()
-    cntx = minx + ( width / 2.0 )
-    cnty = miny + ( height / 2.0 )
-    area = width * height
-    perim = ( 2 * width ) + (2 * height )
-    rect = [
-    QgsPoint( minx, miny ),
-    QgsPoint( minx, maxy ),
-    QgsPoint( maxx, maxy ),
-    QgsPoint( maxx, miny ),
-    QgsPoint( minx, miny ) ]
-    geometry = QgsGeometry().fromPolygon( [ rect ] )
-    feat = QgsFeature()
-    feat.setGeometry( geometry )
-    feat.setAttributeMap( {
-    0 : QVariant( minx ),
-    1 : QVariant( miny ),
-    2 : QVariant( maxx ),
-    3 : QVariant( maxy ),
-    4 : QVariant( cntx ),
-    5 : QVariant( cnty ),
-    6 : QVariant( area ),
-    7 : QVariant( perim ),
-    8 : QVariant( height ),
-    9 : QVariant( width ) } )
-    writer.addFeature( feat )
-    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, 100 ) )
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  0 )
-    del writer
-    return True
-*/
+  WriterError err = writer->hasError();
+  if ( err != NoError )
+  {
+    delete writer;
+    return err;
+  }
+
+  QgsRectangle rect;
+  rect = layer->extent();
+  double minx = rect.xMinimum();
+  double miny = rect.yMinimum();
+  double maxx = rect.xMaximum();
+  double maxy = rect.yMiaximum();
+  double height = rect.height();
+  double width = rect.width();
+  
+  double cntx = minx + ( width / 2.0 );
+  double cnty = miny + ( height / 2.0 );
+  double area = width * height;
+  double perim = ( 2 * width ) + (2 * height );
+
+  QgsFeature feat;
+  QgsAttributeMap atMap;
+  atMap.insert( 0 , QVariant( minx ) );
+  atMap.insert( 1 , QVariant( miny ) );
+  atMap.insert( 2 , QVariant( maxx ) );
+  atMap.insert( 3 , QVariant( maxy ) );
+  atMap.insert( 4 , QVariant( cntx ) );
+  atMap.insert( 5 , QVariant( cnty ) );
+  atMap.insert( 6 , QVariant( area ) );
+  atMap.insert( 7 , QVariant( perim ) );
+  atMap.insert( 8 , QVariant( height ) );
+  atMap.insert( 9 , QVariant( width ) );
+  feat.setAttributeMap( atMap );
+  feat.setGeometry( QgsGeometry().fromRect( rect ) );
+  writer.addFeature( feat );
+  delete writer;
+  return true
   
 }
 
@@ -487,25 +487,27 @@ QgsFieldMap QgsGeometryAnalyzer::checkGeometryFields( QgsGeometry& geometry, int
 */
   
 }
-QgsPolyline QgsGeometryAnalyzer::extractAsLine( QgsGeometry& geometry )
+QgsGeometry QgsGeometryAnalyzer::extractLines( QgsGeometry& geometry )
 {
-  /*
-    multi_geom = QgsGeometry()
-    temp_geom = []
-    if geom.type() == 2:
-      if geom.isMultipart()
-        multi_geom = geom.asMultiPolygon()
-        for i in multi_geom:
-          temp_geom.extend(i)
-      else:
-        multi_geom = geom.asPolygon()
-        temp_geom = multi_geom
-      return temp_geom
-    else:
-      return []
-
-  */
-
+  QGis::WkbType wkbType = geometry.wkbType();
+  QList<QgsPolyline> lineList;
+  QgsMultiPolygon polyList
+  if ( geometry.type() == QGis::Polygon )
+  {
+    if ( geometry.isMultipart() )
+    {
+      polyList = geometry.asMultiPolygon()
+      for ( QList<QgsPolyline>::const_iterator polygon = polyList.constBegin(); polygon != polyList.constEnd(); ++polygon )
+      {
+        lineList << line
+      }
+      else
+      {
+        lineList = geom.asPolygon()
+      }
+    }
+  }
+  return lineList
 }
 QgsGeometry QgsGeometryAnalyzer::extractAsSingle( QgsGeometry& geometry )
 {
@@ -604,57 +606,53 @@ QgsGeometry QgsGeometryAnalyzer::convertGeometry( QgsGeometry& geometry )
   */
 }
 
-QList<QPoint> QgsGeometryAnalyzer::extractPoints( QgsGeometry& geometry )
+QList<QgsPoint> QgsGeometryAnalyzer::extractPoints( QgsGeometry& geometry )
 {
-/*
-	QList multi_geom;
-	QList<QgsPoint> temp_geom;
-	if ( geom.type() == QGis::Point )// it's a point
-	{
-    if ( geom.isMultipart() )
-    {
-		  temp_geom << geom.asMultiPoint();
-    }
-		else
-		{
-      temp_geom << geom.asPoint();
-    }
-  }
-  else if ( geom.type() == QGis::Line ) // it's a line
-	{
-    if ( geom.isMultipart() )
-    {
-      multi_geom << geom.asMultiPolyline(); // multi_geog is a multiline    for ( int it = unique.begin(); it != unique.end(); ++it )
-      for ( QgsPolyline i = multi_geom.begin(); i != multi_geom.end(); ++i ) // i is a line
-      {
-        temp_geom << i;
-      }
-    }
-    else
-    {
-      temp_geom << geom.asPolyline();
-    }
-  }
-  else if ( geom.type() == 2 ) // it's a polygon
+  QGis::WkbType wkbType = geometry.wkbType();
+  QList<QgsPoint> pointList;
+  QgsPolyline lineList;
+  switch ( wkbType )
   {
-    if ( geom.isMultipart() )
+    case QGis::WKBPoint25D:
+    case QGis::WKBPoint:
+    case QGis::WKBMultiLineString25D:
+    case QGis::WKBMultiLineString:
     {
-      multi_geom = geom.asMultiPolygon(); // multi_geom is a multipolygon
-      for ( i in multi_geom ) // i is a polygon
-        for ( j in i ) // j is a line
-        {
-          temp_geom << extend( j )
-        }
+      geometry->convertToMultitype()
+      pointList = geometry.asMultiPoint()
+      break;
     }
-		else
-		{
-      multi_geom = geom.asPolygon() #multi_geom is a polygon
-      for ( i in multi_geom ) // i is a line
-        {
-          temp_geom.extend( i )
-        }
+    case QGis::WKBLineString25D:
+    case QGis::WKBLineString:
+    case QGis::WKBMultiLineString25D:
+    case QGis::WKBMultiLineString:
+    {
+      geometry->convertToMultitype()
+      lineList = geometry.asMultiPolyline()
+      for ( QList<QgsPolyline>::const_iterator line = lineList.constBegin(); line != lineList.constEnd(); ++line )
+      {
+        pointList << line
+      }
+      break;
     }
+    case QGis::WKBPolygon25D:
+    case QGis::WKBPolygon:
+    case QGis::WKBMultiPolygon25D:
+    case QGis::WKBMultiPolygon:
+    {
+      geometry->convertToMultitype()
+      QgsPolygon polyList = geometry.asMultiPolygon()
+      for ( QList<QgsPolygon>::const_iterator lineList = polyList.constBegin(); lineList != polyList.constEnd(); ++lineList )
+      {
+        for ( QList<QgsPolyline>::const_iterator line = lineList.constBegin(); line != lineList.constEnd(); ++line )
+        {
+          pointList << line
+        }
+      }
+      break;
+    }
+    default:
+      break;
   }
-  return temp_geom
-  */
+  return pointList;
 }
