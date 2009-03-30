@@ -101,7 +101,8 @@ namespace pal {
         friend void releaseAllInIndex (RTree<PointSet*, double, 2, double> *obstacles);
         friend bool releaseCallback (PointSet *pset, void *ctx);
         friend bool filteringCallback (PointSet*, void*);
-    protected:
+    /*protected*/ 
+public:
         int nbPoints;
         double *x;
         double *y;   // points order is counterclockwise
