@@ -37,6 +37,7 @@ class QgsDiagramDialog: public QgsApplyDialog, private Ui::QgsDiagramDialogBase
   void on_mClassificationTypeComboBox_currentIndexChanged(const QString& newType);
   void on_mClassificationComboBox_currentIndexChanged(const QString& newAttribute);
   void on_mDiagramTypeComboBox_currentIndexChanged(const QString& text);
+  void on_mDisplayDiagramsCheckBox_stateChanged(int state);
 
 
  private:
@@ -45,6 +46,8 @@ class QgsDiagramDialog: public QgsApplyDialog, private Ui::QgsDiagramDialogBase
   void restoreSettings(const QgsVectorOverlay* overlay);
   /**Vector layer containing the features to be symbolized with diagrams*/
   QgsVectorLayer* mVectorLayer;
+  /**Activate / deactivate all the input elements of this dialog*/
+  void setGuiElementsEnabled(bool enabled);
 };
 
 #endif

@@ -58,7 +58,7 @@ void QgsPALObjectPositionManager::addLayer(QgsVectorLayer* vl, QList<QgsVectorOv
       return; //error
     }
 
-  pal::Layer* positionLayer = mPositionEngine.addLayer(QString::number(mNumberOfLayers).toLocal8Bit().data(), 0, 1000000, labelArrangement, pal::PIXEL, 0, false, true, true);
+  pal::Layer* positionLayer = mPositionEngine.addLayer(QString::number(mNumberOfLayers).toLocal8Bit().data(), 0, 1000000, labelArrangement, pal::PIXEL, 0.5, true, true, true);
   ++mNumberOfLayers;
 
   if(!positionLayer)

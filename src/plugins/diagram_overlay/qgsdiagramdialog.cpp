@@ -65,6 +65,7 @@ QgsDiagramDialog::QgsDiagramDialog(QgsVectorLayer* vl): mVectorLayer(vl)
     {
       restoreSettings(previousOverlay);
     }
+  setGuiElementsEnabled(mDisplayDiagramsCheckBox->checkState() == Qt::Checked);
 }
 
 QgsDiagramDialog::QgsDiagramDialog(): mVectorLayer(0)
@@ -136,6 +137,19 @@ void QgsDiagramDialog::on_mDiagramTypeComboBox_currentIndexChanged(const QString
         mDiagramFactoryStackedWidget->setCurrentWidget(newWidget);
         newWidget->show();
     }
+}
+
+void QgsDiagramDialog::on_mDisplayDiagramsCheckBox_stateChanged(int state)
+{
+  //activate / deactivate all gui items depending on the checkbox state
+  if(state == Qt::Checked)
+  {
+    setGuiElementsEnabled(true);
+  }
+  else
+  {
+    setGuiElementsEnabled(false);
+  }
 }
 
 void QgsDiagramDialog::apply() const
@@ -316,6 +330,18 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
                 }
           }
   }
+}
+
+void QgsDiagramDialog::setGuiElementsEnabled(bool enabled)
+{
+  mDiagramTypeComboBox->setEnabled(enabled);
+  mTypeLabel->setEnabled(enabled);
+  mDiagramFactoryStackedWidget->setEnabled(enabled);
+  mClassificationTypeLabel->setEnabled(enabled);
+  mClassificationTypeComboBox->setEnabled(enabled);
+  mClassificationLabel->setEnabled(enabled);
+  mClassificationComboBox->setEnabled(enabled);
+  mWidgetStackRenderers->setEnabled(enabled);
 }
 
 

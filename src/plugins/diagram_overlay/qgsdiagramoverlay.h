@@ -34,7 +34,7 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   //setters and getters
   QString typeName() const{return "diagram";}
   void setDiagramRenderer(QgsDiagramRenderer* r);
-  const QgsDiagramRenderer* diagramRenderer() const {return mDiagramRenderer;}
+  const QgsDiagramRenderer* diagramRenderer() const;
 
   bool readXML(const QDomNode& overlayNode);
   bool writeXML(QDomNode& layer_node, QDomDocument& doc) const;

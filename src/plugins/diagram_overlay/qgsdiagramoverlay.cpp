@@ -49,6 +49,11 @@ void QgsDiagramOverlay::setDiagramRenderer(QgsDiagramRenderer* r)
   mDiagramRenderer = r;
 }
 
+const QgsDiagramRenderer* QgsDiagramOverlay::diagramRenderer() const
+{
+  return mDiagramRenderer;
+}
+
 void QgsDiagramOverlay::createOverlayObjects(const QgsRenderContext& renderContext)
 {
     if(!mDisplayFlag)
