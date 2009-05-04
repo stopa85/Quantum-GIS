@@ -15,10 +15,14 @@
 #include "qgswfsdata.h"
 #include "qgsrectangle.h"
 #include "qgscoordinatereferencesystem.h"
+#include "qgsgeometry.h"
+#include "qgshttptransaction.h"
+#include "qgslogger.h"
 #include <QBuffer>
 #include <QUrl>
 #include <QList>
 #include <QSet>
+#include <QWidget>
 
 //just for a test
 //#include <QProgressDialog>
@@ -76,6 +80,11 @@ int QgsWFSData::getWFSData()
   XML_SetElementHandler( p, QgsWFSData::start, QgsWFSData::end );
   XML_SetCharacterDataHandler( p, QgsWFSData::chars );
 
+  //start with empty extent
+  if(mExtent)
+  {
+      mExtent->set(0, 0, 0, 0);
+  }
 
   //separate host from query string
   QUrl requestUrl( mUri );
@@ -96,7 +105,7 @@ int QgsWFSData::getWFSData()
   //loop to read the data
   QByteArray readData;
   int atEnd = 0;
-  qWarning( "Entering loop" );
+
   while ( !mFinished || mHttp.bytesAvailable() > 0 )
   {
     if ( mFinished )
@@ -110,7 +119,16 @@ int QgsWFSData::getWFSData()
     }
     qApp->processEvents( QEventLoop::ExcludeUserInputEvents );
   }
-  qWarning( "Left loop" );
+
+  if(mExtent)
+  {
+    if(mExtent->isEmpty())
+      {
+        //reading of bbox from the server failed, so we calculate it less efficiently by evaluating the features
+        calculateExtentFromFeatures();
+      }
+  }
+
   return 0; //soon
 }
 
@@ -131,7 +149,7 @@ void QgsWFSData::setFinished( bool error )
 void QgsWFSData::startElement( const XML_Char* el, const XML_Char** attr )
 {
   QString elementName( el );
-  QString localName = elementName.section( NS_SEPARATOR, 1, 1 );
+    QString localName = elementName.section( NS_SEPARATOR, 1, 1 );
   if ( elementName == GML_NAMESPACE + NS_SEPARATOR + "coordinates" )
   {
     mParseModeStack.push( QgsWFSData::coordinate );
@@ -751,4 +769,55 @@ int QgsWFSData::totalWKBFragmentSize() const
     }
   }
   return result;
+}
+
+QWidget* QgsWFSData::findMainWindow() const
+{
+  QWidget* mainWindow = 0;
+
+  QWidgetList topLevelWidgets = qApp->topLevelWidgets();
+  QWidgetList::iterator it = topLevelWidgets.begin();
+  for ( ; it != topLevelWidgets.end(); ++it )
+  {
+    if (( *it )->objectName() == "QgisApp" )
+    {
+      mainWindow = *it;
+      break;
+    }
+  }
+  return mainWindow;
+}
+
+void QgsWFSData::calculateExtentFromFeatures() const
+{
+    if(mFeatures.size() < 1)
+    {
+        return;
+    }
+
+    QgsRectangle bbox;
+
+    QgsFeature* currentFeature = 0;
+    QgsGeometry* currentGeometry = 0;
+    for(int i = 0; i < mFeatures.size(); ++i)
+    {
+        currentFeature = mFeatures[i];
+        if(!currentFeature)
+        {
+            continue;
+        }
+        currentGeometry = currentFeature->geometry();
+        if(currentGeometry)
+        {
+            if(bbox.isEmpty())
+            {
+                bbox = currentGeometry->boundingBox();
+            }
+            else
+            {
+                bbox.unionRect(currentGeometry->boundingBox());
+            }
+        }
+    }
+    (*mExtent) = bbox;
 }
