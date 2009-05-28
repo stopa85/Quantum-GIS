@@ -83,6 +83,7 @@ void QgsComposerView::mousePressEvent( QMouseEvent* e )
     {
       QTransform t;
       mRubberBandItem = new QGraphicsRectItem( 0, 0, 0, 0 );
+      mRubberBandStartPos = QPointF(scenePoint.x(), scenePoint.y());
       t.translate( scenePoint.x(), scenePoint.y() );
       mRubberBandItem->setTransform( t );
       mRubberBandItem->setZValue( 100 );
@@ -249,11 +250,44 @@ void QgsComposerView::mouseMoveEvent( QMouseEvent* e )
         break;
 
       case AddMap:
-        //adjust rubber band item
-        newWidth = scenePoint.x() - mRubberBandItem->transform().dx();
-        newHeight = scenePoint.y() - mRubberBandItem->transform().dy();
-        mRubberBandItem->setRect( 0, 0, newWidth, newHeight );
-        break;
+         //adjust rubber band item
+        {
+          double x = 0;
+          double y = 0;
+          double width = 0;
+          double height = 0;
+
+          double dx = scenePoint.x() - mRubberBandStartPos.x();
+          double dy = scenePoint.y() - mRubberBandStartPos.y();
+
+          if(dx < 0)
+          {
+            x = scenePoint.x();
+            width = -dx;
+          }
+          else
+          {
+            x = mRubberBandStartPos.x();
+            width = dx;
+          }
+
+          if(dy < 0)
+          {
+            y = scenePoint.y();
+            height = -dy;
+          }
+          else
+          {
+            y = mRubberBandStartPos.y();
+            height = dy;
+          }
+
+          mRubberBandItem->setRect( 0, 0, width, height );
+          QTransform t;
+          t.translate(x, y);
+          mRubberBandItem->setTransform(t);
+          break;
+        }
 
       case MoveItemContent:
       {
