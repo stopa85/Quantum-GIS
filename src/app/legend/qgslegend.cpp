@@ -266,6 +266,7 @@ void QgsLegend::mouseMoveEvent( QMouseEvent * e )
               moveItem( dest, origin );
             }
           }
+          setCursor( QCursor( Qt::SizeVerCursor ) );
           setCurrentItem( origin );
         }
         else
@@ -290,6 +291,7 @@ void QgsLegend::mouseMoveEvent( QMouseEvent * e )
             //origin->moveItem(dest);
             moveItem( origin, dest );
           }
+          setCursor( QCursor( Qt::SizeVerCursor ) );
           setCurrentItem( origin );
         }
         else if ( action == QgsLegendItem::INSERT )
