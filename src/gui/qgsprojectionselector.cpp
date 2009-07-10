@@ -9,7 +9,7 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 /* $Id$ */
-#include "qgsprojectionselector.h"
+#include <qgsprojectionselector.h>
 
 //standard includes
 #include <cassert>
