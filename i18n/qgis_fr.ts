@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.0" language="fr_FR">
 <context>
     <name>@default</name>
     <message>
@@ -2577,7 +2577,7 @@ Le support Python va être désactivé.</translation>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1204"/>
         <source>&amp;Plugins</source>
-        <translation>&amp;Plugins</translation>
+        <translation type="unfinished">&amp;Extensions</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1419"/>
@@ -5409,6 +5409,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">
             <numerusform>
         </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>
@@ -12395,6 +12396,7 @@ This may be a problem in your network connection or at the WMS server.</source>
         <translation type="unfinished">
             <numerusform>
         </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -13466,6 +13468,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">
             <numerusform>
         </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -18137,6 +18140,7 @@ De ce fait le sélecteur de projection ne fonctionnera pas...</translation>
         <translation type="unfinished">
             <numerusform>
         </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -19284,6 +19288,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">
             <numerusform>
         </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>
@@ -19346,6 +19351,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">
             <numerusform>
         </numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -19536,7 +19542,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgssinglesymboldialog.cpp" line="114"/>
         <source>Solid Line</source>
-        <translation>Line continue</translation>
+        <translation>Ligne continue</translation>
     </message>
     <message>
         <location filename="../src/app/qgssinglesymboldialog.cpp" line="115"/>
