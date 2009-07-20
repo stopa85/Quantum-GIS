@@ -20097,7 +20097,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsspit.cpp" line="174"/>
         <source>Shapefiles (*.shp);;All files (*.*)</source>
-        <translation>Shapefiles (*.shp); Tous les fichiers (*.*)</translation>
+        <translation>Shapefiles (*.shp);;Tous les fichiers (*.*)</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspit.cpp" line="468"/>
