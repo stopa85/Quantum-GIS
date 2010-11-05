@@ -74,6 +74,9 @@ struct QgsRasterViewPort
   /** \brief Distance in map units from bottom edge to top edge for the part of the raster that
    * is to be rendered.*/
   int drawableAreaYDim;
+
+  // intersection of current map extent and layer extent
+  QgsRectangle mDrawnExtent;
 };
 
 #endif //QGSRASTERVIEWPORT_H

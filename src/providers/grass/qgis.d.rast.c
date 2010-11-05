@@ -21,7 +21,7 @@
 #include <grass/raster.h>
 #include <grass/display.h>
 
-int display( char *name, char *mapset, RASTER_MAP_TYPE data_type );
+int display( char *name, char *mapset, RASTER_MAP_TYPE data_type, char *format );
 
 int main( int argc, char **argv )
 {
@@ -31,6 +31,7 @@ int main( int argc, char **argv )
   struct GModule *module;
   struct Option *map;
   struct Option *win;
+  struct Option *format;
   struct Cell_head window;
 
   /* Initialize the GIS calls */
@@ -42,6 +43,12 @@ int main( int argc, char **argv )
 
   map = G_define_standard_option( G_OPT_R_MAP );
   map->description = ( "Raster map to be displayed" );
+
+  format = G_define_option();
+  format->key = "format";
+  format->type = TYPE_STRING;
+  format->description = "format";
+  format->options = "color,value";
 
   win = G_define_option();
   win->key = "window";
@@ -76,18 +83,19 @@ int main( int argc, char **argv )
 
   /* use DCELL even if the map is FCELL */
   if ( fp )
-    display( name, mapset, DCELL_TYPE );
+    display( name, mapset, DCELL_TYPE, format->answer );
   else
-    display( name, mapset, CELL_TYPE );
+    display( name, mapset, CELL_TYPE, format->answer );
 
   exit( EXIT_SUCCESS );
 }
 
-static int cell_draw( char *, char *, struct Colors *, RASTER_MAP_TYPE );
+static int cell_draw( char *, char *, struct Colors *, RASTER_MAP_TYPE, char *format );
 
 int display( char *name,
              char *mapset,
-             RASTER_MAP_TYPE data_type )
+             RASTER_MAP_TYPE data_type,
+             char *format )
 {
   struct Colors colors;
 
@@ -97,7 +105,7 @@ int display( char *name,
   //G_set_null_value_color(r, g, b, &colors);
 
   /* Go draw the raster map */
-  cell_draw( name, mapset, &colors, data_type );
+  cell_draw( name, mapset, &colors, data_type, format );
 
   /* release the colors now */
   G_free_colors( &colors );
@@ -108,7 +116,8 @@ int display( char *name,
 static int cell_draw( char *name,
                       char *mapset,
                       struct Colors *colors,
-                      RASTER_MAP_TYPE data_type )
+                      RASTER_MAP_TYPE data_type,
+                      char *format )
 {
   int cellfile;
   void *xarray;
@@ -120,6 +129,7 @@ static int cell_draw( char *name,
   int big_endian;
   long one = 1;
   FILE *fo;
+  int raster_size;
 
   big_endian = !( *(( char * )( &one ) ) );
 
@@ -145,6 +155,7 @@ static int cell_draw( char *name,
   // Unfortunately this is not sufficient on Windows to switch stdout to binary mode
   fo = fdopen( fileno( stdout ), "wb" );
 
+  raster_size = G_raster_size( data_type );
   /* loop for array rows */
   for ( row = 0; row < nrows; row++ )
   {
@@ -157,25 +168,53 @@ static int cell_draw( char *name,
     for ( i = 0; i < ncols; i++ )
     {
       unsigned char alpha = 255;
+      //G_debug ( 0, "row = %d col = %d", row, i );
       if ( G_is_null_value( ptr, data_type ) )
       {
         alpha = 0;
       }
-      ptr = G_incr_void_ptr( ptr, G_raster_size( data_type ) );
+      ptr = G_incr_void_ptr( ptr, raster_size );
 
-
-      // We need data suitable for QImage 32-bpp
-      // the data are stored in QImage as QRgb which is unsigned int.
-      // Because it depends on byte order of the platform we have to
-      // consider byte order (well, middle endian ignored)
-      if ( big_endian )
+      if ( strcmp(format,"color") == 0 ) 
       {
-        // I have never tested this
-        fprintf( fo, "%c%c%c%c", alpha, red[i], grn[i], blu[i] );
+        // We need data suitable for QImage 32-bpp
+        // the data are stored in QImage as QRgb which is unsigned int.
+        // Because it depends on byte order of the platform we have to
+        // consider byte order (well, middle endian ignored)
+        if ( big_endian )
+        {
+          // I have never tested this
+          fprintf( fo, "%c%c%c%c", alpha, red[i], grn[i], blu[i] );
+        }
+        else
+        {
+          fprintf( fo, "%c%c%c%c", blu[i], grn[i], red[i], alpha );
+        }
       }
       else
       {
-        fprintf( fo, "%c%c%c%c", blu[i], grn[i], red[i], alpha );
+          int *val;
+          val = (int*) (ptr);
+          //G_debug ( 0, "val = %d", *val );
+          if ( data_type == CELL_TYPE) {
+            G_debug ( 0, "valx = %d", *((CELL *) ptr));
+          }
+          if ( G_is_null_value(ptr, data_type) ) {
+            if ( data_type == CELL_TYPE) {
+              int nul = -2147483647;
+              fwrite( &nul , 4, 1, fo );
+            } else if ( data_type == DCELL_TYPE) {
+              double nul = 2.2250738585072014e-308;
+              fwrite( &nul , 8, 1, fo );
+            } else if ( data_type == FCELL_TYPE) {
+              double nul = 1.17549435e-38F;
+              fwrite( &nul , 4, 1, fo );
+            }
+          }
+          else
+          {
+            fwrite( ptr, raster_size, 1, fo );
+          }
       }
     }
   }

@@ -778,7 +778,8 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     bool readFile( const QString & fileName );
 
     /** \brief Read a raster value given position from memory block created by readData() */
-    inline double readValue( void *data, GDALDataType type, int index );
+    //inline double readValue( void *data, GDALDataType type, int index );
+    inline double readValue( void *data, int type, int index );
 
     /** \brief Update the layer if it is outdated */
     bool update();
@@ -922,8 +923,9 @@ class QPainter;*/
 class CORE_EXPORT QgsRasterImageBuffer
 {
   public:
-    QgsRasterImageBuffer( GDALRasterBandH rasterBand, QPainter* p,
-                          QgsRasterViewPort* viewPort, const QgsMapToPixel* mapToPixel, double* mGeoTransform );
+    //QgsRasterImageBuffer( GDALRasterBandH rasterBand, QPainter* p,
+    QgsRasterImageBuffer( QgsRasterDataProvider *dataProvider, int bandNo, QPainter* p,
+                          QgsRasterViewPort* viewPort, const QgsMapToPixel* mapToPixel, double* mGeoTransform  );
     ~QgsRasterImageBuffer();
     void reset( int maxPixelsInVirtualMemory = 5000000 );
     /**Returns a pointer to the next scan line (or 0 if end)*/
@@ -939,7 +941,9 @@ class CORE_EXPORT QgsRasterImageBuffer
     /**Peter's fix for zoomed in rasters*/
     void drawPixelRectangle();
 
-    GDALRasterBandH mRasterBand; //raster band
+    //GDALRasterBandH mRasterBand; //raster band
+    QgsRasterDataProvider* mDataProvider;
+    int mBandNo;
     QPainter* mPainter;
     QgsRasterViewPort* mViewPort;
     const QgsMapToPixel* mMapToPixel;
@@ -957,6 +961,7 @@ class CORE_EXPORT QgsRasterImageBuffer
     int mCurrentPartRasterMax; //maximum (raster source) row of current image
     int mCurrentPartImageRow; //current image row
     int mNumCurrentImageRows; //number of image rows for the current part
+    //QgsRectangle mCurrentPartExtent; // extent of current part in map units
 
     //current memory image and gdal scan data
     QImage* mCurrentImage;

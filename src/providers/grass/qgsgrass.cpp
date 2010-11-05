@@ -29,6 +29,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QTemporaryFile>
+#include <QHash>
 
 #include <QTextCodec>
 
@@ -1169,6 +1170,60 @@ QgsRectangle GRASS_EXPORT QgsGrass::extent( QString gisdbase, QString location, 
                           QObject::tr( "Cannot get raster extent" ) + "\n" + e.what() );
   }
   return QgsRectangle( 0, 0, 0, 0 );
+}
+
+void GRASS_EXPORT QgsGrass::size( QString gisdbase, QString location, QString mapset, QString map, int *cols, int *rows )
+{
+  QgsDebugMsg( QString( "gisdbase = %1 location = %2" ).arg( gisdbase ).arg( location ) );
+
+  *cols = 0;
+  *rows = 0;
+  try
+  {
+    QString str = QgsGrass::getInfo( "size", gisdbase, location, mapset, map, QgsGrass::Raster );
+    QStringList list = str.split( "," );
+    if ( list.size() != 2 )
+    {
+      throw QgsGrass::Exception( "Cannot parse GRASS map size: " + str );
+    }
+    *cols = list[0].toInt();
+    *rows = list[1].toInt();
+  }
+  catch ( QgsGrass::Exception &e )
+  {
+    QMessageBox::warning( 0, QObject::tr( "Warning" ),
+                          QObject::tr( "Cannot get raster extent" ) + "\n" + e.what() );
+  }
+  
+  QgsDebugMsg( QString( "raster size = %1 %2" ).arg( *cols ).arg( *rows ) );
+}
+
+QHash<QString, QString> GRASS_EXPORT QgsGrass::info( QString gisdbase, QString location, QString mapset, QString map, MapType type )
+{
+  QgsDebugMsg( QString( "gisdbase = %1 location = %2" ).arg( gisdbase ).arg( location ) );
+  QHash<QString, QString> inf;
+
+  try
+  {
+    QString str = QgsGrass::getInfo( "info", gisdbase, location, mapset, map, type );
+    QgsDebugMsg( str );
+    QStringList list = str.split( "\n" );
+    for ( int i = 0; i < list.size(); i++ ) {
+      QStringList keyVal = list[i].split(':');
+      if ( list[i].isEmpty() ) { continue; }
+      if ( keyVal.size() != 2 )
+      {
+        throw QgsGrass::Exception( "Cannot parse GRASS map info key value : " + list[i] + " (" + str + " ) " );
+      }
+      inf[keyVal[0]] = keyVal[1];
+    }
+  }
+  catch ( QgsGrass::Exception &e )
+  {
+    QMessageBox::warning( 0, QObject::tr( "Warning" ),
+                          QObject::tr( "Cannot get map info" ) + "\n" + e.what() );
+  }
+  return inf; 
 }
 
 QMap<QString, QString> GRASS_EXPORT QgsGrass::query( QString gisdbase, QString location, QString mapset, QString map, MapType type, double x, double y )

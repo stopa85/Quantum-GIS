@@ -21,6 +21,11 @@
 #ifndef QGSWMSPROVIDER_H
 #define QGSWMSPROVIDER_H
 
+extern "C"
+{
+#include <grass/gis.h>
+}
+
 #include "qgscoordinatereferencesystem.h"
 #include "qgsrasterdataprovider.h"
 #include "qgsrectangle.h"
@@ -171,6 +176,26 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
       */
     int capabilities() const;
 
+    int dataType ( int bandNo ) const;
+
+    int bandCount() const;
+
+    int colorInterpretation ( int bandNo ) const;
+
+    int xBlockSize() const;
+    int yBlockSize() const;
+
+    int xSize() const;
+    int ySize() const;
+
+
+    void readBlock( int bandNo, int xBlock, int yBlock, void *data );
+    void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height,  void *data );
+
+    double noDataValue() const;
+    double minimumValue(int bandNo)const;
+    double maximumValue(int bandNo)const;
+
     /**
      * Get metadata in a format suitable for feeding directly
      * into a subset of the GUI raster properties "Metadata" tab.
@@ -196,7 +221,16 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
     QString mMapset;        // map mapset
     QString mMapName;       // map name
 
+    RASTER_MAP_TYPE mGrassDataType; // CELL_TYPE, DCELL_TYPE, FCELL_TYPE
+
+    QgsRectangle mExtent;
+    int mCols;
+    int mRows;
+
+    QHash<QString, QString> mInfo;
+
     QgsCoordinateReferenceSystem mCrs;
+
 };
 
 #endif

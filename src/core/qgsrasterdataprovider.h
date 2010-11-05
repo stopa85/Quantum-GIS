@@ -21,7 +21,7 @@
 #ifndef QGSRASTERDATAPROVIDER_H
 #define QGSRASTERDATAPROVIDER_H
 
-
+#include "qgslogger.h"
 #include "qgsdataprovider.h"
 
 class QImage;
@@ -46,10 +46,54 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     enum Capability
     {
       NoCapabilities =              0,
-      Identify =                    1
-//      Capability2 =           1 <<  1, etc
+      Identify =                    1,
+      // Draw: the provider is capable to render data on QImage, e.g. WMS, GRASS
+      Draw =                   1 << 1,
+      // Data: the provider is capable to return data values, so that 
+      // QgsRasterLayer can render them using selected rendering mode, e.g. GDAL, GRASS
+      Data =          1 << 2
     };
 
+    // This is modified copy of GDALDataType
+    enum DataType
+    {
+      /*! Unknown or unspecified type */          UnknownDataType = 0,
+      /*! Eight bit unsigned integer */           Byte = 1,
+      /*! Sixteen bit unsigned integer */         UInt16 = 2,
+      /*! Sixteen bit signed integer */           Int16 = 3,
+      /*! Thirty two bit unsigned integer */      UInt32 = 4,
+      /*! Thirty two bit signed integer */        Int32 = 5,
+      /*! Thirty two bit floating point */        Float32 = 6,
+      /*! Sixty four bit floating point */        Float64 = 7,
+      /*! Complex Int16 */                        CInt16 = 8,
+      /*! Complex Int32 */                        CInt32 = 9,
+      /*! Complex Float32 */                      CFloat32 = 10,
+      /*! Complex Float64 */                      CFloat64 = 11,
+      TypeCount = 12          /* maximum type # + 1 */
+    }; 
+
+    // This is modified copy of GDALColorInterp
+    enum ColorInterpretation
+    {
+      UndefinedColorInterpretation=0,
+      /*! Greyscale */                                      GrayIndex=1,
+      /*! Paletted (see associated color table) */          PaletteIndex=2,
+      /*! Red band of RGBA image */                         RedBand=3,
+      /*! Green band of RGBA image */                       GreenBand=4,
+      /*! Blue band of RGBA image */                        BlueBand=5,
+      /*! Alpha (0=transparent, 255=opaque) */              AlphaBand=6,
+      /*! Hue band of HLS image */                          HueBand=7,
+      /*! Saturation band of HLS image */                   SaturationBand=8,
+      /*! Lightness band of HLS image */                    LightnessBand=9,
+      /*! Cyan band of CMYK image */                        CyanBand=10,
+      /*! Magenta band of CMYK image */                     MagentaBand=11,
+      /*! Yellow band of CMYK image */                      YellowBand=12,
+      /*! Black band of CMLY image */                       BlackBand=13,
+      /*! Y Luminance */                                    YCbCr_YBand=14,
+      /*! Cb Chroma */                                      YCbCr_CbBand=15,
+      /*! Cr Chroma */                                      YCbCr_CrBand=16,
+      /*! Max current value */                              ColorInterpretationMax=16
+    };
 
     QgsRasterDataProvider();
 
@@ -108,6 +152,72 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
 
     // TODO: Get the file masks supported by this provider, suitable for feeding into the file open dialog box
 
+    /** Returns data type for the band specified by number */
+    virtual int dataType ( int bandNo ) const
+    {
+      return QgsRasterDataProvider::UnknownDataType;
+    }
+
+    int dataTypeSize ( int dataType ) const
+    {
+      // modified copy from GDAL
+      switch( dataType )
+      {
+        case Byte:
+          return 8;
+
+        case UInt16:
+        case Int16:
+          return 16;
+
+        case UInt32:
+        case Int32:
+        case Float32:
+        case CInt16:
+          return 32;
+
+        case Float64:
+        case CInt32:
+        case CFloat32:
+          return 64;
+
+        case CFloat64:
+          return 128;
+
+        default:
+          return 0;
+      }
+    }
+
+    /** Get numbur of bands */
+    virtual int bandCount() const {
+      return 0;
+    }
+
+    /** Returns data type for the band specified by number */
+    virtual int colorInterpretation ( int bandNo ) const {
+      return QgsRasterDataProvider::UndefinedColorInterpretation;
+    }
+
+    /** Get block size */
+    virtual int xBlockSize() const { return 0; }
+    virtual int yBlockSize() const { return 0; }
+    
+    /** Get raster size */
+    virtual int xSize() const { return 0; }
+    virtual int ySize() const { return 0; }
+
+    /** read block of data  */
+    virtual void readBlock( int bandNo, int xBlock, int yBlock, void *data ){}
+
+    /** read block of data using give extent and size */
+    virtual void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, void *data ) {};
+
+    /** value representing null data */
+    virtual double noDataValue() const { return 0; }
+
+    virtual double minimumValue(int bandNo)const { return 0; }
+    virtual double maximumValue(int bandNo)const { return 0; }
 
     /**
      * Get metadata in a format suitable for feeding directly

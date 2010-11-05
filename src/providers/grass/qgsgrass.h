@@ -27,6 +27,7 @@ extern "C"
 #include "qgsexception.h"
 #include <QString>
 #include <QMap>
+#include <QHash>
 class QgsCoordinateReferenceSystem;
 class QgsRectangle;
 
@@ -187,6 +188,14 @@ class QgsGrass
     // ! Get map extent
     static GRASS_EXPORT QgsRectangle extent( QString gisdbase, QString location,
         QString mapset, QString map, MapType type = None );
+
+    // ! Get raster map size
+    static GRASS_EXPORT void size( QString gisdbase, QString location,
+        QString mapset, QString map, int *cols, int *rows );
+
+    // ! Get raster info
+    static GRASS_EXPORT QHash<QString, QString> info( QString gisdbase, QString location,
+        QString mapset, QString map, MapType type );
 
     // ! Get map value / feautre info
     static GRASS_EXPORT QMap<QString, QString> query( QString gisdbase, QString location,
