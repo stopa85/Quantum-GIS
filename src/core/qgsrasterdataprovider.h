@@ -23,6 +23,7 @@
 
 #include "qgslogger.h"
 #include "qgsdataprovider.h"
+#include "qgscolorrampshader.h"
 
 class QImage;
 class QgsPoint;
@@ -208,6 +209,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     virtual int ySize() const { return 0; }
 
     /** read block of data  */
+    // TODO clarify what happens on the last block (the part outside raster)
     virtual void readBlock( int bandNo, int xBlock, int yBlock, void *data ){}
 
     /** read block of data using give extent and size */
@@ -218,6 +220,8 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
 
     virtual double minimumValue(int bandNo)const { return 0; }
     virtual double maximumValue(int bandNo)const { return 0; }
+
+    virtual QList<QgsColorRampShader::ColorRampItem> colorTable(int bandNo)const { return QList<QgsColorRampShader::ColorRampItem>(); }
 
     /**
      * Get metadata in a format suitable for feeding directly

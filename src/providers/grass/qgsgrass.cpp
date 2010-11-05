@@ -1226,6 +1226,36 @@ QHash<QString, QString> GRASS_EXPORT QgsGrass::info( QString gisdbase, QString l
   return inf; 
 }
 
+QList<QgsGrass::Color> GRASS_EXPORT QgsGrass::colors( QString gisdbase, QString location, QString mapset, QString map )
+{
+  QgsDebugMsg( QString( "gisdbase = %1 location = %2" ).arg( gisdbase ).arg( location ) );
+  QList<QgsGrass::Color> ct;
+
+  try
+  {
+    QString str = QgsGrass::getInfo( "colors", gisdbase, location, mapset, map, QgsGrass::Raster );
+    QgsDebugMsg( str );
+    QStringList list = str.split( "\n" );
+    for ( int i = 0; i < list.size(); i++ ) {
+      double v1, v2;
+      int r1, r2, g1, g2, b1, b2;
+      QgsGrass::Color c;
+      if ( list[i].isEmpty() ) { continue; }
+      if ( sscanf( list[i].toUtf8().data(), "%lf %lf %d %d %d %d %d %d", &(c.value1), &(c.value2), &(c.red1), &(c.green1), &(c.blue1), &(c.red2), &(c.green2), &(c.blue2) ) != 8 )  
+      {
+        throw QgsGrass::Exception( "Cannot parse GRASS colors" + list[i] + " (" + str + " ) " );
+      }
+      ct.append( c);
+    }
+  }
+  catch ( QgsGrass::Exception &e )
+  {
+    QMessageBox::warning( 0, QObject::tr( "Warning" ),
+                          QObject::tr( "Cannot get colors" ) + "\n" + e.what() );
+  }
+  return ct; 
+}
+
 QMap<QString, QString> GRASS_EXPORT QgsGrass::query( QString gisdbase, QString location, QString mapset, QString map, MapType type, double x, double y )
 {
   QgsDebugMsg( QString( "gisdbase = %1 location = %2" ).arg( gisdbase ).arg( location ) );

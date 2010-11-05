@@ -197,7 +197,7 @@ static int cell_draw( char *name,
           val = (int*) (ptr);
           //G_debug ( 0, "val = %d", *val );
           if ( data_type == CELL_TYPE) {
-            G_debug ( 0, "valx = %d", *((CELL *) ptr));
+            //G_debug ( 0, "valx = %d", *((CELL *) ptr));
           }
           if ( G_is_null_value(ptr, data_type) ) {
             if ( data_type == CELL_TYPE) {

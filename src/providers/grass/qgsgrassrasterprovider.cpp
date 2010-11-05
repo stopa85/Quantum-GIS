@@ -85,6 +85,18 @@ QgsGrassRasterProvider::QgsGrassRasterProvider( QString const & uri )
 
   mGrassDataType = mInfo["TYPE"].toInt();
   QgsDebugMsg( "mGrassDataType = " + QString::number( mGrassDataType ) );
+
+  // TODO: refresh mRows and mCols if raster was rewritten
+  // We have to decide some reasonable block size, not to big to occupate too much
+  // memory, not too small to result in too many calls to readBlock -> qgis.d.rast 
+  // for statistics
+  int cache_size = 10000000; // ~ 10 MB
+  mYBlockSize = cache_size / (dataTypeSize(dataType ( 1 ) )/8) / mCols;
+  if ( mYBlockSize  > mRows ) 
+  {
+    mYBlockSize = mRows;
+  }
+  QgsDebugMsg( "mYBlockSize = " + QString::number ( mYBlockSize ) ); 
 }
 
 QgsGrassRasterProvider::~QgsGrassRasterProvider()
@@ -146,14 +158,17 @@ void QgsGrassRasterProvider::readBlock( int bandNo, int xBlock, int yBlock, void
 
   QgsRectangle ext = extent();
 
-  double cellHeight = ext.height() / mRows;
-  double yMaximum = ext.yMaximum() - cellHeight * yBlock;
-  double yMinimum = yMaximum - cellHeight;
 
+  // TODO: cut the last block
+  double cellHeight = ext.height() / mRows;
+  double yMaximum = ext.yMaximum() - cellHeight * yBlock * mYBlockSize;
+  double yMinimum = yMaximum - cellHeight * mYBlockSize;
+
+  QgsDebugMsg( "mYBlockSize = " + QString::number ( mYBlockSize ) ); 
   arguments.append(( QString( "window=%1,%2,%3,%4,%5,%6" )
                      .arg( ext.xMinimum() ).arg( yMinimum )
                      .arg( ext.xMaximum() ).arg( yMaximum )
-                     .arg( mCols  ).arg( 1 ) ) );
+                     .arg( mCols  ).arg( mYBlockSize ) ) );
 
   arguments.append( "format=value");
   QProcess process( this );
@@ -241,6 +256,38 @@ double  QgsGrassRasterProvider::maximumValue( int bandNo ) const {
   return mInfo["MAX_VALUE"].toDouble();
 }
 
+QList<QgsColorRampShader::ColorRampItem> QgsGrassRasterProvider::colorTable(int bandNo)const {
+  QList<QgsColorRampShader::ColorRampItem> ct;
+  
+  // TODO: check if color can be realy discontinuous in GRASS,
+  // for now we just believe that they are continuous, i.e. end and beginning
+  // of the ramp with the same value has the same color
+  // we are also expecting ordered CT records in the list
+  QList<QgsGrass::Color> colors = QgsGrass::colors( mGisdbase, mLocation, mMapset, mMapName );
+  QList<QgsGrass::Color>::iterator i;
+  
+  double v, r, g, b;
+  for (i = colors.begin(); i != colors.end(); ++i)
+  {
+    if ( ct.count() == 0 || i->value1 != v || i->red1 != r || i->green1 != g || i->blue1 != b ) {
+      // not added in previous rule
+      QgsColorRampShader::ColorRampItem ctItem1;
+      ctItem1.value = i->value1;
+      ctItem1.color = QColor::fromRgb( i->red1, i->green1, i->blue1);
+      ct.append(ctItem1);
+      QgsDebugMsg( QString("color %1 %2 %3 %4").arg(i->value1).arg(i->red1).arg(i->green1).arg(i->blue1) );
+    }
+    QgsColorRampShader::ColorRampItem ctItem2;
+    ctItem2.value = i->value2;
+    ctItem2.color = QColor::fromRgb( i->red2, i->green2, i->blue2);
+    ct.append(ctItem2);
+    QgsDebugMsg( QString("color %1 %2 %3 %4").arg(i->value2).arg(i->red2).arg(i->green2).arg(i->blue2) );
+
+    v = i->value2; r = i->red2; g = i->green2; b = i->blue2;
+  }
+  return ct;
+}
+
 QgsCoordinateReferenceSystem QgsGrassRasterProvider::crs()
 {
   QgsDebugMsg( "Entered" );
@@ -258,7 +305,9 @@ QgsRectangle QgsGrassRasterProvider::extent()
 
 // this is only called once when statistics are calculated
 int QgsGrassRasterProvider::xBlockSize() const { return mCols; } 
-int QgsGrassRasterProvider::yBlockSize() const { return 1; }
+int QgsGrassRasterProvider::yBlockSize() const { 
+  return mYBlockSize; 
+}
 
 // TODO this should be always refreshed if raster has changed ?
 // maybe also only for stats
@@ -282,8 +331,19 @@ int QgsGrassRasterProvider::capabilities() const
 
 int QgsGrassRasterProvider::dataType( int bandNo ) const
 {
-  // TODO
-  return QgsRasterDataProvider::Int32;
+  switch ( mGrassDataType ) {
+    case CELL_TYPE:
+      return QgsGrassRasterProvider::Int32;
+      break;
+    case FCELL_TYPE:
+      return QgsGrassRasterProvider::Float32;
+      break;
+    case DCELL_TYPE:
+      return QgsGrassRasterProvider::Int32;
+      return QgsGrassRasterProvider::Float64;
+      break;
+  }
+  return QgsRasterDataProvider::UnknownDataType;
 }
 
 int QgsGrassRasterProvider::bandCount() const

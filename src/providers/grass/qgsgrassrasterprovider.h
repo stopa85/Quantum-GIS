@@ -29,6 +29,7 @@ extern "C"
 #include "qgscoordinatereferencesystem.h"
 #include "qgsrasterdataprovider.h"
 #include "qgsrectangle.h"
+#include "qgscolorrampshader.h"
 
 #include <QString>
 #include <QStringList>
@@ -196,6 +197,9 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
     double minimumValue(int bandNo)const;
     double maximumValue(int bandNo)const;
 
+    QList<QgsColorRampShader::ColorRampItem> colorTable(int bandNo)const;
+
+
     /**
      * Get metadata in a format suitable for feeding directly
      * into a subset of the GUI raster properties "Metadata" tab.
@@ -226,6 +230,7 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
     QgsRectangle mExtent;
     int mCols;
     int mRows;
+    int mYBlockSize;
 
     QHash<QString, QString> mInfo;
 

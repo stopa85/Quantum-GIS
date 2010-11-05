@@ -772,7 +772,8 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     QString projectionWkt();
 
     /** \brief Allocate memory and load data to that allocated memory */
-    void* readData( GDALRasterBandH gdalBand, QgsRasterViewPort *viewPort );
+    //void* readData( GDALRasterBandH gdalBand, QgsRasterViewPort *viewPort );
+    void* readData( int bandNo, QgsRasterViewPort *viewPort );
 
     /** \brief Load the given raster file */
     bool readFile( const QString & fileName );
@@ -961,7 +962,10 @@ class CORE_EXPORT QgsRasterImageBuffer
     int mCurrentPartRasterMax; //maximum (raster source) row of current image
     int mCurrentPartImageRow; //current image row
     int mNumCurrentImageRows; //number of image rows for the current part
+
     //QgsRectangle mCurrentPartExtent; // extent of current part in map units
+    int mCurrentPart; 
+    
 
     //current memory image and gdal scan data
     QImage* mCurrentImage;

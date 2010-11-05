@@ -52,6 +52,11 @@ class QgsGrass
       Exception( const QString &msg ) : std::runtime_error( msg.toUtf8().constData() ) {}
     };
 
+    struct Color {
+      double value1, value2;
+      int red1, red2, green1, green2, blue1, blue2;
+    };
+
     //! Get info about the mode
     /*! QgsGrass may be running in active or passive mode.
      *  Active mode means that GISRC is set up and GISRC file is available,
@@ -196,6 +201,10 @@ class QgsGrass
     // ! Get raster info
     static GRASS_EXPORT QHash<QString, QString> info( QString gisdbase, QString location,
         QString mapset, QString map, MapType type );
+
+    // ! List of Color
+    static GRASS_EXPORT QList<QgsGrass::Color> colors( QString gisdbase, QString location,
+        QString mapset, QString map );
 
     // ! Get map value / feautre info
     static GRASS_EXPORT QMap<QString, QString> query( QString gisdbase, QString location,
