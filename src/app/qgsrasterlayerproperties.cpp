@@ -72,6 +72,7 @@ QgsRasterLayerProperties::QgsRasterLayerProperties( QgsMapLayer* lyr, QgsMapCanv
   mGrayMinimumMaximumEstimated = true;
   mRGBMinimumMaximumEstimated = true;
 
+  // TODO
   if ( mRasterLayer->dataProvider() == 0 )
   {
     // This is a GDAL-based layer
@@ -84,6 +85,9 @@ QgsRasterLayerProperties::QgsRasterLayerProperties( QgsMapLayer* lyr, QgsMapCanv
     mRasterLayerIsWms = true;
     mRasterLayerIsGdal = false;
   }
+  mRasterLayerIsGdal = true;
+  mRasterLayerIsWms = false;
+
 
   setupUi( this );
   connect( buttonBox, SIGNAL( accepted() ), this, SLOT( accept() ) );
@@ -945,6 +949,8 @@ void QgsRasterLayerProperties::apply()
   //set the appropriate render style
   if ( rbtnSingleBand->isChecked() )
   {
+    QgsDebugMsg( "SingleBand isChecked" );
+    QgsDebugMsg( "rasterType = " + QString::number ( mRasterLayer->rasterType() ) );
     //
     // Grayscale
     //
