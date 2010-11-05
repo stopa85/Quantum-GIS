@@ -34,7 +34,7 @@ int main( int argc, char **argv )
   info_opt->key = "info";
   info_opt->type = TYPE_STRING;
   info_opt->description = "info key";
-  info_opt->options = "proj,window,query";
+  info_opt->options = "proj,window,size,query,info";
 
   rast_opt = G_define_standard_option( G_OPT_R_INPUT );
   rast_opt->key = "rast";
@@ -78,6 +78,34 @@ int main( int argc, char **argv )
     {
       G_fatal_error( "Not yet supported" );
     }
+  }
+  // raster width and height
+  else if ( strcmp( "size", info_opt->answer ) == 0 )
+  {
+    if ( rast_opt->answer )
+    {
+      G_get_cellhd( rast_opt->answer, "", &window );
+      fprintf( stdout, "%d,%d", window.cols, window.rows );
+    }
+    else if ( vect_opt->answer )
+    {
+      G_fatal_error( "Not yet supported" );
+    }
+  }
+  // raster informations
+  else if ( strcmp( "info", info_opt->answer ) == 0 )
+  {
+      //struct Range crange;
+      struct FPRange range;
+      double zmin, zmax;
+      RASTER_MAP_TYPE raster_type = G_raster_map_type ( rast_opt->answer, "" );
+      fprintf( stdout, "TYPE:%d\n", raster_type );
+      if (G_read_fp_range( rast_opt->answer, "", &range) < 0) {
+        G_fatal_error(("Unable to read range file"));
+      }
+      G_get_fp_range_min_max(&range, &zmin, &zmax);
+      fprintf( stdout, "MIN_VALUE:%f\n", zmin );
+      fprintf( stdout, "MAX_VALUE:%f\n", zmax );
   }
   else if ( strcmp( "query", info_opt->answer ) == 0 )
   {
