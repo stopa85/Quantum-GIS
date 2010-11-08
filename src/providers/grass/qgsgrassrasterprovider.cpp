@@ -188,9 +188,7 @@ void QgsGrassRasterProvider::readBlock( int bandNo, int xBlock, int yBlock, void
   QgsDebugMsg( QString( "%1 bytes read from modules stdout" ).arg( data.size() ) );
   // byteCount() in Qt >= 4.6
   //int size = image->byteCount() < data.size() ? image->byteCount() : data.size();
-  // TODO : data type size
-  int typeSize = 4;
-  int size = mCols * typeSize < data.size() ? mCols * typeSize : data.size();
+  int size = mCols * dataTypeSize(bandNo) < data.size() ? mCols * dataTypeSize(bandNo) : data.size();
   memcpy( block, data.data(), size );
 }
 
@@ -230,9 +228,7 @@ void QgsGrassRasterProvider::readBlock( int bandNo, QgsRectangle  const & viewEx
   QgsDebugMsg( QString( "%1 bytes read from modules stdout" ).arg( data.size() ) );
   // byteCount() in Qt >= 4.6
   //int size = image->byteCount() < data.size() ? image->byteCount() : data.size();
-  // TODO : data type size
-  int typeSize = 4;
-  int size = pixelWidth * pixelHeight * typeSize < data.size() ? pixelWidth * pixelHeight * typeSize : data.size();
+  int size = pixelWidth * pixelHeight * dataTypeSize(bandNo) < data.size() ? pixelWidth * pixelHeight * dataTypeSize(bandNo) : data.size();
   memcpy( block, data.data(), size );
 }
 
@@ -333,14 +329,13 @@ int QgsGrassRasterProvider::dataType( int bandNo ) const
 {
   switch ( mGrassDataType ) {
     case CELL_TYPE:
-      return QgsGrassRasterProvider::Int32;
+      return QgsRasterDataProvider::Int32;
       break;
     case FCELL_TYPE:
-      return QgsGrassRasterProvider::Float32;
+      return QgsRasterDataProvider::Float32;
       break;
     case DCELL_TYPE:
-      return QgsGrassRasterProvider::Int32;
-      return QgsGrassRasterProvider::Float64;
+      return QgsRasterDataProvider::Float64;
       break;
   }
   return QgsRasterDataProvider::UnknownDataType;

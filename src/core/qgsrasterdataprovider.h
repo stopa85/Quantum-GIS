@@ -159,7 +159,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
       return QgsRasterDataProvider::UnknownDataType;
     }
 
-    int dataTypeSize ( int dataType ) const
+    int typeSize ( int dataType ) const
     {
       // modified copy from GDAL
       switch( dataType )
@@ -188,6 +188,10 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
         default:
           return 0;
       }
+    }
+    int dataTypeSize ( int bandNo ) const
+    {
+      return typeSize ( dataType ( bandNo ) );
     }
 
     /** Get numbur of bands */

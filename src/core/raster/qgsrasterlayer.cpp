@@ -752,7 +752,7 @@ const QgsRasterBandStats QgsRasterLayer::bandStatistics( int theBandNo )
   myNYBlocks = ( mDataProvider->ySize() + myYBlockSize - 1 ) / myYBlockSize;
 
   //void *myData = CPLMalloc( myXBlockSize * myYBlockSize * ( GDALGetDataTypeSize( myDataType ) / 8 ) );
-  void *myData = CPLMalloc( myXBlockSize * myYBlockSize * ( mDataProvider->dataTypeSize( myDataType ) / 8 ) );
+  void *myData = CPLMalloc( myXBlockSize * myYBlockSize * ( mDataProvider->dataTypeSize(theBandNo ) / 8 ) );
 
   // unfortunately we need to make two passes through the data to calculate stddev
   bool myFirstIterationFlag = true;
@@ -1975,7 +1975,7 @@ bool QgsRasterLayer::identify( const QgsPoint& thePoint, QMap<QString, QString>&
       //GDALRasterBandH gdalBand = GDALGetRasterBand( mGdalDataset, i );
       //GDALDataType type = GDALGetRasterDataType( gdalBand );
       //int size = GDALGetDataTypeSize( type ) / 8;
-      int size = mDataProvider->dataTypeSize(mDataProvider->dataType(i))/8;
+      int size = mDataProvider->dataTypeSize(i)/8;
       void *data = CPLMalloc( size );
 
       // TODO
@@ -5427,7 +5427,7 @@ void *QgsRasterLayer::readData( int bandNo, QgsRasterViewPort *viewPort )
 {
  // GDALDataType type = GDALGetRasterDataType( gdalBand );
   //int size = GDALGetDataTypeSize( type ) / 8;
-  int size = mDataProvider->dataTypeSize(mDataProvider->dataType(bandNo))/8;
+  int size = mDataProvider->dataTypeSize(bandNo)/8;
 
   QgsDebugMsg( "calling RasterIO with " +
                QString( ", source NW corner: " ) + QString::number( viewPort->rectXOffset ) +
@@ -5926,7 +5926,7 @@ bool QgsRasterImageBuffer::nextScanLine( QRgb** imageScanLine, void** rasterScan
   }
   //GDALDataType type = GDALGetRasterDataType( mRasterBand );
   //int size = GDALGetDataTypeSize( type ) / 8;
-  int size = mDataProvider->dataTypeSize(mDataProvider->dataType(mBandNo))/8;
+  int size = mDataProvider->dataTypeSize(mBandNo)/8;
   *rasterScanLine = ( unsigned char * )mCurrentGDALData + mCurrentPartImageRow * mViewPort->drawableAreaXDim * size;
 
   ++mCurrentPartImageRow;
@@ -5973,10 +5973,10 @@ bool QgsRasterImageBuffer::createNextPartImage()
           imageY = static_cast<int>( mViewPort->topLeftPoint.y() + 0.5 +  fabs( mGeoTransform[5] ) * mCurrentPartRasterMin / mMapToPixel->mapUnitsPerPixel() );
         }
 
-        mPainter->drawImage( imageX,
+        mPainter->drawImage( imageX, //the top-left point in the paint device
                              imageY,
                              *mCurrentImage,
-                             paintXoffset,
+                             paintXoffset, //specifies the top-left point in image
                              paintYoffset );
       }
     }
@@ -6005,11 +6005,12 @@ bool QgsRasterImageBuffer::createNextPartImage()
   //read GDAL image data
   //GDALDataType type = GDALGetRasterDataType( mRasterBand );
   //int size = GDALGetDataTypeSize( type ) / 8;
-  int size = mDataProvider->dataTypeSize ( mDataProvider->dataType(mBandNo) ) / 8 ;
+  int size = mDataProvider->dataTypeSize ( mBandNo ) / 8 ;
+  QgsDebugMsg( "type = " + QString::number( mDataProvider->dataType(mBandNo) ) );
+  QgsDebugMsg( "size = " + QString::number(size) );
   int xSize = mViewPort->drawableAreaXDim;
   int ySize = mViewPort->drawableAreaYDim;
 
-  //TODO: clean up - most should be thrown out
   //make the raster tiles overlap at least 2 pixels to avoid white stripes
   int overlapRows = 0;
   if ( mMapToPixel )
@@ -6040,6 +6041,7 @@ bool QgsRasterImageBuffer::createNextPartImage()
     return false;
   }
   mNumCurrentImageRows = ySize;
+  QgsDebugMsg( "alloc " + QString::number( size * xSize * ySize) );
   mCurrentGDALData = VSIMalloc( size * xSize * ySize );
   //CPLErr myErr = GDALRasterIO( mRasterBand, GF_Read, mViewPort->rectXOffset,
   //                             mViewPort->rectYOffset + mCurrentRow, mViewPort->clippedWidth, rasterYSize,
@@ -6047,8 +6049,8 @@ bool QgsRasterImageBuffer::createNextPartImage()
 
 
   // TODO !!! get correct extent
-  double yMin = mViewPort->mDrawnExtent.yMaximum() - mCurrentPartRasterMax ;
-  double yMax = mViewPort->mDrawnExtent.yMaximum() - mCurrentPartRasterMin;
+  double yMax = mViewPort->mDrawnExtent.yMaximum() - mCurrentRow * mMapToPixel->mapUnitsPerPixel();
+  double yMin = yMax - ySize * mMapToPixel->mapUnitsPerPixel();
 
   QgsDebugMsg( QString("mCurrentRow = %1 yMaximum = %2 ySize = %3 mapUnitsPerPixel = %4").arg(mCurrentRow).arg(mViewPort->mDrawnExtent.yMaximum()).arg(ySize).arg(mMapToPixel->mapUnitsPerPixel()) );
   QgsRectangle partExtent ( mViewPort->mDrawnExtent.xMinimum(), yMin,

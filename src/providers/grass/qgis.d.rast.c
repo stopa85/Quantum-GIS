@@ -33,6 +33,7 @@ int main( int argc, char **argv )
   struct Option *win;
   struct Option *format;
   struct Cell_head window;
+  RASTER_MAP_TYPE raster_type;
 
   /* Initialize the GIS calls */
   G_gisinit( argv[0] );
@@ -79,13 +80,16 @@ int main( int argc, char **argv )
   G_adjust_Cell_head( &window, 1, 1 );
   G_set_window( &window );
 
+  raster_type = G_raster_map_type ( name, "" );
   fp = G_raster_map_is_fp( name, mapset );
 
   /* use DCELL even if the map is FCELL */
-  if ( fp )
-    display( name, mapset, DCELL_TYPE, format->answer );
-  else
-    display( name, mapset, CELL_TYPE, format->answer );
+  // Why? It would break dataType in provider.
+  //if ( fp )
+  //  display( name, mapset, DCELL_TYPE, format->answer );
+  //else
+  //  display( name, mapset, CELL_TYPE, format->answer );
+  display( name, mapset, raster_type, format->answer );
 
   exit( EXIT_SUCCESS );
 }
@@ -156,6 +160,8 @@ static int cell_draw( char *name,
   fo = fdopen( fileno( stdout ), "wb" );
 
   raster_size = G_raster_size( data_type );
+  //fprintf( fo, "%d %d", data_type, raster_size );
+  //exit(0);
   /* loop for array rows */
   for ( row = 0; row < nrows; row++ )
   {
