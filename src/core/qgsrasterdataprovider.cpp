@@ -31,6 +31,58 @@ QgsRasterDataProvider::QgsRasterDataProvider( QString const & uri )
 {
 }
 
+//
+//Random Static convenience function
+//
+/////////////////////////////////////////////////////////
+//TODO: Change these to private function or make seprate class
+// convenience function for building metadata() HTML table cells
+// convenience function for creating a string list from a C style string list
+QStringList QgsRasterDataProvider::cStringList2Q_( char ** stringList )
+{
+  QStringList strings;
+
+  // presume null terminated string list
+  for ( size_t i = 0; stringList[i]; ++i )
+  {
+    strings.append( stringList[i] );
+  }
+
+  return strings;
+
+} // cStringList2Q_
+
+
+QString QgsRasterDataProvider::makeTableCell( QString const & value )
+{
+  return "<p>\n" + value + "</p>\n";
+} // makeTableCell_
+
+
+
+// convenience function for building metadata() HTML table cells
+QString QgsRasterDataProvider::makeTableCells( QStringList const & values )
+{
+  QString s( "<tr>" );
+
+  for ( QStringList::const_iterator i = values.begin();
+        i != values.end();
+        ++i )
+  {
+    s += QgsRasterDataProvider::makeTableCell( *i );
+  }
+
+  s += "</tr>";
+
+  return s;
+} // makeTableCell_
+
+QString QgsRasterDataProvider::metadata()
+{
+  QString s;
+  return s;
+}
+
 QString QgsRasterDataProvider::capabilitiesString() const
 {
   QStringList abilitiesList;

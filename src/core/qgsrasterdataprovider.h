@@ -22,6 +22,7 @@
 #define QGSRASTERDATAPROVIDER_H
 
 #include "qgslogger.h"
+#include "qgsrectangle.h"
 #include "qgsdataprovider.h"
 #include "qgscolorrampshader.h"
 
@@ -306,12 +307,30 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
       @note: this method was added in version 1.2*/
     void setDpi( int dpi ) {mDpi = dpi;}
 
+    /** \brief Is the NoDataValue Valid */
+    bool isNoDataValueValid() const { return mValidNoDataValue; }
+
+    static QStringList cStringList2Q_( char ** stringList );
+
+    static QString makeTableCell( QString const & value );
+    static QString makeTableCells( QStringList const & values );
+
 
   protected:
     /**Dots per intch. Extended WMS (e.g. QGIS mapserver) support DPI dependent output and therefore
     are suited for printing. A value of -1 means it has not been set
     @note: this member has been added in version 1.2*/
     int mDpi;
+
+    /** \brief Cell value representing no data. e.g. -9999  */
+    double mNoDataValue;
+
+    /** \brief Flag indicating if the nodatavalue is valid*/
+    bool mValidNoDataValue;
+
+
+    QgsRectangle mExtent;
+    
 
 };
 

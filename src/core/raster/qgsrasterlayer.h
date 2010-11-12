@@ -292,6 +292,7 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     /** Return time stamp for given file name */
     static QDateTime lastModified( const QString &  name );
 
+    // Keep this for now, it is used by Python interface!!!
     /** \brief ensures that GDAL drivers are registered, but only once */
     static void registerGdalDrivers();
 
@@ -646,9 +647,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
      * Set the visibility of the given sublayer name
      */
     virtual void setSubLayerVisibility( const QString & name, bool vis );
-
-
-
 
 
   public slots:

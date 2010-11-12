@@ -89,7 +89,13 @@ QgsRasterLayer::QgsRasterLayer(
     , mHeight( std::numeric_limits<int>::max() )
     , mInvertColor( false )
 {
+  QgsDebugMsg("Entered");
 
+  // TODO, call constructor with provider key for now
+  setDataProvider( "gdal", QStringList(), QStringList(), QString(), QString() );
+  return;
+
+  // TODO: add this somewhere - in another constructor
   mRasterType = QgsRasterLayer::GrayOrUndefined;
 
   mRedBandName = TRSTRING_NOT_SET;
@@ -192,22 +198,9 @@ QgsRasterLayer::QgsRasterLayer( int dummy,
                layers.join( ", " ) +  " and style list of " + styles.join( ", " ) + " and format of " +
                format +  " and CRS of " + crs );
 
-  mBandCount = 0;
-  mRasterShader = new QgsRasterShader();
-
-  // Initialise the affine transform matrix
-  mGeoTransform[0] =  0;
-  mGeoTransform[1] =  1;
-  mGeoTransform[2] =  0;
-  mGeoTransform[3] =  0;
-  mGeoTransform[4] =  0;
-  mGeoTransform[5] = -1;
 
   // if we're given a provider type, try to create and bind one to this layer
-  if ( ! providerKey.isEmpty() )
-  {
-    setDataProvider( providerKey, layers, styles, format, crs );
-  }
+  setDataProvider( providerKey, layers, styles, format, crs );
 
   // Default for the popup menu
   // TODO: popMenu = 0;
@@ -275,7 +268,7 @@ QgsRasterLayer::~QgsRasterLayer()
 void QgsRasterLayer::buildSupportedRasterFileFilter( QString & theFileFiltersString )
 {
   // first get the GDAL driver manager
-  registerGdalDrivers();
+  //registerGdalDrivers();
 
   // then iterate through all of the supported drivers, adding the
   // corresponding file filter
@@ -447,7 +440,10 @@ void QgsRasterLayer::buildSupportedRasterFileFilter( QString & theFileFiltersStr
 bool QgsRasterLayer::isValidRasterFileName( QString const & theFileNameQString, QString & retErrMsg )
 {
   GDALDatasetH myDataset;
-  registerGdalDrivers();
+  //registerGdalDrivers();
+
+  // TODO
+  return true;
 
   CPLErrorReset();
 
@@ -501,64 +497,6 @@ QDateTime QgsRasterLayer::lastModified( QString const & name )
   return t;
 }
 
-
-
-void QgsRasterLayer::registerGdalDrivers()
-{
-  if ( GDALGetDriverCount() == 0 )
-    GDALAllRegister();
-}
-
-
-
-
-//////////////////////////////////////////////////////////
-//
-//Random Static convenience function
-//
-/////////////////////////////////////////////////////////
-//TODO: Change these to private function or make seprate class
-// convenience function for building metadata() HTML table cells
-static QString makeTableCell_( QString const & value )
-{
-  return "<p>\n" + value + "</p>\n";
-} // makeTableCell_
-
-
-
-// convenience function for building metadata() HTML table cells
-static QString makeTableCells_( QStringList const & values )
-{
-  QString s( "<tr>" );
-
-  for ( QStringList::const_iterator i = values.begin();
-        i != values.end();
-        ++i )
-  {
-    s += makeTableCell_( *i );
-  }
-
-  s += "</tr>";
-
-  return s;
-} // makeTableCell_
-
-
-
-// convenience function for creating a string list from a C style string list
-static QStringList cStringList2Q_( char ** stringList )
-{
-  QStringList strings;
-
-  // presume null terminated string list
-  for ( size_t i = 0; stringList[i]; ++i )
-  {
-    strings.append( stringList[i] );
-  }
-
-  return strings;
-
-} // cStringList2Q_
 
 
 // typedef for the QgsDataProvider class factory
@@ -2609,172 +2547,79 @@ QString QgsRasterLayer::metadata()
   QString myMetadata ;
   myMetadata += "<p class=\"glossy\">" + tr( "Driver:" ) + "</p>\n";
   myMetadata += "<p>";
-  if ( mProviderKey.isEmpty() )
+  myMetadata += mDataProvider->description();
+  myMetadata += "</p>\n";
+
+  // Insert provider-specific (e.g. WMS-specific) metadata
+  // crashing
+  //QString s =  mDataProvider->metadata();
+  //QgsDebugMsg( s );
+  myMetadata += mDataProvider->metadata();
+
+  myMetadata += "<p class=\"glossy\">";
+  myMetadata += tr( "No Data Value" );
+  myMetadata += "</p>\n";
+  myMetadata += "<p>";
+  if ( mValidNoDataValue )
   {
-    myMetadata += QString( GDALGetDescription( GDALGetDatasetDriver( mGdalDataset ) ) );
-    myMetadata += "<br>";
-    myMetadata += QString( GDALGetMetadataItem( GDALGetDatasetDriver( mGdalDataset ), GDAL_DMD_LONGNAME, NULL ) );
+    myMetadata += QString::number( mNoDataValue );
   }
   else
   {
-    myMetadata += mDataProvider->description();
+    myMetadata += "*" + tr( "NoDataValue not set" ) + "*";
   }
   myMetadata += "</p>\n";
 
-  if ( !mProviderKey.isEmpty() )
+  myMetadata += "</p>\n";
+  myMetadata += "<p class=\"glossy\">";
+  myMetadata += tr( "Data Type:" );
+  myMetadata += "</p>\n";
+  myMetadata += "<p>";
+  //just use the first band
+  switch ( mDataProvider->dataType( 1 ) )
   {
-    // Insert provider-specific (e.g. WMS-specific) metadata
-    myMetadata += mDataProvider->metadata();
+    case GDT_Byte:
+      myMetadata += tr( "GDT_Byte - Eight bit unsigned integer" );
+      break;
+    case GDT_UInt16:
+      myMetadata += tr( "GDT_UInt16 - Sixteen bit unsigned integer " );
+      break;
+    case GDT_Int16:
+      myMetadata += tr( "GDT_Int16 - Sixteen bit signed integer " );
+      break;
+    case GDT_UInt32:
+      myMetadata += tr( "GDT_UInt32 - Thirty two bit unsigned integer " );
+      break;
+    case GDT_Int32:
+      myMetadata += tr( "GDT_Int32 - Thirty two bit signed integer " );
+      break;
+    case GDT_Float32:
+      myMetadata += tr( "GDT_Float32 - Thirty two bit floating point " );
+      break;
+    case GDT_Float64:
+      myMetadata += tr( "GDT_Float64 - Sixty four bit floating point " );
+      break;
+    case GDT_CInt16:
+      myMetadata += tr( "GDT_CInt16 - Complex Int16 " );
+      break;
+    case GDT_CInt32:
+      myMetadata += tr( "GDT_CInt32 - Complex Int32 " );
+      break;
+    case GDT_CFloat32:
+      myMetadata += tr( "GDT_CFloat32 - Complex Float32 " );
+      break;
+    case GDT_CFloat64:
+      myMetadata += tr( "GDT_CFloat64 - Complex Float64 " );
+      break;
+    default:
+      myMetadata += tr( "Could not determine raster data type." );
   }
-  else
-  {
+  myMetadata += "</p>\n";
 
-    // my added code (MColetti)
-
-    myMetadata += "<p class=\"glossy\">";
-    myMetadata += tr( "Dataset Description" );
-    myMetadata += "</p>\n";
-    myMetadata += "<p>";
-    myMetadata += QFile::decodeName( GDALGetDescription( mGdalDataset ) );
-    myMetadata += "</p>\n";
-
-
-    char ** GDALmetadata = GDALGetMetadata( mGdalDataset, NULL );
-
-    if ( GDALmetadata )
-    {
-      QStringList metadata = cStringList2Q_( GDALmetadata );
-      myMetadata += makeTableCells_( metadata );
-    }
-    else
-    {
-      QgsDebugMsg( "dataset has no metadata" );
-    }
-
-    for ( int i = 1; i <= GDALGetRasterCount( mGdalDataset ); ++i )
-    {
-      myMetadata += "<p class=\"glossy\">" + tr( "Band %1" ).arg( i ) + "</p>\n";
-      GDALRasterBandH gdalBand = GDALGetRasterBand( mGdalDataset, i );
-      GDALmetadata = GDALGetMetadata( gdalBand, NULL );
-
-      if ( GDALmetadata )
-      {
-        QStringList metadata = cStringList2Q_( GDALmetadata );
-        myMetadata += makeTableCells_( metadata );
-      }
-      else
-      {
-        QgsDebugMsg( "band " + QString::number( i ) + " has no metadata" );
-      }
-
-      char ** GDALcategories = GDALGetRasterCategoryNames( gdalBand );
-
-      if ( GDALcategories )
-      {
-        QStringList categories = cStringList2Q_( GDALcategories );
-        myMetadata += makeTableCells_( categories );
-      }
-      else
-      {
-        QgsDebugMsg( "band " + QString::number( i ) + " has no categories" );
-      }
-
-    }
-
-    // end my added code
-
-    myMetadata += "<p class=\"glossy\">";
-    myMetadata += tr( "Dimensions:" );
-    myMetadata += "</p>\n";
-    myMetadata += "<p>";
-    myMetadata += tr( "X: %1 Y: %2 Bands: %3" )
-                  .arg( GDALGetRasterXSize( mGdalDataset ) )
-                  .arg( GDALGetRasterYSize( mGdalDataset ) )
-                  .arg( GDALGetRasterCount( mGdalDataset ) );
-    myMetadata += "</p>\n";
-
-    //just use the first band
-    GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, 1 );
-
-    myMetadata += "<p class=\"glossy\">";
-    myMetadata += tr( "No Data Value" );
-    myMetadata += "</p>\n";
-    myMetadata += "<p>";
-    if ( mValidNoDataValue )
-    {
-      myMetadata += QString::number( mNoDataValue );
-    }
-    else
-    {
-      myMetadata += "*" + tr( "NoDataValue not set" ) + "*";
-    }
-    myMetadata += "</p>\n";
-
-    myMetadata += "</p>\n";
-    myMetadata += "<p class=\"glossy\">";
-    myMetadata += tr( "Data Type:" );
-    myMetadata += "</p>\n";
-    myMetadata += "<p>";
-    switch ( GDALGetRasterDataType( myGdalBand ) )
-    {
-      case GDT_Byte:
-        myMetadata += tr( "GDT_Byte - Eight bit unsigned integer" );
-        break;
-      case GDT_UInt16:
-        myMetadata += tr( "GDT_UInt16 - Sixteen bit unsigned integer " );
-        break;
-      case GDT_Int16:
-        myMetadata += tr( "GDT_Int16 - Sixteen bit signed integer " );
-        break;
-      case GDT_UInt32:
-        myMetadata += tr( "GDT_UInt32 - Thirty two bit unsigned integer " );
-        break;
-      case GDT_Int32:
-        myMetadata += tr( "GDT_Int32 - Thirty two bit signed integer " );
-        break;
-      case GDT_Float32:
-        myMetadata += tr( "GDT_Float32 - Thirty two bit floating point " );
-        break;
-      case GDT_Float64:
-        myMetadata += tr( "GDT_Float64 - Sixty four bit floating point " );
-        break;
-      case GDT_CInt16:
-        myMetadata += tr( "GDT_CInt16 - Complex Int16 " );
-        break;
-      case GDT_CInt32:
-        myMetadata += tr( "GDT_CInt32 - Complex Int32 " );
-        break;
-      case GDT_CFloat32:
-        myMetadata += tr( "GDT_CFloat32 - Complex Float32 " );
-        break;
-      case GDT_CFloat64:
-        myMetadata += tr( "GDT_CFloat64 - Complex Float64 " );
-        break;
-      default:
-        myMetadata += tr( "Could not determine raster data type." );
-    }
-    myMetadata += "</p>\n";
-
-    myMetadata += "<p class=\"glossy\">";
-    myMetadata += tr( "Pyramid overviews:" );
-    myMetadata += "</p>\n";
-    myMetadata += "<p>";
-
-    if ( GDALGetOverviewCount( myGdalBand ) > 0 )
-    {
-      int myOverviewInt;
-      for ( myOverviewInt = 0;
-            myOverviewInt < GDALGetOverviewCount( myGdalBand );
-            myOverviewInt++ )
-      {
-        GDALRasterBandH myOverview;
-        myOverview = GDALGetOverview( myGdalBand, myOverviewInt );
-        myMetadata += "<p>X : " + QString::number( GDALGetRasterBandXSize( myOverview ) );
-        myMetadata += ",Y " + QString::number( GDALGetRasterBandYSize( myOverview ) ) + "</p>";
-      }
-    }
-    myMetadata += "</p>\n";
-  }  // if (mProviderKey.isEmpty())
+  myMetadata += "<p class=\"glossy\">";
+  myMetadata += tr( "Pyramid overviews:" );
+  myMetadata += "</p>\n";
+  myMetadata += "<p>";
 
   myMetadata += "<p class=\"glossy\">";
   myMetadata += tr( "Layer Spatial Reference System: " );
@@ -2794,140 +2639,110 @@ QString QgsRasterLayer::metadata()
   myMetadata += "</p>\n";
 #endif
 
-  if ( mProviderKey.isEmpty() )
+  //
+  // Add the stats for each band to the output table
+  //
+  int myBandCountInt = bandCount();
+  for ( int myIteratorInt = 1; myIteratorInt <= myBandCountInt; ++myIteratorInt )
   {
-    if ( GDALGetGeoTransform( mGdalDataset, mGeoTransform ) != CE_None )
-    {
-      // if the raster does not have a valid transform we need to use
-      // a pixel size of (1,-1), but GDAL returns (1,1)
-      mGeoTransform[5] = -1;
-    }
-    else
-    {
-      myMetadata += "<p class=\"glossy\">";
-      myMetadata += tr( "Origin:" );
-      myMetadata += "</p>\n";
-      myMetadata += "<p>";
-      myMetadata += QString::number( mGeoTransform[0] );
-      myMetadata += ",";
-      myMetadata += QString::number( mGeoTransform[3] );
-      myMetadata += "</p>\n";
+    QgsDebugMsg( "Raster properties : checking if band " + QString::number( myIteratorInt ) + " has stats? " );
+    //band name
+    myMetadata += "<p class=\"glossy\">\n";
+    myMetadata += tr( "Band" );
+    myMetadata += "</p>\n";
+    myMetadata += "<p>";
+    myMetadata += bandName( myIteratorInt );
+    myMetadata += "</p>\n";
+    //band number
+    myMetadata += "<p>";
+    myMetadata += tr( "Band No" );
+    myMetadata += "</p>\n";
+    myMetadata += "<p>\n";
+    myMetadata += QString::number( myIteratorInt );
+    myMetadata += "</p>\n";
 
-      myMetadata += "<p class=\"glossy\">";
-      myMetadata += tr( "Pixel Size:" );
-      myMetadata += "</p>\n";
-      myMetadata += "<p>";
-      myMetadata += QString::number( mGeoTransform[1] );
-      myMetadata += ",";
-      myMetadata += QString::number( mGeoTransform[5] );
-      myMetadata += "</p>\n";
-    }
-
-    //
-    // Add the stats for each band to the output table
-    //
-    int myBandCountInt = bandCount();
-    for ( int myIteratorInt = 1; myIteratorInt <= myBandCountInt; ++myIteratorInt )
+    //check if full stats for this layer have already been collected
+    if ( !hasStatistics( myIteratorInt ) )  //not collected
     {
-      QgsDebugMsg( "Raster properties : checking if band " + QString::number( myIteratorInt ) + " has stats? " );
-      //band name
-      myMetadata += "<p class=\"glossy\">\n";
-      myMetadata += tr( "Band" );
-      myMetadata += "</p>\n";
+      QgsDebugMsg( ".....no" );
+
       myMetadata += "<p>";
-      myMetadata += bandName( myIteratorInt );
-      myMetadata += "</p>\n";
-      //band number
-      myMetadata += "<p>";
-      myMetadata += tr( "Band No" );
+      myMetadata += tr( "No Stats" );
       myMetadata += "</p>\n";
       myMetadata += "<p>\n";
-      myMetadata += QString::number( myIteratorInt );
+      myMetadata += tr( "No stats collected yet" );
+      myMetadata += "</p>\n";
+    }
+    else                    // collected - show full detail
+    {
+      QgsDebugMsg( ".....yes" );
+
+      QgsRasterBandStats myRasterBandStats = bandStatistics( myIteratorInt );
+      //Min Val
+      myMetadata += "<p>";
+      myMetadata += tr( "Min Val" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.minimumValue, 'f', 10 );
       myMetadata += "</p>\n";
 
-      //check if full stats for this layer have already been collected
-      if ( !hasStatistics( myIteratorInt ) )  //not collected
-      {
-        QgsDebugMsg( ".....no" );
+      // Max Val
+      myMetadata += "<p>";
+      myMetadata += tr( "Max Val" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.maximumValue, 'f', 10 );
+      myMetadata += "</p>\n";
 
-        myMetadata += "<p>";
-        myMetadata += tr( "No Stats" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += tr( "No stats collected yet" );
-        myMetadata += "</p>\n";
-      }
-      else                    // collected - show full detail
-      {
-        QgsDebugMsg( ".....yes" );
+      // Range
+      myMetadata += "<p>";
+      myMetadata += tr( "Range" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.range, 'f', 10 );
+      myMetadata += "</p>\n";
 
-        QgsRasterBandStats myRasterBandStats = bandStatistics( myIteratorInt );
-        //Min Val
-        myMetadata += "<p>";
-        myMetadata += tr( "Min Val" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.minimumValue, 'f', 10 );
-        myMetadata += "</p>\n";
+      // Mean
+      myMetadata += "<p>";
+      myMetadata += tr( "Mean" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.mean, 'f', 10 );
+      myMetadata += "</p>\n";
 
-        // Max Val
-        myMetadata += "<p>";
-        myMetadata += tr( "Max Val" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.maximumValue, 'f', 10 );
-        myMetadata += "</p>\n";
+      //sum of squares
+      myMetadata += "<p>";
+      myMetadata += tr( "Sum of squares" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.sumOfSquares, 'f', 10 );
+      myMetadata += "</p>\n";
 
-        // Range
-        myMetadata += "<p>";
-        myMetadata += tr( "Range" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.range, 'f', 10 );
-        myMetadata += "</p>\n";
+      //standard deviation
+      myMetadata += "<p>";
+      myMetadata += tr( "Standard Deviation" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.stdDev, 'f', 10 );
+      myMetadata += "</p>\n";
 
-        // Mean
-        myMetadata += "<p>";
-        myMetadata += tr( "Mean" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.mean, 'f', 10 );
-        myMetadata += "</p>\n";
+      //sum of all cells
+      myMetadata += "<p>";
+      myMetadata += tr( "Sum of all cells" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.sum, 'f', 10 );
+      myMetadata += "</p>\n";
 
-        //sum of squares
-        myMetadata += "<p>";
-        myMetadata += tr( "Sum of squares" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.sumOfSquares, 'f', 10 );
-        myMetadata += "</p>\n";
-
-        //standard deviation
-        myMetadata += "<p>";
-        myMetadata += tr( "Standard Deviation" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.stdDev, 'f', 10 );
-        myMetadata += "</p>\n";
-
-        //sum of all cells
-        myMetadata += "<p>";
-        myMetadata += tr( "Sum of all cells" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.sum, 'f', 10 );
-        myMetadata += "</p>\n";
-
-        //number of cells
-        myMetadata += "<p>";
-        myMetadata += tr( "Cell Count" );
-        myMetadata += "</p>\n";
-        myMetadata += "<p>\n";
-        myMetadata += QString::number( myRasterBandStats.elementCount );
-        myMetadata += "</p>\n";
-      }
+      //number of cells
+      myMetadata += "<p>";
+      myMetadata += tr( "Cell Count" );
+      myMetadata += "</p>\n";
+      myMetadata += "<p>\n";
+      myMetadata += QString::number( myRasterBandStats.elementCount );
+      myMetadata += "</p>\n";
     }
-  } // if (mProviderKey.isEmpty())
+  }
 
   QgsDebugMsg( myMetadata );
   return myMetadata;
@@ -3234,6 +3049,17 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
   mProviderKey = provider;     // XXX is this necessary?  Usually already set
   // XXX when execution gets here.
 
+  mBandCount = 0;
+  mRasterShader = new QgsRasterShader();
+
+  // Initialise the affine transform matrix
+  mGeoTransform[0] =  0;
+  mGeoTransform[1] =  1;
+  mGeoTransform[2] =  0;
+  mGeoTransform[3] =  0;
+  mGeoTransform[4] =  0;
+  mGeoTransform[5] = -1;
+
   // load the plugin
   QgsProviderRegistry * pReg = QgsProviderRegistry::instance();
   QString ogrlib = pReg->library( provider );
@@ -3336,6 +3162,17 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
   {
     *mCRS = QgsCoordinateReferenceSystem( mDataProvider->crs() );
   }
+  //get the project projection, defaulting to this layer's projection
+  //if none exists....
+  if ( !mCRS->isValid() )
+  {
+    mCRS->setValidationHint( tr( "Specify CRS for layer %1" ).arg( name() ) );
+    mCRS->validate();
+  }
+  QString mySourceWkt = mCRS->toWkt();
+
+  QgsDebugMsg( "using wkt:\n" + mySourceWkt );
+
   //mBandCount = GDALGetRasterCount( mGdalDataset );
   mBandCount = mDataProvider->bandCount( );
   for ( int i = 1; i <= mBandCount; i++ )
@@ -3359,6 +3196,9 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     QgsContrastEnhancement myContrastEnhancement(( QgsContrastEnhancement::QgsRasterDataType )mDataProvider->dataType( i ) );
     mContrastEnhancementList.append( myContrastEnhancement );
   }
+
+  //defaults - Needs to be set after the Contrast list has been build
+  //Try to read the default contrast enhancement from the config file
 
   QSettings myQSettings;
   setContrastEnhancementAlgorithm( myQSettings.value( "/Raster/defaultContrastEnhancementAlgorithm", "StretchToMinimumMaximum" ).toString() );
@@ -3450,6 +3290,17 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     mTransparencyBandName = TRSTRING_NOT_SET;  //sensible default
     mDrawingStyle = SingleBandGray;  //sensible default
     mGrayBandName = bandName( 1 );
+  }
+
+  // Store timestamp
+  // TODO move to provider
+  mLastModified = lastModified( mDataSource );
+
+  mValidNoDataValue = mDataProvider->isNoDataValueValid();
+  if ( mValidNoDataValue )
+  {
+    mRasterTransparency.initializeTransparentPixelList( mNoDataValue, mNoDataValue, mNoDataValue );
+    mRasterTransparency.initializeTransparentPixelList( mNoDataValue );
   }
 
   //mark the layer as valid
@@ -5395,27 +5246,8 @@ void QgsRasterLayer::paintImageToCanvas( QPainter* theQPainter, QgsRasterViewPor
 
 QString QgsRasterLayer::projectionWkt()
 {
-  QString myWktString;
-  QgsCoordinateReferenceSystem myCRS;
-  myWktString = QString( GDALGetProjectionRef( mGdalDataset ) );
-  myCRS.createFromWkt( myWktString );
-  if ( !myCRS.isValid() )
-  {
-    //try to get the gcp srs from the raster layer if available
-    myWktString = QString( GDALGetGCPProjection( mGdalDataset ) );
-
-// What is the purpose of this piece of code?
-// Sideeffects from validate()?
-//    myCRS.createFromWkt(myWktString);
-//    if (!myCRS.isValid())
-//    {
-//      // use force and make CRS valid!
-//      myCRS.validate();
-//    }
-
-  }
-
-  return myWktString;
+  // TODO: where is it used? It would be better to use crs.
+  return mDataProvider->crs().toWkt();
 }
 
 /*
@@ -5472,254 +5304,8 @@ void *QgsRasterLayer::readData( int bandNo, QgsRasterViewPort *viewPort )
  */
 bool QgsRasterLayer::readFile( QString const &theFilename )
 {
-  registerGdalDrivers();
-
-  mGdalDataset = NULL;
-
-  //open the dataset making sure we handle char encoding of locale properly
-  mGdalBaseDataset = GDALOpen( QFile::encodeName( theFilename ).constData(), GA_ReadOnly );
-
-  if ( mGdalBaseDataset == NULL )
-  {
-    mValid = false;
-    return false;
-  }
-
-  // Store timestamp
-  mLastModified = lastModified( theFilename );
-
-  // Check if we need a warped VRT for this file.
-  if (( GDALGetGeoTransform( mGdalBaseDataset, mGeoTransform ) == CE_None
-        && ( mGeoTransform[1] < 0.0
-             || mGeoTransform[2] != 0.0
-             || mGeoTransform[4] != 0.0
-             || mGeoTransform[5] > 0.0 ) )
-      || GDALGetGCPCount( mGdalBaseDataset ) > 0 )
-  {
-    QgsLogger::warning( "Creating Warped VRT." );
-
-    mGdalDataset =
-      GDALAutoCreateWarpedVRT( mGdalBaseDataset, NULL, NULL,
-                               GRA_NearestNeighbour, 0.2, NULL );
-    if ( mGdalDataset == NULL )
-    {
-      QgsLogger::warning( "Warped VRT Creation failed." );
-      mGdalDataset = mGdalBaseDataset;
-      GDALReferenceDataset( mGdalDataset );
-    }
-  }
-  else
-  {
-    mGdalDataset = mGdalBaseDataset;
-    GDALReferenceDataset( mGdalDataset );
-  }
-
-  if ( subLayers().size() > 0 )
-  {
-    // just to get the sublayers
-    mValid = false;
-    return true;
-  }
-
-  //check f this file has pyramids
-  GDALRasterBandH myGDALBand = GDALGetRasterBand( mGdalDataset, 1 ); //just use the first band
-  if ( myGDALBand == NULL )
-  {
-    GDALDereferenceDataset( mGdalBaseDataset );
-    mGdalBaseDataset = NULL;
-
-    GDALClose( mGdalDataset );
-    mGdalDataset = NULL;
-    mValid = false;
-    return false;
-  }
-
-  mHasPyramids = GDALGetOverviewCount( myGDALBand ) > 0;
-
-  //populate the list of what pyramids exist
-  buildPyramidList();
-
-  // Get the layer's projection info and set up the
-  // QgsCoordinateTransform for this layer
-  // NOTE: we must do this before metadata is called
-
-  QString mySourceWkt = projectionWkt();
-
-  QgsDebugMsg( "--------------------------------------------------------------------------------------" );
-  QgsDebugMsg( "using wkt:\n" + mySourceWkt );
-  QgsDebugMsg( "--------------------------------------------------------------------------------------" );
-
-  mCRS->createFromWkt( mySourceWkt );
-  //get the project projection, defaulting to this layer's projection
-  //if none exists....
-  if ( !mCRS->isValid() )
-  {
-    mCRS->setValidationHint( tr( "Specify CRS for layer %1" ).arg( name() ) );
-    mCRS->validate();
-  }
-
-  //set up the coordinat transform - in the case of raster this is mainly used to convert
-  //the inverese projection of the map extents of the canvas when zzooming in etc. so
-  //that they match the coordinate system of this layer
-  QgsDebugMsg( "Layer registry has " + QString::number( QgsMapLayerRegistry::instance()->count() ) + "layers" );
-
-  metadata();
-
-  // Use the affine transform to get geo coordinates for
-  // the corners of the raster
-  double myXMax = mGeoTransform[0] +
-                  GDALGetRasterXSize( mGdalDataset ) * mGeoTransform[1] +
-                  GDALGetRasterYSize( mGdalDataset ) * mGeoTransform[2];
-  double myYMin = mGeoTransform[3] +
-                  GDALGetRasterXSize( mGdalDataset ) * mGeoTransform[4] +
-                  GDALGetRasterYSize( mGdalDataset ) * mGeoTransform[5];
-
-  mLayerExtent.setXMaximum( myXMax );
-  // The affine transform reduces to these values at the
-  // top-left corner of the raster
-  mLayerExtent.setXMinimum( mGeoTransform[0] );
-  mLayerExtent.setYMaximum( mGeoTransform[3] );
-  mLayerExtent.setYMinimum( myYMin );
-
-  //
-  // Set up the x and y dimensions of this raster layer
-  //
-  mWidth = GDALGetRasterXSize( mGdalDataset );
-  mHeight = GDALGetRasterYSize( mGdalDataset );
-
-  //
-  // Determine the nodata value
-  //
-  mNoDataValue = -9999.0; //Standard default?
-  mValidNoDataValue = false;
-  int isValid = false;
-  double myNoDataValue = GDALGetRasterNoDataValue( GDALGetRasterBand( mGdalDataset, 1 ), &isValid );
-  if ( isValid )
-  {
-    mNoDataValue = myNoDataValue;
-    mValidNoDataValue = true;
-  }
-
-  if ( mValidNoDataValue )
-  {
-    mRasterTransparency.initializeTransparentPixelList( mNoDataValue, mNoDataValue, mNoDataValue );
-    mRasterTransparency.initializeTransparentPixelList( mNoDataValue );
-  }
-
-  // Moved to setDataProvider, later maybe to constructor
-  //mBandCount = GDALGetRasterCount( mGdalDataset );
-  //for ( int i = 1; i <= mBandCount; i++ )
-  //{
-    //GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, i );
-    //QgsRasterBandStats myRasterBandStats;
-    //myRasterBandStats.bandName = generateBandName( i );
-    //myRasterBandStats.bandNumber = i;
-    //myRasterBandStats.statsGathered = false;
-    //myRasterBandStats.histogramVector = new QgsRasterBandStats::HistogramVector();
-    ////Store the default color table
-    //readColorTable( i, &myRasterBandStats.colorTable );
-
-    //mRasterStatsList.push_back( myRasterBandStats );
-
-    ////Build a new contrast enhancement for the band and store in list
-    //QgsContrastEnhancement myContrastEnhancement(( QgsContrastEnhancement::QgsRasterDataType )GDALGetRasterDataType( myGdalBand ) );
-    //mContrastEnhancementList.append( myContrastEnhancement );
-  //}
-
-  //defaults - Needs to be set after the Contrast list has been build
-  //Try to read the default contrast enhancement from the config file
-  //QSettings myQSettings;
-  //setContrastEnhancementAlgorithm( myQSettings.value( "/Raster/defaultContrastEnhancementAlgorithm", "StretchToMinimumMaximum" ).toString() );
-
-  ////decide what type of layer this is...
-  ////TODO Change this to look at the color interp and palette interp to decide which type of layer it is
-  //if (( GDALGetRasterCount( mGdalDataset ) > 1 ) )
-  //{
-    //mRasterType = Multiband;
-  //}
-  ////TODO hasBand is really obsolete and only used in the Palette instance, change to new function hasPalette(int)
-  //else if ( hasBand( "Palette" ) ) //don't tr() this its a gdal word!
-  //{
-    //mRasterType = Palette;
-  //}
-  //else
-  //{
-    //mRasterType = GrayOrUndefined;
-  //}
-
-  //if ( mRasterType == Palette )
-  //{
-    //mRedBandName = TRSTRING_NOT_SET; // sensible default
-    //mGreenBandName = TRSTRING_NOT_SET; // sensible default
-    //mBlueBandName = TRSTRING_NOT_SET;// sensible default
-    //mTransparencyBandName = TRSTRING_NOT_SET; // sensible default
-    //mGrayBandName = bandName( 1 );  //sensible default
-    //QgsDebugMsg( mGrayBandName );
-
-    //mDrawingStyle = PalettedColor; //sensible default
-
-    ////Set up a new color ramp shader
-    //setColorShadingAlgorithm( ColorRampShader );
-    //QgsColorRampShader* myColorRampShader = ( QgsColorRampShader* ) mRasterShader->rasterShaderFunction();
-    ////TODO: Make sure the set algorithm and cast was successful,
-    ////e.g., if ( 0 != myColorRampShader && myColorRampShader->shaderTypeAsString == "ColorRampShader" )
-    //myColorRampShader->setColorRampType( QgsColorRampShader::INTERPOLATED );
-    //myColorRampShader->setColorRampItemList( *colorTable( 1 ) );
-  //}
-  //else if ( mRasterType == Multiband )
-  //{
-    ////we know we have at least 2 layers...
-    //mRedBandName = bandName( myQSettings.value( "/Raster/defaultRedBand", 1 ).toInt() );  // sensible default
-    //mGreenBandName = bandName( myQSettings.value( "/Raster/defaultGreenBand", 2 ).toInt() );  // sensible default
-
-    ////Check to make sure preferred bands combinations are valid
-    //if ( mRedBandName.isEmpty() )
-    //{
-      //mRedBandName = bandName( 1 );
-    //}
-
-    //if ( mGreenBandName.isEmpty() )
-    //{
-      //mGreenBandName = bandName( 2 );
-    //}
-
-    ////for the third layer we cant be sure so..
-    //if ( GDALGetRasterCount( mGdalDataset ) > 2 )
-    //{
-      //mBlueBandName = bandName( myQSettings.value( "/Raster/defaultBlueBand", 3 ).toInt() ); // sensible default
-      //if ( mBlueBandName.isEmpty() )
-      //{
-        //mBlueBandName = bandName( 3 );
-      //}
-    //}
-    //else
-    //{
-      //mBlueBandName = bandName( myQSettings.value( "/Raster/defaultBlueBand", 2 ).toInt() );  // sensible default
-      //if ( mBlueBandName.isEmpty() )
-      //{
-        //mBlueBandName = bandName( 2 );
-      //}
-    //}
-
-
-    //mTransparencyBandName = TRSTRING_NOT_SET;
-    //mGrayBandName = TRSTRING_NOT_SET;  //sensible default
-    //mDrawingStyle = MultiBandColor;  //sensible default
-  //}
-  //else                        //GrayOrUndefined
-  //{
-    //mRedBandName = TRSTRING_NOT_SET; //sensible default
-    //mGreenBandName = TRSTRING_NOT_SET; //sensible default
-    //mBlueBandName = TRSTRING_NOT_SET;  //sensible default
-    //mTransparencyBandName = TRSTRING_NOT_SET;  //sensible default
-    //mDrawingStyle = SingleBandGray;  //sensible default
-    //mGrayBandName = bandName( 1 );
-  //}
-
-  ////mark the layer as valid
-  //mValid = true;
+  mValid = false;
   return true;
-
 } // QgsRasterLayer::readFile
 
 /*
@@ -6043,6 +5629,12 @@ bool QgsRasterImageBuffer::createNextPartImage()
   mNumCurrentImageRows = ySize;
   QgsDebugMsg( "alloc " + QString::number( size * xSize * ySize) );
   mCurrentGDALData = VSIMalloc( size * xSize * ySize );
+  double *p = (double *)mCurrentGDALData;
+  for ( int i = 0; i  < xSize * ySize; i++ ) 
+  {
+    *p = mDataProvider->noDataValue();
+    p++;
+  }
   //CPLErr myErr = GDALRasterIO( mRasterBand, GF_Read, mViewPort->rectXOffset,
   //                             mViewPort->rectYOffset + mCurrentRow, mViewPort->clippedWidth, rasterYSize,
   //                             mCurrentGDALData, xSize, ySize, type, 0, 0 );
@@ -6200,3 +5792,11 @@ void QgsRasterImageBuffer::drawPixelRectangle()
     }
   }
 }
+
+// Keep this for now, it is used by Python interface!!!
+void QgsRasterLayer::registerGdalDrivers()
+{
+  if ( GDALGetDriverCount() == 0 )
+    GDALAllRegister();
+}
+
