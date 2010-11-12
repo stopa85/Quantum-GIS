@@ -3291,6 +3291,8 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     mDrawingStyle = SingleBandGray;  //sensible default
     mGrayBandName = bandName( 1 );
   }
+  // Debug
+  //mDrawingStyle = SingleBandPseudoColor;
 
   // Store timestamp
   // TODO move to provider
@@ -5629,12 +5631,13 @@ bool QgsRasterImageBuffer::createNextPartImage()
   mNumCurrentImageRows = ySize;
   QgsDebugMsg( "alloc " + QString::number( size * xSize * ySize) );
   mCurrentGDALData = VSIMalloc( size * xSize * ySize );
-  double *p = (double *)mCurrentGDALData;
-  for ( int i = 0; i  < xSize * ySize; i++ ) 
-  {
-    *p = mDataProvider->noDataValue();
-    p++;
-  }
+  // TODO just debug - attention type width -> crash
+  //double *p = (double *)mCurrentGDALData;
+  //for ( int i = 0; i  < xSize * ySize; i++ ) 
+  //{
+    //*p = mDataProvider->noDataValue();
+    //p++;
+  //}
   //CPLErr myErr = GDALRasterIO( mRasterBand, GF_Read, mViewPort->rectXOffset,
   //                             mViewPort->rectYOffset + mCurrentRow, mViewPort->clippedWidth, rasterYSize,
   //                             mCurrentGDALData, xSize, ySize, type, 0, 0 );

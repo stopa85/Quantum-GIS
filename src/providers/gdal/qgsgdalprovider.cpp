@@ -192,6 +192,7 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
     mNoDataValue = myNoDataValue;
     mValidNoDataValue = true;
   }
+  QgsDebugMsg( QString("mNoDataValue = %1").arg ( mNoDataValue ) ); 
 
   mValid = true;
   QgsDebugMsg( "end" );
@@ -392,12 +393,11 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
   myMemGeoTransform[2] = 0; /* rotation, 0 if image is "north up" */
   myMemGeoTransform[3] = theExtent.yMaximum(); /* top left y */
   myMemGeoTransform[4] = 0; /* rotation, 0 if image is "north up" */
-  myMemGeoTransform[5] = theExtent.height()/thePixelHeight; /* n-s pixel resolution */
+  myMemGeoTransform[5] = -1. *  theExtent.height()/thePixelHeight; /* n-s pixel resolution */
 
   double myGeoTransform[6];
   GDALGetGeoTransform( mGdalDataset, myGeoTransform );
-  GDALSetGeoTransform( myGdalMemDataset, myGeoTransform );
-  GDALGetGeoTransform( myGdalMemDataset, myMemGeoTransform );
+  GDALSetGeoTransform( myGdalMemDataset, myMemGeoTransform );
 
   for ( int i = 0 ; i < 6; i++ ) 
   {
@@ -421,7 +421,7 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
   myWarpOptions->pfnProgress = GDALTermProgress;   
 
   QgsDebugMsg ( "src wkt: " +  QString (GDALGetProjectionRef(mGdalDataset) ) ); 
-  QgsDebugMsg ( "dst wkt: " +  QString ( GDALGetProjectionRef(myGdalMemDataset) ) ); 
+  QgsDebugMsg ( "dst wkt: " +  QString (GDALGetProjectionRef(myGdalMemDataset) ) ); 
   myWarpOptions->pTransformerArg = 
       GDALCreateGenImgProjTransformer( 
         mGdalDataset, 
@@ -430,13 +430,16 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
         GDALGetProjectionRef(myGdalMemDataset), 
         FALSE, 0.0, 1 
       );
+  CPLAssert( myWarpOptions->pTransformerArg  != NULL); 
   myWarpOptions->pfnTransformer = GDALGenImgProjTransform;
+
 
   GDALWarpOperation myOperation;
 
   myOperation.Initialize( myWarpOptions );
   CPLErrorReset();
-  CPLErr myErr = myOperation.ChunkAndWarpImage( 0, 0, thePixelWidth, thePixelHeight ); 
+  CPLErr myErr;
+  myErr = myOperation.ChunkAndWarpImage( 0, 0, thePixelWidth, thePixelHeight ); 
   if ( myErr != CPLE_None )
   {
     QMessageBox::warning( 0, QObject::tr( "Warning" ),
@@ -448,13 +451,10 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
   GDALDestroyGenImgProjTransformer( myWarpOptions->pTransformerArg );
   GDALDestroyWarpOptions( myWarpOptions );
 
-  // this works 
-  //myErr = GDALRasterIO( myGdalBand, GF_Read, 0, 0, 
-  //  xSize(), ySize(),
-  //  theBlock,  thePixelWidth, thePixelHeight,
-  //  myGdalDataType, 0, 0 ); 
-
-  //GDALClose( myGdalMemDataset ); 
+  // without this it does not work (data not written), 
+  GDALFlushCache  (  myGdalMemDataset );
+  // with this it is causing crash ???
+  GDALClose( myGdalMemDataset ); 
 
 }
 
