@@ -52,6 +52,13 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
   QgsDebugMsg( "QgsGdalProvider: constructing with uri '" + uri + "'." );
 
   mValid = false;
+  mGdalBaseDataset = 0;
+  mGdalDataset = 0;
+
+  registerGdalDrivers();
+
+  // To get buildSupportedRasterFileFilter the provider is called with empty uri
+  if ( uri.isEmpty() ) return;
 
   // Initialise the affine transform matrix
   mGeoTransform[0] =  0;
@@ -62,7 +69,6 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
   mGeoTransform[5] = -1;
 
 
-  registerGdalDrivers();
   mGdalDataset = NULL;
 
   mGdalBaseDataset = GDALOpen( QFile::encodeName( uri ).constData(), GA_ReadOnly );
@@ -78,6 +84,12 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
 
   QgsDebugMsg ("GdalDataset opened" );
 
+  for ( int i = 0; i < GDALGetRasterCount( mGdalDataset ); i++ )
+  {
+    mMinMaxComputed.append(false);
+    mMinimum.append(0);
+    mMaximum.append(0);
+  }
   // Check if we need a warped VRT for this file.
   if (( GDALGetGeoTransform( mGdalBaseDataset, mGeoTransform ) == CE_None
         && ( mGeoTransform[1] < 0.0
@@ -201,6 +213,14 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
 QgsGdalProvider::~QgsGdalProvider()
 {
   QgsDebugMsg( "QgsGdalProvider: deconstructing." );
+  if ( mGdalBaseDataset )
+  {
+    GDALDereferenceDataset( mGdalBaseDataset );
+  }
+  if ( mGdalDataset )
+  {
+    GDALClose( mGdalDataset );
+  }
 }
 
 
@@ -451,9 +471,10 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
   GDALDestroyGenImgProjTransformer( myWarpOptions->pTransformerArg );
   GDALDestroyWarpOptions( myWarpOptions );
 
-  // without this it does not work (data not written), 
-  GDALFlushCache  (  myGdalMemDataset );
-  // with this it is causing crash ???
+  // flush should not be necessary 
+  //GDALFlushCache  (  myGdalMemDataset );
+  // this was causing crash ???
+  // The MEM driver does not free() the memory passed as DATAPOINTER so we can closee the dataset
   GDALClose( myGdalMemDataset ); 
 
 }
@@ -462,17 +483,25 @@ double  QgsGdalProvider::noDataValue() const {
   return mNoDataValue;
 }
 
-double  QgsGdalProvider::minimumValue( int theBandNo ) const {
+void QgsGdalProvider::computeMinMax ( int theBandNo ) 
+{
+  if ( mMinMaxComputed[theBandNo-1] ) return; 
   double GDALrange[2];
   GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, theBandNo );
   GDALComputeRasterMinMax( myGdalBand, 1, GDALrange ); //Approximate
-  return  GDALrange[0];
+  mMinimum[theBandNo-1] = GDALrange[0]; 
+  mMaximum[theBandNo-1] = GDALrange[1]; 
 }
-double  QgsGdalProvider::maximumValue( int theBandNo ) const {
-  double GDALrange[2];
-  GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, theBandNo );
-  GDALComputeRasterMinMax( myGdalBand, 1, GDALrange ); //Approximate
-  return  GDALrange[1];
+
+double  QgsGdalProvider::minimumValue( int theBandNo )  
+{
+  computeMinMax ( theBandNo );
+  return  mMinimum[theBandNo-1];
+}
+double  QgsGdalProvider::maximumValue( int theBandNo ) 
+{
+  computeMinMax ( theBandNo );
+  return  mMaximum[theBandNo-1];
 }
 
 QList<QgsColorRampShader::ColorRampItem> QgsGdalProvider::colorTable(int bandNo)const {
@@ -531,7 +560,8 @@ bool QgsGdalProvider::identify( const QgsPoint& thePoint, QMap<QString, QString>
 int QgsGdalProvider::capabilities() const
 {
   int capability = QgsRasterDataProvider::Identify 
-                 | QgsRasterDataProvider::Data;
+                 | QgsRasterDataProvider::Data
+                 | QgsRasterDataProvider::EstimatedMinimumMaximum;
   return capability;
 }
 
@@ -633,6 +663,185 @@ QString  QgsGdalProvider::description() const
 {
   return PROVIDER_DESCRIPTION;
 }
+/**
+  Builds the list of file filter strings to later be used by
+  QgisApp::addRasterLayer()
+
+  We query GDAL for a list of supported raster formats; we then build
+  a list of file filter strings from that list.  We return a string
+  that contains this list that is suitable for use in a
+  QFileDialog::getOpenFileNames() call.
+
+*/
+void QgsGdalProvider::buildSupportedRasterFileFilter( QString & theFileFiltersString )
+{
+  QgsDebugMsg("Entered");
+  // first get the GDAL driver manager
+  //registerGdalDrivers();
+
+  // then iterate through all of the supported drivers, adding the
+  // corresponding file filter
+
+  GDALDriverH myGdalDriver;           // current driver
+
+  char **myGdalDriverMetadata;        // driver metadata strings
+
+  QString myGdalDriverLongName( "" ); // long name for the given driver
+  QString myGdalDriverExtension( "" );  // file name extension for given driver
+  QString myGdalDriverDescription;    // QString wrapper of GDAL driver description
+
+  QStringList metadataTokens;   // essentially the metadata string delimited by '='
+
+  QStringList catchallFilter;   // for Any file(*.*), but also for those
+  // drivers with no specific file filter
+
+  GDALDriverH jp2Driver = NULL; // first JPEG2000 driver found
+
+  // Grind through all the drivers and their respective metadata.
+  // We'll add a file filter for those drivers that have a file
+  // extension defined for them; the others, well, even though
+  // theoreticaly we can open those files because there exists a
+  // driver for them, the user will have to use the "All Files" to
+  // open datasets with no explicitly defined file name extension.
+  // Note that file name extension strings are of the form
+  // "DMD_EXTENSION=.*".  We'll also store the long name of the
+  // driver, which will be found in DMD_LONGNAME, which will have the
+  // same form.
+
+  // start with the default case
+  theFileFiltersString = QObject::tr( "[GDAL] All files (*)" );
+
+  for ( int i = 0; i < GDALGetDriverCount(); ++i )
+  {
+    myGdalDriver = GDALGetDriver( i );
+
+    Q_CHECK_PTR( myGdalDriver );
+
+    if ( !myGdalDriver )
+    {
+      QgsLogger::warning( "unable to get driver " + QString::number( i ) );
+      continue;
+    }
+    // now we need to see if the driver is for something currently
+    // supported; if not, we give it a miss for the next driver
+
+    myGdalDriverDescription = GDALGetDescription( myGdalDriver );
+
+    // QgsDebugMsg(QString("got driver string %1").arg(myGdalDriverDescription));
+
+    myGdalDriverMetadata = GDALGetMetadata( myGdalDriver, NULL );
+
+    // presumably we know we've run out of metadta if either the
+    // address is 0, or the first character is null
+    while ( myGdalDriverMetadata && '\0' != myGdalDriverMetadata[0] )
+    {
+      metadataTokens = QString( *myGdalDriverMetadata ).split( "=", QString::SkipEmptyParts );
+      // QgsDebugMsg(QString("\t%1").arg(*myGdalDriverMetadata));
+
+      // XXX add check for malformed metadataTokens
+
+      // Note that it's oddly possible for there to be a
+      // DMD_EXTENSION with no corresponding defined extension
+      // string; so we check that there're more than two tokens.
+
+      if ( metadataTokens.count() > 1 )
+      {
+        if ( "DMD_EXTENSION" == metadataTokens[0] )
+        {
+          myGdalDriverExtension = metadataTokens[1];
+
+        }
+        else if ( "DMD_LONGNAME" == metadataTokens[0] )
+        {
+          myGdalDriverLongName = metadataTokens[1];
+
+          // remove any superfluous (.*) strings at the end as
+          // they'll confuse QFileDialog::getOpenFileNames()
+
+          myGdalDriverLongName.remove( QRegExp( "\\(.*\\)$" ) );
+        }
+      }
+      // if we have both the file name extension and the long name,
+      // then we've all the information we need for the current
+      // driver; therefore emit a file filter string and move to
+      // the next driver
+      if ( !( myGdalDriverExtension.isEmpty() || myGdalDriverLongName.isEmpty() ) )
+      {
+        // XXX add check for SDTS; in that case we want (*CATD.DDF)
+        QString glob = "*." + myGdalDriverExtension.replace( "/", " *." );
+        // Add only the first JP2 driver found to the filter list (it's the one GDAL uses)
+        if ( myGdalDriverDescription == "JPEG2000" ||
+             myGdalDriverDescription.startsWith( "JP2" ) ) // JP2ECW, JP2KAK, JP2MrSID
+        {
+          if ( jp2Driver )
+            break; // skip if already found a JP2 driver
+
+          jp2Driver = myGdalDriver;   // first JP2 driver found
+          glob += " *.j2k";           // add alternate extension
+        }
+        else if ( myGdalDriverDescription == "GTiff" )
+        {
+          glob += " *.tiff";
+        }
+        else if ( myGdalDriverDescription == "JPEG" )
+        {
+          glob += " *.jpeg";
+        }
+
+        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
+
+        break;            // ... to next driver, if any.
+      }
+
+      ++myGdalDriverMetadata;
+
+    }                       // each metadata item
+
+    if ( myGdalDriverExtension.isEmpty() && !myGdalDriverLongName.isEmpty() )
+    {
+      // Then what we have here is a driver with no corresponding
+      // file extension; e.g., GRASS.  In which case we append the
+      // string to the "catch-all" which will match all file types.
+      // (I.e., "*.*") We use the driver description intead of the
+      // long time to prevent the catch-all line from getting too
+      // large.
+
+      // ... OTOH, there are some drivers with missing
+      // DMD_EXTENSION; so let's check for them here and handle
+      // them appropriately
+
+      // USGS DEMs use "*.dem"
+      if ( myGdalDriverDescription.startsWith( "USGSDEM" ) )
+      {
+        QString glob = "*.dem";
+        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
+      }
+      else if ( myGdalDriverDescription.startsWith( "DTED" ) )
+      {
+        // DTED use "*.dt0, *.dt1, *.dt2"
+        QString glob = "*.dt0";
+        glob += " *.dt1";
+        glob += " *.dt2";
+        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
+      }
+      else if ( myGdalDriverDescription.startsWith( "MrSID" ) )
+      {
+        // MrSID use "*.sid"
+        QString glob = "*.sid";
+        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
+      }
+      else
+      {
+        catchallFilter << QString( GDALGetDescription( myGdalDriver ) );
+      }
+    }
+
+    myGdalDriverExtension = myGdalDriverLongName = "";  // reset for next driver
+
+  }                           // each loaded GDAL driver
+
+  QgsDebugMsg( "Raster filter list built: " + theFileFiltersString );
+}                               // buildSupportedRasterFileFilter_()
 
 /**
  * Class factory to return a pointer to a newly created

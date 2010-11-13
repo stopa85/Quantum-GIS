@@ -296,12 +296,29 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     /** \brief ensures that GDAL drivers are registered, but only once */
     static void registerGdalDrivers();
 
-
-
-
     //
     // Non Static inline methods
     //
+
+    /** \brief Initialize default values */
+    void init ();
+
+    // For backward compatibility (Python) get rid of it once python is updated
+    void setDataProvider( const QString & provider,
+                          const QStringList & layers,
+                          const QStringList & styles,
+                          const QString & format,
+                          const QString & crs);
+    /**  [ data provider interface ] Set the data provider */
+    void setDataProvider( const QString & provider,
+                          const QStringList & layers,
+                          const QStringList & styles,
+                          const QString & format,
+                          const QString & crs,
+                          bool loadDefaultStyleFlag );
+
+    static QgsRasterDataProvider* loadProvider( QString theProviderKey, QString theDataSource = 0);
+    
 
     /** \brief  Accessor for blue band name mapping */
     QString blueBandName() const { return mBlueBandName; }
@@ -363,12 +380,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     /** \brief Accessor for red band name (allows alternate mappings e.g. map blue as red color) */
     QString redBandName() const { return mRedBandName; }
 
-    /**  [ data provider interface ] Set the data provider */
-    void setDataProvider( const QString & provider,
-                          const QStringList & layers,
-                          const QStringList & styles,
-                          const QString & format,
-                          const QString & crs );
 
     /** \brief Mutator for drawing style */
     void setDrawingStyle( const DrawingStyle &  theDrawingStyle ) { mDrawingStyle = theDrawingStyle; }
@@ -864,7 +875,7 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     QgsRasterViewPort mLastViewPort;
 
     /**  [ data provider interface ] pointer for loading the provider library */
-    QLibrary* mLib;
+    //QLibrary* mLib;
 
     /**  [ data provider interface ] Flag indicating whether the layer has been modified since the last commit*/
     bool mModified;

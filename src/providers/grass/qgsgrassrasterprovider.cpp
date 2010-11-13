@@ -75,6 +75,8 @@ QgsGrassRasterProvider::QgsGrassRasterProvider( QString const & uri )
   QgsDebugMsg( QString( "mapset: %1" ).arg( mMapset ) );
   QgsDebugMsg( QString( "mapName: %1" ).arg( mMapName ) );
 
+  mValidNoDataValue = true; 
+
   mCrs = QgsGrass::crs( mGisdbase, mLocation );
 
   // the block size can change of course when the raster is overridden
@@ -188,7 +190,13 @@ void QgsGrassRasterProvider::readBlock( int bandNo, int xBlock, int yBlock, void
   QgsDebugMsg( QString( "%1 bytes read from modules stdout" ).arg( data.size() ) );
   // byteCount() in Qt >= 4.6
   //int size = image->byteCount() < data.size() ? image->byteCount() : data.size();
-  int size = mCols * dataTypeSize(bandNo) < data.size() ? mCols * dataTypeSize(bandNo) : data.size();
+  int size = mCols * mYBlockSize * dataTypeSize(bandNo) / 8;
+  QgsDebugMsg ( QString ( "mCols = %1 mYBlockSize = %2 dataTypeSize = %3" ).arg ( mCols ).arg ( mYBlockSize ).arg ( dataTypeSize(bandNo) ) ); 
+  if ( size != data.size() ) {
+    QMessageBox::warning( 0, QObject::tr( "Warning" ), 
+      QString( "%1 bytes expected but %2 byte were read from qgis.d.rast" ).arg(size).arg(data.size() )   );
+    size = size < data.size() ? size : data.size();
+  } 
   memcpy( block, data.data(), size );
 }
 
@@ -228,7 +236,12 @@ void QgsGrassRasterProvider::readBlock( int bandNo, QgsRectangle  const & viewEx
   QgsDebugMsg( QString( "%1 bytes read from modules stdout" ).arg( data.size() ) );
   // byteCount() in Qt >= 4.6
   //int size = image->byteCount() < data.size() ? image->byteCount() : data.size();
-  int size = pixelWidth * pixelHeight * dataTypeSize(bandNo) < data.size() ? pixelWidth * pixelHeight * dataTypeSize(bandNo) : data.size();
+  int size = pixelWidth * pixelHeight * dataTypeSize(bandNo) / 8;
+  if ( size != data.size() ) {
+    QMessageBox::warning( 0, QObject::tr( "Warning" ), 
+      QString( "%1 bytes expected but %2 byte were read from qgis.d.rast" ).arg(size).arg(data.size() )   );
+    size = size < data.size() ? size : data.size();
+  } 
   memcpy( block, data.data(), size );
 }
 
@@ -321,7 +334,8 @@ bool QgsGrassRasterProvider::identify( const QgsPoint& thePoint, QMap<QString, Q
 int QgsGrassRasterProvider::capabilities() const
 {
   int capability = QgsRasterDataProvider::Identify 
-                 | QgsRasterDataProvider::Data;
+                 | QgsRasterDataProvider::Data
+                 | QgsRasterDataProvider::ExactMinimumMaximum;
   return capability;
 }
 
@@ -350,6 +364,26 @@ int QgsGrassRasterProvider::bandCount() const
 int QgsGrassRasterProvider::colorInterpretation ( int bandNo ) const {
   // TODO
   return QgsRasterDataProvider::GrayIndex;
+}
+
+QString QgsGrassRasterProvider::metadata()
+{
+  QString myMetadata ;
+  QStringList myList;
+  myList.append ( "GISDBASE: " + mGisdbase );
+  myList.append ( "LOCATION: " + mLocation );
+  myList.append ( "MAPSET: " + mMapset );
+  myList.append ( "MAP: " + mMapName );
+
+  QHash<QString, QString>::iterator i;
+  for (i = mInfo.begin(); i != mInfo.end(); ++i)
+  {
+     myList.append ( i.key() + " : " + i.value() );
+  }
+  myMetadata += QgsRasterDataProvider::makeTableCells( myList );
+ 
+
+  return myMetadata;
 }
 
 bool QgsGrassRasterProvider::isValid()
@@ -387,6 +421,10 @@ QString  QgsGrassRasterProvider::description() const
   return PROVIDER_DESCRIPTION;
 }
 
+void QgsGrassRasterProvider::buildSupportedRasterFileFilter( QString & theFileFiltersString )
+{
+}
+
 /**
  * Class factory to return a pointer to a newly created
  * QgsGrassRasterProvider object
@@ -416,4 +454,5 @@ QGISEXTERN bool isProvider()
 {
   return true;
 }
+
 

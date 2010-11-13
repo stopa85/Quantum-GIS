@@ -53,7 +53,9 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
       Draw =                   1 << 1,
       // Data: the provider is capable to return data values, so that 
       // QgsRasterLayer can render them using selected rendering mode, e.g. GDAL, GRASS
-      Data =          1 << 2
+      Data =          1 << 2,
+      ExactMinimumMaximum =   1 << 3,
+      EstimatedMinimumMaximum =  1 << 4,
     };
 
     // This is modified copy of GDALDataType
@@ -309,6 +311,9 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
 
     /** \brief Is the NoDataValue Valid */
     bool isNoDataValueValid() const { return mValidNoDataValue; }
+
+    void buildSupportedRasterFileFilter( QString & theFileFiltersString ) ;
+
 
     static QStringList cStringList2Q_( char ** stringList );
 

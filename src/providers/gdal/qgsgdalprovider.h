@@ -201,8 +201,9 @@ class QgsGdalProvider : public QgsRasterDataProvider
     void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height,  void *data );
 
     double noDataValue() const;
-    double minimumValue(int bandNo)const;
-    double maximumValue(int bandNo)const;
+    void computeMinMax(int bandNo);
+    double minimumValue(int bandNo);
+    double maximumValue(int bandNo);
 
     QList<QgsColorRampShader::ColorRampItem> colorTable(int bandNo)const;
 
@@ -222,6 +223,8 @@ class QgsGdalProvider : public QgsRasterDataProvider
 
     /** \brief ensures that GDAL drivers are registered, but only once */
     static void registerGdalDrivers();
+
+    void buildSupportedRasterFileFilter( QString & theFileFiltersString ); 
 
   private:
 
@@ -243,6 +246,14 @@ class QgsGdalProvider : public QgsRasterDataProvider
     int mHeight;
     int mXBlockSize;
     int mYBlockSize;
+
+    QList<bool> mMinMaxComputed;
+
+    // List of estimated min values, index 0 for band 1
+    QList<double> mMinimum;
+
+    // List of estimated max values, index 0 for band 1
+    QList<double> mMaximum;
 
     //GDALDataType mGdalDataType;
 

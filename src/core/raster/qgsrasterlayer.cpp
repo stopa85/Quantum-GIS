@@ -92,83 +92,10 @@ QgsRasterLayer::QgsRasterLayer(
   QgsDebugMsg("Entered");
 
   // TODO, call constructor with provider key for now
-  setDataProvider( "gdal", QStringList(), QStringList(), QString(), QString() );
+  init();
+  setDataProvider( "gdal", QStringList(), QStringList(), QString(), QString(), loadDefaultStyleFlag );
   return;
 
-  // TODO: add this somewhere - in another constructor
-  mRasterType = QgsRasterLayer::GrayOrUndefined;
-
-  mRedBandName = TRSTRING_NOT_SET;
-  mGreenBandName = TRSTRING_NOT_SET;
-  mBlueBandName = TRSTRING_NOT_SET;
-  mGrayBandName = TRSTRING_NOT_SET;
-  mTransparencyBandName = TRSTRING_NOT_SET;
-
-
-  mUserDefinedRGBMinimumMaximum = false; //defaults needed to bypass enhanceContrast
-  mUserDefinedGrayMinimumMaximum = false;
-  mRGBMinimumMaximumEstimated = true;
-  mGrayMinimumMaximumEstimated = true;
-
-  mDrawingStyle = QgsRasterLayer::UndefinedDrawingStyle;
-  mContrastEnhancementAlgorithm = QgsContrastEnhancement::NoEnhancement;
-  mColorShadingAlgorithm = QgsRasterLayer::UndefinedShader;
-  mRasterShader = new QgsRasterShader();
-
-  mBandCount = 0;
-  mHasPyramids = false;
-  mNoDataValue = -9999.0;
-  mValidNoDataValue = false;
-
-  mGdalBaseDataset = 0;
-  mGdalDataset = 0;
-
-  // Initialise the affine transform matrix
-  mGeoTransform[0] =  0;
-  mGeoTransform[1] =  1;
-  mGeoTransform[2] =  0;
-  mGeoTransform[3] =  0;
-  mGeoTransform[4] =  0;
-  mGeoTransform[5] = -1;
-
-  // set the layer name (uppercase first character)
-
-  if ( ! baseName.isEmpty() )   // XXX shouldn't this happen in parent?
-  {
-    setLayerName( baseName );
-  }
-
-  // load the file if one specified
-  if ( ! path.isEmpty() )
-  {
-    readFile( path ); // XXX check for failure?
-
-    //readFile() is really an extension of the constructor as many imporant fields are set in this method
-    //loadDefaultStyle() can not be called before the layer has actually be opened
-    if ( loadDefaultStyleFlag )
-    {
-      bool defaultLoadedFlag = false;
-      loadDefaultStyle( defaultLoadedFlag );
-      if ( defaultLoadedFlag )
-      {
-        return;
-      }
-    }
-  }
-
-  //Initialize the last view port structure, should really be a class
-  mLastViewPort.rectXOffset = 0;
-  mLastViewPort.rectXOffsetFloat = 0.0;
-  mLastViewPort.rectYOffset = 0;
-  mLastViewPort.rectYOffsetFloat = 0.0;
-  mLastViewPort.clippedXMin = 0.0;
-  mLastViewPort.clippedXMax = 0.0;
-  mLastViewPort.clippedYMin = 0.0;
-  mLastViewPort.clippedYMax = 0.0;
-  mLastViewPort.clippedWidth = 0;
-  mLastViewPort.clippedHeight = 0;
-  mLastViewPort.drawableAreaXDim = 0;
-  mLastViewPort.drawableAreaYDim = 0;
 
 } // QgsRasterLayer ctor
 
@@ -199,8 +126,10 @@ QgsRasterLayer::QgsRasterLayer( int dummy,
                format +  " and CRS of " + crs );
 
 
+  init();
   // if we're given a provider type, try to create and bind one to this layer
-  setDataProvider( providerKey, layers, styles, format, crs );
+  bool loadDefaultStyleFlag = false ; // ???
+  setDataProvider( providerKey, layers, styles, format, crs, loadDefaultStyleFlag);
 
   // Default for the popup menu
   // TODO: popMenu = 0;
@@ -230,20 +159,9 @@ QgsRasterLayer::QgsRasterLayer( int dummy,
 
 QgsRasterLayer::~QgsRasterLayer()
 {
-
-  if ( mProviderKey.isEmpty() )
-  {
-    if ( mGdalBaseDataset )
-    {
-      GDALDereferenceDataset( mGdalBaseDataset );
-    }
-
-    if ( mGdalDataset )
-    {
-      GDALClose( mGdalDataset );
-    }
-  }
+  mValid = false;
   delete mRasterShader;
+  delete mDataProvider;
 }
 
 
@@ -257,182 +175,28 @@ QgsRasterLayer::~QgsRasterLayer()
 /////////////////////////////////////////////////////////
 /**
   Builds the list of file filter strings to later be used by
-  QgisApp::addRasterLayer()
-
+  QgisApp::addRasterLayer() 
   We query GDAL for a list of supported raster formats; we then build
   a list of file filter strings from that list.  We return a string
   that contains this list that is suitable for use in a
   QFileDialog::getOpenFileNames() call.
-
 */
 void QgsRasterLayer::buildSupportedRasterFileFilter( QString & theFileFiltersString )
 {
-  // first get the GDAL driver manager
-  //registerGdalDrivers();
-
-  // then iterate through all of the supported drivers, adding the
-  // corresponding file filter
-
-  GDALDriverH myGdalDriver;           // current driver
-
-  char **myGdalDriverMetadata;        // driver metadata strings
-
-  QString myGdalDriverLongName( "" ); // long name for the given driver
-  QString myGdalDriverExtension( "" );  // file name extension for given driver
-  QString myGdalDriverDescription;    // QString wrapper of GDAL driver description
-
-  QStringList metadataTokens;   // essentially the metadata string delimited by '='
-
-  QStringList catchallFilter;   // for Any file(*.*), but also for those
-  // drivers with no specific file filter
-
-  GDALDriverH jp2Driver = NULL; // first JPEG2000 driver found
-
-  // Grind through all the drivers and their respective metadata.
-  // We'll add a file filter for those drivers that have a file
-  // extension defined for them; the others, well, even though
-  // theoreticaly we can open those files because there exists a
-  // driver for them, the user will have to use the "All Files" to
-  // open datasets with no explicitly defined file name extension.
-  // Note that file name extension strings are of the form
-  // "DMD_EXTENSION=.*".  We'll also store the long name of the
-  // driver, which will be found in DMD_LONGNAME, which will have the
-  // same form.
-
-  // start with the default case
-  theFileFiltersString = tr( "[GDAL] All files (*)" );
-
-  for ( int i = 0; i < GDALGetDriverCount(); ++i )
+  QgsDebugMsg( "Entered" );
+  QgsRasterDataProvider *myDataProvider = QgsRasterLayer::loadProvider ( "gdal" );
+  if ( !myDataProvider ) 
   {
-    myGdalDriver = GDALGetDriver( i );
-
-    Q_CHECK_PTR( myGdalDriver );
-
-    if ( !myGdalDriver )
-    {
-      QgsLogger::warning( "unable to get driver " + QString::number( i ) );
-      continue;
-    }
-    // now we need to see if the driver is for something currently
-    // supported; if not, we give it a miss for the next driver
-
-    myGdalDriverDescription = GDALGetDescription( myGdalDriver );
-
-    // QgsDebugMsg(QString("got driver string %1").arg(myGdalDriverDescription));
-
-    myGdalDriverMetadata = GDALGetMetadata( myGdalDriver, NULL );
-
-    // presumably we know we've run out of metadta if either the
-    // address is 0, or the first character is null
-    while ( myGdalDriverMetadata && '\0' != myGdalDriverMetadata[0] )
-    {
-      metadataTokens = QString( *myGdalDriverMetadata ).split( "=", QString::SkipEmptyParts );
-      // QgsDebugMsg(QString("\t%1").arg(*myGdalDriverMetadata));
-
-      // XXX add check for malformed metadataTokens
-
-      // Note that it's oddly possible for there to be a
-      // DMD_EXTENSION with no corresponding defined extension
-      // string; so we check that there're more than two tokens.
-
-      if ( metadataTokens.count() > 1 )
-      {
-        if ( "DMD_EXTENSION" == metadataTokens[0] )
-        {
-          myGdalDriverExtension = metadataTokens[1];
-
-        }
-        else if ( "DMD_LONGNAME" == metadataTokens[0] )
-        {
-          myGdalDriverLongName = metadataTokens[1];
-
-          // remove any superfluous (.*) strings at the end as
-          // they'll confuse QFileDialog::getOpenFileNames()
-
-          myGdalDriverLongName.remove( QRegExp( "\\(.*\\)$" ) );
-        }
-      }
-      // if we have both the file name extension and the long name,
-      // then we've all the information we need for the current
-      // driver; therefore emit a file filter string and move to
-      // the next driver
-      if ( !( myGdalDriverExtension.isEmpty() || myGdalDriverLongName.isEmpty() ) )
-      {
-        // XXX add check for SDTS; in that case we want (*CATD.DDF)
-        QString glob = "*." + myGdalDriverExtension.replace( "/", " *." );
-        // Add only the first JP2 driver found to the filter list (it's the one GDAL uses)
-        if ( myGdalDriverDescription == "JPEG2000" ||
-             myGdalDriverDescription.startsWith( "JP2" ) ) // JP2ECW, JP2KAK, JP2MrSID
-        {
-          if ( jp2Driver )
-            break; // skip if already found a JP2 driver
-
-          jp2Driver = myGdalDriver;   // first JP2 driver found
-          glob += " *.j2k";           // add alternate extension
-        }
-        else if ( myGdalDriverDescription == "GTiff" )
-        {
-          glob += " *.tiff";
-        }
-        else if ( myGdalDriverDescription == "JPEG" )
-        {
-          glob += " *.jpeg";
-        }
-
-        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
-
-        break;            // ... to next driver, if any.
-      }
-
-      ++myGdalDriverMetadata;
-
-    }                       // each metadata item
-
-    if ( myGdalDriverExtension.isEmpty() && !myGdalDriverLongName.isEmpty() )
-    {
-      // Then what we have here is a driver with no corresponding
-      // file extension; e.g., GRASS.  In which case we append the
-      // string to the "catch-all" which will match all file types.
-      // (I.e., "*.*") We use the driver description intead of the
-      // long time to prevent the catch-all line from getting too
-      // large.
-
-      // ... OTOH, there are some drivers with missing
-      // DMD_EXTENSION; so let's check for them here and handle
-      // them appropriately
-
-      // USGS DEMs use "*.dem"
-      if ( myGdalDriverDescription.startsWith( "USGSDEM" ) )
-      {
-        QString glob = "*.dem";
-        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
-      }
-      else if ( myGdalDriverDescription.startsWith( "DTED" ) )
-      {
-        // DTED use "*.dt0, *.dt1, *.dt2"
-        QString glob = "*.dt0";
-        glob += " *.dt1";
-        glob += " *.dt2";
-        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
-      }
-      else if ( myGdalDriverDescription.startsWith( "MrSID" ) )
-      {
-        // MrSID use "*.sid"
-        QString glob = "*.sid";
-        theFileFiltersString += ";;[GDAL] " + myGdalDriverLongName + " (" + glob.toLower() + " " + glob.toUpper() + ")";
-      }
-      else
-      {
-        catchallFilter << QString( GDALGetDescription( myGdalDriver ) );
-      }
-    }
-
-    myGdalDriverExtension = myGdalDriverLongName = "";  // reset for next driver
-
-  }                           // each loaded GDAL driver
-
-  QgsDebugMsg( "Raster filter list built: " + theFileFiltersString );
-}                               // buildSupportedRasterFileFilter_()
+    QgsDebugMsg( "Could not createe gdal provider" );
+    return;
+  }
+  myDataProvider->buildSupportedRasterFileFilter( theFileFiltersString );
+  
+  // crash
+  //delete myDataProvider;
+  QgsDebugMsg( "file filter: " + theFileFiltersString );
+  exit(0);
+}
 
 /**
  * This helper checks to see whether the file name appears to be a valid raster file name
@@ -440,7 +204,6 @@ void QgsRasterLayer::buildSupportedRasterFileFilter( QString & theFileFiltersStr
 bool QgsRasterLayer::isValidRasterFileName( QString const & theFileNameQString, QString & retErrMsg )
 {
   GDALDatasetH myDataset;
-  //registerGdalDrivers();
 
   // TODO
   return true;
@@ -771,6 +534,7 @@ const QgsRasterBandStats QgsRasterLayer::bandStatistics( int theBandNo )
         for ( int iX = 0; iX < nXValid; iX++ )
         {
           double myValue = readValue( myData, myDataType, iX + ( iY * myXBlockSize ) );
+          QgsDebugMsg ( QString ( "%1 %2 value %3" ).arg (iX).arg(iY).arg( myValue ) );
 
           if ( mValidNoDataValue && ( fabs( myValue - mNoDataValue ) <= TINY_VALUE || myValue != myValue ) )
           {
@@ -3034,25 +2798,9 @@ void QgsRasterLayer::setBlueBandName( QString const & theBandName )
   mBlueBandName = validateBandName( theBandName );
 }
 
-/** Copied from QgsVectorLayer::setDataProvider
- *  TODO: Make it work in the raster environment
- */
-void QgsRasterLayer::setDataProvider( QString const & provider,
-                                      QStringList const & layers,
-                                      QStringList const & styles,
-                                      QString const & format,
-                                      QString const & crs )
+void QgsRasterLayer::init()
 {
-  // XXX should I check for and possibly delete any pre-existing providers?
-  // XXX How often will that scenario occur?
-
-  mProviderKey = provider;     // XXX is this necessary?  Usually already set
-  // XXX when execution gets here.
-
-  mBandCount = 0;
-  mRasterShader = new QgsRasterShader();
-
-  // Initialise the affine transform matrix
+  // keep this until mGeoTransform occurences are removed ! 
   mGeoTransform[0] =  0;
   mGeoTransform[1] =  1;
   mGeoTransform[2] =  0;
@@ -3060,9 +2808,56 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
   mGeoTransform[4] =  0;
   mGeoTransform[5] = -1;
 
+
+  mRasterType = QgsRasterLayer::GrayOrUndefined;
+
+  mRedBandName = TRSTRING_NOT_SET;
+  mGreenBandName = TRSTRING_NOT_SET;
+  mBlueBandName = TRSTRING_NOT_SET;
+  mGrayBandName = TRSTRING_NOT_SET;
+  mTransparencyBandName = TRSTRING_NOT_SET;
+
+
+  mUserDefinedRGBMinimumMaximum = false; //defaults needed to bypass enhanceContrast
+  mUserDefinedGrayMinimumMaximum = false;
+  mRGBMinimumMaximumEstimated = true;
+  mGrayMinimumMaximumEstimated = true;
+
+  mDrawingStyle = QgsRasterLayer::UndefinedDrawingStyle;
+  mContrastEnhancementAlgorithm = QgsContrastEnhancement::NoEnhancement;
+  mColorShadingAlgorithm = QgsRasterLayer::UndefinedShader;
+  mRasterShader = new QgsRasterShader();
+
+  mBandCount = 0;
+  mHasPyramids = false;
+  mNoDataValue = -9999.0;
+  mValidNoDataValue = false;
+
+  mGdalBaseDataset = 0;
+  mGdalDataset = 0;
+
+  //Initialize the last view port structure, should really be a class
+  mLastViewPort.rectXOffset = 0;
+  mLastViewPort.rectXOffsetFloat = 0.0;
+  mLastViewPort.rectYOffset = 0;
+  mLastViewPort.rectYOffsetFloat = 0.0;
+  mLastViewPort.clippedXMin = 0.0;
+  mLastViewPort.clippedXMax = 0.0;
+  mLastViewPort.clippedYMin = 0.0;
+  mLastViewPort.clippedYMax = 0.0;
+  mLastViewPort.clippedWidth = 0;
+  mLastViewPort.clippedHeight = 0;
+  mLastViewPort.drawableAreaXDim = 0;
+  mLastViewPort.drawableAreaYDim = 0;
+}
+
+// This code should be shared also by vector layer -> move it to QgsMapLayer
+QgsRasterDataProvider* QgsRasterLayer::loadProvider( QString theProviderKey, QString theDataSource ) 
+{
+    QgsDebugMsg( "Entered" );
   // load the plugin
   QgsProviderRegistry * pReg = QgsProviderRegistry::instance();
-  QString ogrlib = pReg->library( provider );
+  QString ogrlib = pReg->library( theProviderKey );
 
   //QString ogrlib = libDir + "/libpostgresprovider.so";
 
@@ -3084,25 +2879,24 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
 #endif
 
   // load the data provider
-  mLib = new QLibrary( ogrlib );
-  QgsDebugMsg( "Library name is " + mLib->fileName() );
-  bool loaded = mLib->load();
+  QLibrary*  myLib = new QLibrary( ogrlib );
+  
+  QgsDebugMsg( "Library name is " + myLib->fileName() );
+  bool loaded = myLib->load();
 
-  mValid = false;            // assume the layer is invalid until we determine otherwise
   if ( !loaded )
   {
-    mValid = false;
-    QgsLogger::warning( "QgsRasterLayer::setDataProvider: Failed to load ../providers/libproviders.so" );
+    QgsLogger::warning( "QgsRasterLayer::setDataProvider: Failed to load " );
 
   }
   QgsDebugMsg( "Loaded data provider library" );
   QgsDebugMsg( "Attempting to resolve the classFactory function" );
-  classFactoryFunction_t * classFactory = ( classFactoryFunction_t * ) cast_to_fptr( mLib->resolve( "classFactory" ) );
+  classFactoryFunction_t * classFactory = ( classFactoryFunction_t * ) cast_to_fptr( myLib->resolve( "classFactory" ) );
 
   if ( !classFactory )
   {
       QgsLogger::warning( "QgsRasterLayer::setDataProvider: Cannot resolve the classFactory function" );
-      return;
+      return NULL;
   }
   QgsDebugMsg( "Getting pointer to a mDataProvider object from the library" );
   //XXX - This was a dynamic cast but that kills the Windows
@@ -3111,13 +2905,58 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
   //                                              char*)(dataSource.utf8())));
 
   // Copied from qgsproviderregistry in preference to the above.
-  mDataProvider = ( QgsRasterDataProvider* )( *classFactory )( &mDataSource );
+  QgsRasterDataProvider* myDataProvider = ( QgsRasterDataProvider* )( *classFactory )( &theDataSource );
 
-  if ( !mDataProvider )
+  if ( !myDataProvider )
   {
     QgsLogger::warning( "QgsRasterLayer::setDataProvider: Unable to instantiate the data provider plugin" );
+    return NULL;
+  }
+  QgsDebugMsg( "Data driver created" );
+  return myDataProvider;
+}
+
+void QgsRasterLayer::setDataProvider( QString const & provider,
+                                      QStringList const & layers,
+                                      QStringList const & styles,
+                                      QString const & format,
+                                      QString const & crs) {
+  setDataProvider ( provider, layers, styles, format, crs, false );
+}
+
+/** Copied from QgsVectorLayer::setDataProvider
+ *  TODO: Make it work in the raster environment
+ */
+void QgsRasterLayer::setDataProvider( QString const & provider,
+                                      QStringList const & layers,
+                                      QStringList const & styles,
+                                      QString const & format,
+                                      QString const & crs,
+                                      bool loadDefaultStyleFlag )
+{
+  // XXX should I check for and possibly delete any pre-existing providers?
+  // XXX How often will that scenario occur?
+
+  mProviderKey = provider;     
+  mValid = false;            // assume the layer is invalid until we determine otherwise
+
+  // set the layer name (uppercase first character)
+
+  if ( ! mLayerName.isEmpty() )   // XXX shouldn't this happen in parent?
+  {
+    setLayerName( mLayerName );
+  }
+
+  mBandCount = 0;
+  mRasterShader = new QgsRasterShader();
+
+  mDataProvider = QgsRasterLayer::loadProvider ( mProviderKey, mDataSource );
+  if ( !mDataProvider ) 
+  {
     return;
   }
+
+
   QgsDebugMsg( "Instantiated the data provider plugin" 
               + QString( " with layer list of " ) + layers.join( ", " ) 
               + " and style list of " + styles.join( ", " ) 
@@ -3173,11 +3012,9 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
 
   QgsDebugMsg( "using wkt:\n" + mySourceWkt );
 
-  //mBandCount = GDALGetRasterCount( mGdalDataset );
   mBandCount = mDataProvider->bandCount( );
   for ( int i = 1; i <= mBandCount; i++ )
   {
-    //GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, i );
     QgsRasterBandStats myRasterBandStats;
     myRasterBandStats.bandName = generateBandName( i );
     myRasterBandStats.bandNumber = i;
@@ -3192,7 +3029,6 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     mRasterStatsList.push_back( myRasterBandStats );
 
     //Build a new contrast enhancement for the band and store in list
-    //QgsContrastEnhancement myContrastEnhancement(( QgsContrastEnhancement::QgsRasterDataType )GDALGetRasterDataType( myGdalBand ) );
     QgsContrastEnhancement myContrastEnhancement(( QgsContrastEnhancement::QgsRasterDataType )mDataProvider->dataType( i ) );
     mContrastEnhancementList.append( myContrastEnhancement );
   }
@@ -3205,7 +3041,6 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
 
   //decide what type of layer this is...
   //TODO Change this to look at the color interp and palette interp to decide which type of layer it is
-  //if (( GDALGetRasterCount( mGdalDataset ) > 1 ) )
   if (( mDataProvider->bandCount() > 1 ) )
   {
     mRasterType = Multiband;
@@ -3259,7 +3094,6 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     }
 
     //for the third layer we cant be sure so..
-    //if ( GDALGetRasterCount( mGdalDataset ) > 2 )
     if (( mDataProvider->bandCount() > 2 ) )
     {
       mBlueBandName = bandName( myQSettings.value( "/Raster/defaultBlueBand", 3 ).toInt() ); // sensible default
@@ -3307,6 +3141,19 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
 
   //mark the layer as valid
   mValid = true;
+
+  //loadDefaultStyle() can not be called before the layer has actually be opened
+  // TODO ???
+  //if ( loadDefaultStyleFlag )
+  //{
+    //bool defaultLoadedFlag = false;
+    //loadDefaultStyle( defaultLoadedFlag );
+    //if ( defaultLoadedFlag )
+    //{
+      //return;
+    //}
+  //}
+
   QgsDebugMsg( "exiting." );
 } // QgsRasterLayer::setDataProvider
 
@@ -4905,11 +4752,7 @@ void QgsRasterLayer::drawSingleBandGray( QPainter * theQPainter, QgsRasterViewPo
     QgsDebugMsg( "XXX use provider minmax" );
     //This case will be true the first time the image is loaded, so just approimate the min max to keep
     //from calling generate raster band stats
-    double GDALrange[2];
-    //GDALComputeRasterMinMax( myGdalBand, 1, GDALrange ); //Approximate
     mGrayMinimumMaximumEstimated = true;
-    //setMaximumValue( theBandNo, GDALrange[1] );
-    //setMinimumValue( theBandNo, GDALrange[0] );
     setMaximumValue( theBandNo, mDataProvider->maximumValue ( theBandNo ) );
     setMinimumValue( theBandNo, mDataProvider->minimumValue ( theBandNo ) );
 
@@ -4918,12 +4761,14 @@ void QgsRasterLayer::drawSingleBandGray( QPainter * theQPainter, QgsRasterViewPo
   QgsDebugMsg( " -> imageBuffer.nextScanLine");
   while ( imageBuffer.nextScanLine( &imageScanLine, &rasterScanLine ) )
   {
+    //QgsDebugMsg( " rendering line");
     for ( int i = 0; i < theRasterViewPort->drawableAreaXDim; ++i )
     {
       myGrayValue = readValue( rasterScanLine, myDataType, i );
-      if ( myGrayValue != -2147483647 ) {
+      //QgsDebugMsg( QString( "i = %1 myGrayValue = %2 ").arg(i).arg( myGrayValue ) );
+      //if ( myGrayValue != -2147483647 ) {
         //QgsDebugMsg( "myGrayValue = " + QString::number( myGrayValue ) );
-      }
+      //}
 
       if ( mValidNoDataValue && ( fabs( myGrayValue - mNoDataValue ) <= TINY_VALUE || myGrayValue != myGrayValue ) )
       {
@@ -4952,7 +4797,7 @@ void QgsRasterLayer::drawSingleBandGray( QPainter * theQPainter, QgsRasterViewPo
         myGrayVal = 255 - myGrayVal;
       }
 
-      //QgsDebugMsg( QString( "i = %1 myGrayValue = %2").arg(i).arg( myGrayValue ) );
+      //QgsDebugMsg( QString( "i = %1 myGrayValue = %2 myAlphaValue = %3").arg(i).arg( myGrayValue ).arg(myAlphaValue) );
       imageScanLine[ i ] = qRgba( myGrayVal, myGrayVal, myGrayVal, myAlphaValue );
     }
   }
@@ -5046,6 +4891,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor( QPainter * theQPainter,
       {
         //Normal
         imageScanLine[ i ] = qRgba( myRedValue, myGreenValue, myBlueValue, myAlphaValue );
+        QgsDebugMsg ( QString ( "%1 value :  %2 rgba : %3 %4 %5 %6" ).arg (i).arg( myPixelValue ).arg(myRedValue).arg(myGreenValue).arg(myBlueValue).arg(myAlphaValue) );
       }
     }
   }
@@ -5487,7 +5333,7 @@ void QgsRasterImageBuffer::reset( int maxPixelsInVirtualMemory )
 
 bool QgsRasterImageBuffer::nextScanLine( QRgb** imageScanLine, void** rasterScanLine )
 {
-  QgsDebugMsg( "mCurrentRow = " + QString::number( mCurrentRow ) );
+  //QgsDebugMsg( "mCurrentRow = " + QString::number( mCurrentRow ) );
   if ( !mValid )
     return false;
 
@@ -5512,8 +5358,6 @@ bool QgsRasterImageBuffer::nextScanLine( QRgb** imageScanLine, void** rasterScan
   {
     *imageScanLine = 0;
   }
-  //GDALDataType type = GDALGetRasterDataType( mRasterBand );
-  //int size = GDALGetDataTypeSize( type ) / 8;
   int size = mDataProvider->dataTypeSize(mBandNo)/8;
   *rasterScanLine = ( unsigned char * )mCurrentGDALData + mCurrentPartImageRow * mViewPort->drawableAreaXDim * size;
 
