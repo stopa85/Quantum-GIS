@@ -25,9 +25,16 @@
 #include "qgsrectangle.h"
 #include "qgsdataprovider.h"
 #include "qgscolorrampshader.h"
+#include "qgsrasterpyramid.h"
+
+#include <cmath>
 
 class QImage;
 class QgsPoint;
+class QgsRasterBandStats;
+
+#define TINY_VALUE  std::numeric_limits<double>::epsilon() * 20
+
 
 /** \ingroup core
  * Base class for raster data providers.
@@ -203,8 +210,74 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     }
 
     /** Returns data type for the band specified by number */
-    virtual int colorInterpretation ( int bandNo ) const {
+    virtual int colorInterpretation ( int theBandNo ) const {
       return QgsRasterDataProvider::UndefinedColorInterpretation;
+    }
+
+    QString colorName ( int colorInterpretation ) const {
+      // Modified copy from GDAL
+      switch( colorInterpretation )
+      {
+        case UndefinedColorInterpretation:
+          return "Undefined";
+
+        case GrayIndex:
+          return "Gray";
+
+        case PaletteIndex:
+          return "Palette";
+
+        case RedBand:
+          return "Red";
+
+        case GreenBand:
+          return "Green";
+
+        case BlueBand:
+          return "Blue";
+
+        case AlphaBand:
+          return "Alpha";
+
+        case HueBand:
+          return "Hue";
+
+        case SaturationBand:
+          return "Saturation";
+
+        case LightnessBand:
+          return "Lightness";
+
+        case CyanBand:
+          return "Cyan";
+
+        case MagentaBand:
+          return "Magenta";
+
+        case YellowBand:
+          return "Yellow";
+
+        case BlackBand:
+          return "Black";
+
+        case YCbCr_YBand:
+          return "YCbCr_Y";
+
+        case YCbCr_CbBand:
+          return "YCbCr_Cb";
+
+        case YCbCr_CrBand:
+          return "YCbCr_Cr";
+
+        default:
+          return "Unknown";
+      }
+    }
+    /** Reload data (data could change) */
+    virtual bool reload ( ) { return true; }
+
+    virtual QString colorInterpretationName ( int theBandNo ) const {
+      return colorName ( colorInterpretation ( theBandNo ) );
     }
 
     /** Get block size */
@@ -229,6 +302,39 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     virtual double maximumValue(int bandNo)const { return 0; }
 
     virtual QList<QgsColorRampShader::ColorRampItem> colorTable(int bandNo)const { return QList<QgsColorRampShader::ColorRampItem>(); }
+
+    // Defined in parent
+    /** \brief Returns the sublayers of this layer - Useful for providers that manage their own layers, such as WMS */
+    //virtual QStringList subLayers() const ;
+
+    /** \brief Populate the histogram vector for a given band */
+
+    virtual void populateHistogram( int theBandNoInt,
+                    QgsRasterBandStats & theBandStats,
+                    int theBinCountInt = 256,
+                    bool theIgnoreOutOfRangeFlag = true,
+                    bool theThoroughBandScanFlag = false
+                ) {};
+
+    /** \brief Create pyramid overviews */
+    QString buildPyramids( const QList<QgsRasterPyramid>  & thePyramidList,
+                           const QString &  theResamplingMethod = "NEAREST",
+                           bool theTryInternalFlag = false ) { return "FAILED_NOT_SUPPORTED"; };
+
+    /** \brief Accessor for ths raster layers pyramid list. A pyramid list defines the
+     * POTENTIAL pyramids that can be in a raster. To know which of the pyramid layers
+     * ACTUALLY exists you need to look at the existsFlag member in each struct stored in the
+     * list.
+     */
+    QList<QgsRasterPyramid> buildPyramidList() { return QList<QgsRasterPyramid>(); };
+
+
+    /** \brief helper function to create zero padded band names */
+    QString  generateBandName( int theBandNumber ) 
+    {
+      return tr( "Band" ) + QString( " %1" ) .arg( theBandNumber,  1 + ( int ) log10(( float ) bandCount() ), 10, QChar( '0' ) );
+    }
+
 
     /**
      * Get metadata in a format suitable for feeding directly
@@ -300,6 +406,18 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
      */
     virtual QString lastErrorFormat();
 
+    //virtual void buildSupportedRasterFileFilter( QString & theFileFiltersString ) ;
+
+    /** This helper checks to see whether the file name appears to be a valid
+     *  raster file name.  If the file name looks like it could be valid,
+     *  but some sort of error occurs in processing the file, the error is
+     *  returned in retError.
+     */
+
+    //virtual bool isValidRasterFileName( QString const & theFileNameQString, QString & retErrMsg ) { return false; } ;
+
+    //virtual bool isValidRasterFileName( const QString & theFileNameQString ) { return false; };
+
 
     /**Returns the dpi of the output device.
       @note: this method was added in version 1.2*/
@@ -312,7 +430,6 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     /** \brief Is the NoDataValue Valid */
     bool isNoDataValueValid() const { return mValidNoDataValue; }
 
-    void buildSupportedRasterFileFilter( QString & theFileFiltersString ) ;
 
 
     static QStringList cStringList2Q_( char ** stringList );

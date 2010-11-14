@@ -286,7 +286,7 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
      */
     static bool isValidRasterFileName( const QString & theFileNameQString, QString &retError );
     static bool isValidRasterFileName( const QString & theFileNameQString );
-    static QStringList subLayers( GDALDatasetH dataset );
+    //static QStringList subLayers( GDALDatasetH dataset );
 
 
     /** Return time stamp for given file name */
@@ -317,6 +317,7 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
                           const QString & crs,
                           bool loadDefaultStyleFlag );
 
+    static QLibrary* loadProviderLibrary( QString theProviderKey);
     static QgsRasterDataProvider* loadProvider( QString theProviderKey, QString theDataSource = 0);
     
 
@@ -562,6 +563,7 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     double rasterUnitsPerPixel();
 
     /** \brief Read color table from GDAL raster band */
+    // Keep this for QgsRasterLayerProperties
     bool readColorTable( int theBandNumber, QList<QgsColorRampShader::ColorRampItem>* theList );
 
     /** \brief Simple reset function that set the noDataValue back to the value stored in the first raster band */
@@ -667,6 +669,7 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
                            bool theTryInternalFlag = false );
 
     /** \brief Populate the histogram vector for a given band */
+    
     void populateHistogram( int theBandNoInt,
                             int theBinCountInt = 256,
                             bool theIgnoreOutOfRangeFlag = true,
@@ -840,10 +843,10 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     QString mErrorCaption;
 
     /** \brief Pointer to the gdaldataset */
-    GDALDatasetH mGdalBaseDataset;
+    //GDALDatasetH mGdalBaseDataset;
 
     /** \brief Pointer to the gdaldataset (possibly warped vrt) */
-    GDALDatasetH mGdalDataset;
+    //GDALDatasetH mGdalDataset;
 
     /** \brief Values for mapping pixel to world coordinates. Contents of this array are the same as the GDAL adfGeoTransform */
     double mGeoTransform[6];

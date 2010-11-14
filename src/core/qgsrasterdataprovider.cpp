@@ -121,10 +121,9 @@ QString QgsRasterDataProvider::lastErrorFormat()
 }
 
 //void QgsRasterDataProvider::buildSupportedRasterFileFilter( QString & theFileFiltersString ) 
-void QgsRasterDataProvider::buildSupportedRasterFileFilter( QString & theFileFiltersString ) 
-{ 
-  QgsDebugMsg ( "Entered" );  
-};
+//{ 
+  //QgsDebugMsg ( "Entered" );  
+//};
 
 
 

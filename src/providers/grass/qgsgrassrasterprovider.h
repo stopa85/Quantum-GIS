@@ -199,7 +199,7 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
 
     QList<QgsColorRampShader::ColorRampItem> colorTable(int bandNo)const;
 
-    void buildSupportedRasterFileFilter( QString & theFileFiltersString );
+   // void buildSupportedRasterFileFilter( QString & theFileFiltersString );
 
     /**
      * Get metadata in a format suitable for feeding directly

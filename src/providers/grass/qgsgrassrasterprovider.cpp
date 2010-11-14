@@ -386,6 +386,16 @@ QString QgsGrassRasterProvider::metadata()
   return myMetadata;
 }
 
+void populateHistogram( int theBandNoInt,
+                    QgsRasterBandStats & theBandStats,
+                    int theBinCountInt = 256,
+                    bool theIgnoreOutOfRangeFlag = true,
+                    bool theThoroughBandScanFlag = false)
+{
+  // TODO
+}
+
+
 bool QgsGrassRasterProvider::isValid()
 {
   return mValid;
@@ -421,9 +431,9 @@ QString  QgsGrassRasterProvider::description() const
   return PROVIDER_DESCRIPTION;
 }
 
-void QgsGrassRasterProvider::buildSupportedRasterFileFilter( QString & theFileFiltersString )
-{
-}
+//void QgsGrassRasterProvider::buildSupportedRasterFileFilter( QString & theFileFiltersString )
+//{
+//}
 
 /**
  * Class factory to return a pointer to a newly created

@@ -33,6 +33,8 @@
 #include <QMap>
 #include <QVector>
 
+class QgsRasterPyramid;
+
 #define CPL_SUPRESS_CPLUSPLUS
 #include <gdal.h>
 
@@ -224,7 +226,32 @@ class QgsGdalProvider : public QgsRasterDataProvider
     /** \brief ensures that GDAL drivers are registered, but only once */
     static void registerGdalDrivers();
 
-    void buildSupportedRasterFileFilter( QString & theFileFiltersString ); 
+    //void buildSupportedRasterFileFilter( QString & theFileFiltersString ); 
+
+    //bool isValidRasterFileName( QString const & theFileNameQString, QString & retErrMsg );
+
+    //bool isValidRasterFileName( const QString & theFileNameQString );
+
+    static QStringList subLayers( GDALDatasetH dataset );
+
+    /** \brief Returns the sublayers of this layer - Useful for providers that manage their own layers, such as WMS */
+    QStringList subLayers() const;
+
+    void populateHistogram( int theBandNoInt,
+                    QgsRasterBandStats & theBandStats,
+                    int theBinCountInt = 256,
+                    bool theIgnoreOutOfRangeFlag = true,
+                    bool theThoroughBandScanFlag = false
+                     );
+
+    QString buildPyramids( const QList<QgsRasterPyramid> &,
+                           const QString &  theResamplingMethod = "NEAREST",
+                           bool theTryInternalFlag = false );
+    QList<QgsRasterPyramid> buildPyramidList();
+
+    /** \brief Close data set and release related data */
+    void closeDataset();
+
 
   private:
 
@@ -269,6 +296,8 @@ class QgsGdalProvider : public QgsRasterDataProvider
     //QHash<QString, QString> mInfo;
 
     QgsCoordinateReferenceSystem mCrs;
+
+    QList<QgsRasterPyramid> mPyramidList;
 
 };
 
