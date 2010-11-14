@@ -179,7 +179,6 @@ static int cell_draw( char *name,
       {
         alpha = 0;
       }
-      ptr = G_incr_void_ptr( ptr, raster_size );
 
       if ( strcmp(format,"color") == 0 ) 
       {
@@ -222,6 +221,7 @@ static int cell_draw( char *name,
             fwrite( ptr, raster_size, 1, fo );
           }
       }
+      ptr = G_incr_void_ptr( ptr, raster_size );
     }
   }
 
