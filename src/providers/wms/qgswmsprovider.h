@@ -459,6 +459,9 @@ class QgsWmsProvider : public QgsRasterDataProvider
      */
     QImage *draw( QgsRectangle const &  viewExtent, int pixelWidth, int pixelHeight );
 
+    void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height,  void *data );
+
+
     /** Return the extent for this data layer
     */
     virtual QgsRectangle extent();
@@ -523,6 +526,11 @@ class QgsWmsProvider : public QgsRasterDataProvider
         be prudent to check this value per intended operation.
       */
     int capabilities() const;
+
+    int dataType ( int bandNo ) const;
+    int bandCount() const;
+   
+    
 
     /**
      * Get metadata in a format suitable for feeding directly

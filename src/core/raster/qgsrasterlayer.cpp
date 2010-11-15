@@ -376,6 +376,13 @@ const QgsRasterBandStats QgsRasterLayer::bandStatistics( int theBandNo )
 {
   QgsDebugMsg( "theBandNo = " + QString::number(theBandNo) );
   QgsDebugMsg( "mRasterType = " + QString::number(mRasterType) );
+  if ( mRasterType == ColorLayer )
+  {
+    // Statistics have no sense for ColorLayer
+    QgsRasterBandStats myNullReturnStats;
+    return myNullReturnStats;
+  }
+
   // check if we have received a valid band number
   if (( mDataProvider->bandCount() < theBandNo ) && mRasterType != Palette )
   {
@@ -969,13 +976,14 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
 
   // Provider mode: See if a provider key is specified, and if so use the provider instead
 
-  QgsDebugMsg( "Checking for provider key." );
+  QgsDebugMsg( "Checking for provider capability." );
 
-  //if ( !mProviderKey.isEmpty() )
+  // Some providers were returning QImage directly, not they are passing ARGB data - ARGBDataType
   if ( mDataProvider->capabilities() & QgsRasterDataProvider::Draw )
   {
     QgsDebugMsg( "Wanting a '" + mProviderKey + "' provider to draw this." );
 
+    // TODO this should be probably moved to WMS?
     mDataProvider->setDpi( rendererContext.rasterScaleFactor() * 25.4 * rendererContext.scaleFactor() );
 
     //fetch image in several parts if it is too memory consuming
@@ -1037,6 +1045,7 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
       //QImage::setAlphaChannel does not work quite as expected so set each pixel individually
       //Currently this is only done for WMS images, which should be small enough not to impact performance
 
+      // TODO this should be probably moved to WMS?
       if ( mTransparencyLevel != 255 ) //improve performance if layer transparency not altered
       {
         QImage* transparentImageCopy = new QImage( *image ); //copy image if there is user transparency
@@ -1232,6 +1241,18 @@ void QgsRasterLayer::draw( QPainter * theQPainter,
                             theQgsMapToPixel );
       }
       break;
+    case SingleBandColorDataStyle:
+      //check the band is set!
+      if ( mGrayBandName == TRSTRING_NOT_SET )
+      {
+        break;
+      }
+      else
+      {
+        drawSingleBandColorData( theQPainter, theRasterViewPort,
+                            theQgsMapToPixel, bandNumber( mGrayBandName ) );
+        break;
+      }
 
     default:
       break;
@@ -1270,6 +1291,9 @@ QString QgsRasterLayer::drawingStyleAsString() const
       break;
     case MultiBandColor:
       return QString( "MultiBandColor" );//no need to tr() this its not shown in ui
+      break;
+    case SingleBandColorDataStyle:
+      return QString( "SingleBandColorDataStyle" );//no need to tr() this its not shown in ui
       break;
     default:
       break;
@@ -2524,10 +2548,16 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
 
   //decide what type of layer this is...
   //TODO Change this to look at the color interp and palette interp to decide which type of layer it is
+  QgsDebugMsg("bandCount = " + QString::number( mDataProvider->bandCount()));
+  QgsDebugMsg("dataType = " + QString::number( mDataProvider->dataType( 1 )));
   if (( mDataProvider->bandCount() > 1 ) )
   {
     mRasterType = Multiband;
   }
+  else if ( mDataProvider->dataType( 1 ) == QgsRasterDataProvider::ARGBDataType )
+  {
+    mRasterType = ColorLayer;
+  } 
   //TODO hasBand is really obsolete and only used in the Palette instance, change to new function hasPalette(int)
   //else if ( hasBand( "Palette" ) ) //don't tr() this its a gdal word!
   // not sure if is worth to add colorTable capability - CT can be empty in any case
@@ -2540,7 +2570,14 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     mRasterType = GrayOrUndefined;
   }
 
-  if ( mRasterType == Palette )
+  QgsDebugMsg("mRasterType = " + QString::number(mRasterType));
+  if ( mRasterType == ColorLayer )
+  {
+    QgsDebugMsg("Setting mDrawingStyle to SingleBandColorDataStyle " + QString::number ( SingleBandColorDataStyle ) );
+    mDrawingStyle = SingleBandColorDataStyle;
+    mGrayBandName = bandName( 1 );  //sensible default
+  }
+  else if ( mRasterType == Palette )
   {
     mRedBandName = TRSTRING_NOT_SET; // sensible default
     mGreenBandName = TRSTRING_NOT_SET; // sensible default
@@ -2789,7 +2826,13 @@ void QgsRasterLayer::setDrawingStyle( QString const & theDrawingStyleQString )
   {
     mDrawingStyle = MultiBandColor;
   }
-  else
+  else if ( theDrawingStyleQString == "SingleBandColorDataStyle" )//no need to tr() this its not shown in ui
+  {
+    QgsDebugMsg("Setting mDrawingStyle to SingleBandColorDataStyle " + QString::number ( SingleBandColorDataStyle ) );
+    mDrawingStyle = SingleBandColorDataStyle;
+    QgsDebugMsg("Setted mDrawingStyle to " + QString::number ( mDrawingStyle ) );
+  }
+  else 
   {
     mDrawingStyle = UndefinedDrawingStyle;
   }
@@ -3708,6 +3751,25 @@ bool QgsRasterLayer::writeXml( QDomNode & layer_node,
 // Private methods
 //
 /////////////////////////////////////////////////////////
+void QgsRasterLayer::drawSingleBandColorData( QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort,
+    const QgsMapToPixel* theQgsMapToPixel, int theBandNo )
+{
+  QgsDebugMsg( "entered." );
+
+  QgsRasterImageBuffer imageBuffer( mDataProvider, theBandNo, theQPainter, theRasterViewPort, theQgsMapToPixel, &mGeoTransform[0] );
+  imageBuffer.reset();
+
+  QRgb* imageScanLine = 0;
+  void* rasterScanLine = 0;
+
+  while ( imageBuffer.nextScanLine( &imageScanLine, &rasterScanLine ) )
+  {
+    int size = theRasterViewPort->drawableAreaXDim * 4;
+    memcpy( imageScanLine, rasterScanLine, size );
+  }
+
+}
+
 void QgsRasterLayer::drawMultiBandColor( QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort,
     const QgsMapToPixel* theQgsMapToPixel )
 {

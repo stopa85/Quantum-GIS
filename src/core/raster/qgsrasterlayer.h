@@ -241,8 +241,8 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
       //added in 1.6 to fix naming glitch
       MultiBandSingleBandGray = MultiBandSingleGandGray, // a layer containing 2 or more bands, but a single band drawn as a range of gray colors
       MultiBandSingleBandPseudoColor, //a layer containing 2 or more bands, but a single band drawn using a pseudocolor algorithm
-      MultiBandColor                  //a layer containing 2 or more bands, mapped to RGB color space.
-      //In the case of a multiband with only two bands, one band will be mapped to more than one color.
+      MultiBandColor,                  //a layer containing 2 or more bands, mapped to RGB color space. In the case of a multiband with only two bands, one band will be mapped to more than one color.
+      SingleBandColorDataStyle         // ARGB values rendered directly
     };
 
     /** \brief This enumerator describes the type of raster layer */
@@ -250,7 +250,8 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     {
       GrayOrUndefined,
       Palette,
-      Multiband
+      Multiband,
+      ColorLayer
     } ;
 
     /** \brief A list containing on ContrastEnhancement object per raster band in this raster layer */
@@ -713,6 +714,11 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     //
     // Private methods
     //
+    /** \brief Drawing routine for color type data  */
+    void drawSingleBandColorData( QPainter * theQPainter,
+                             QgsRasterViewPort * theRasterViewPort,
+                             const QgsMapToPixel* theQgsMapToPixel,
+                             int theBandNoInt  );
 
     /** \brief Drawing routine for multiband image  */
     void drawMultiBandColor( QPainter * theQPainter,

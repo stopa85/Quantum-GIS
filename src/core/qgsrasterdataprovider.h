@@ -80,7 +80,8 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
       /*! Complex Int32 */                        CInt32 = 9,
       /*! Complex Float32 */                      CFloat32 = 10,
       /*! Complex Float64 */                      CFloat64 = 11,
-      TypeCount = 12          /* maximum type # + 1 */
+      /*! Color, alpha, red, green, blue, 4 bytes */ ARGBDataType = 12,
+      TypeCount = 13          /* maximum type # + 1 */
     }; 
 
     // This is modified copy of GDALColorInterp
@@ -195,6 +196,9 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
         case CFloat64:
           return 128;
 
+        case ARGBDataType:
+          return 32;
+
         default:
           return 0;
       }
@@ -206,7 +210,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
 
     /** Get numbur of bands */
     virtual int bandCount() const {
-      return 0;
+      return 1;
     }
 
     /** Returns data type for the band specified by number */
