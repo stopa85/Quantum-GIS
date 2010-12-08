@@ -155,7 +155,7 @@ QgsSimpleMarkerSymbolLayerV2Widget::QgsSimpleMarkerSymbolLayerV2Widget( QWidget*
   QSize size = lstNames->iconSize();
   QStringList names;
   names << "circle" << "rectangle" << "diamond" << "pentagon" << "cross" << "cross2" << "triangle"
-  << "equilateral_triangle" << "star" << "regular_star" << "arrow" << "line";
+  << "equilateral_triangle" << "star" << "regular_star" << "arrow" << "line" << "arrowhead" << "filled_arrowhead";
   double markerSize = DEFAULT_POINT_SIZE * 2;
   for ( int i = 0; i < names.count(); ++i )
   {
@@ -359,6 +359,11 @@ QgsMarkerLineSymbolLayerV2Widget::QgsMarkerLineSymbolLayerV2Widget( QWidget* par
   connect( btnChangeMarker, SIGNAL( clicked() ), this, SLOT( setMarker() ) );
   connect( chkRotateMarker, SIGNAL( clicked() ), this, SLOT( setRotate() ) );
   connect( spinOffset, SIGNAL( valueChanged( double ) ), this, SLOT( setOffset() ) );
+  connect( radInterval, SIGNAL( clicked() ), this, SLOT( setPlacement() ) );
+  connect( radVertex, SIGNAL( clicked() ), this, SLOT( setPlacement() ) );
+  connect( radVertexLast, SIGNAL( clicked() ), this, SLOT( setPlacement() ) );
+  connect( radVertexFirst, SIGNAL( clicked() ), this, SLOT( setPlacement() ) );
+  connect( radCentralPoint, SIGNAL( clicked() ), this, SLOT( setPlacement() ) );
 }
 
 void QgsMarkerLineSymbolLayerV2Widget::setSymbolLayer( QgsSymbolLayerV2* layer )
@@ -373,7 +378,18 @@ void QgsMarkerLineSymbolLayerV2Widget::setSymbolLayer( QgsSymbolLayerV2* layer )
   spinInterval->setValue( mLayer->interval() );
   chkRotateMarker->setChecked( mLayer->rotateMarker() );
   spinOffset->setValue( mLayer->offset() );
+  if ( mLayer->placement() == QgsMarkerLineSymbolLayerV2::Interval )
+    radInterval->setChecked( true );
+  else if ( mLayer->placement() == QgsMarkerLineSymbolLayerV2::Vertex )
+    radVertex->setChecked( true );
+  else if ( mLayer->placement() == QgsMarkerLineSymbolLayerV2::LastVertex )
+    radVertexLast->setChecked( true );
+  else if ( mLayer->placement() == QgsMarkerLineSymbolLayerV2::CentralPoint )
+    radCentralPoint->setChecked( true );
+  else
+    radVertexFirst->setChecked( true );
   updateMarker();
+  setPlacement(); // update gui
 }
 
 QgsSymbolLayerV2* QgsMarkerLineSymbolLayerV2Widget::symbolLayer()
@@ -416,6 +432,24 @@ void QgsMarkerLineSymbolLayerV2Widget::updateMarker()
   btnChangeMarker->setIcon( icon );
 }
 
+void QgsMarkerLineSymbolLayerV2Widget::setPlacement()
+{
+  bool interval = radInterval->isChecked();
+  spinInterval->setEnabled( interval );
+  //mLayer->setPlacement( interval ? QgsMarkerLineSymbolLayerV2::Interval : QgsMarkerLineSymbolLayerV2::Vertex );
+  if ( radInterval->isChecked() )
+    mLayer->setPlacement( QgsMarkerLineSymbolLayerV2::Interval );
+  else if ( radVertex->isChecked() )
+    mLayer->setPlacement( QgsMarkerLineSymbolLayerV2::Vertex );
+  else if ( radVertexLast->isChecked() )
+    mLayer->setPlacement( QgsMarkerLineSymbolLayerV2::LastVertex );
+  else if ( radVertexFirst->isChecked() )
+    mLayer->setPlacement( QgsMarkerLineSymbolLayerV2::FirstVertex );
+  else
+    mLayer->setPlacement( QgsMarkerLineSymbolLayerV2::CentralPoint );
+
+  emit changed();
+}
 
 ///////////
 
@@ -575,6 +609,7 @@ QgsLineDecorationSymbolLayerV2Widget::QgsLineDecorationSymbolLayerV2Widget( QWid
   setupUi( this );
 
   connect( btnChangeColor, SIGNAL( clicked() ), this, SLOT( colorChanged() ) );
+  connect( spinWidth, SIGNAL( valueChanged( double ) ), this, SLOT( penWidthChanged() ) );
 }
 
 void QgsLineDecorationSymbolLayerV2Widget::setSymbolLayer( QgsSymbolLayerV2* layer )
@@ -587,6 +622,7 @@ void QgsLineDecorationSymbolLayerV2Widget::setSymbolLayer( QgsSymbolLayerV2* lay
 
   // set values
   btnChangeColor->setColor( mLayer->color() );
+  spinWidth->setValue( mLayer->width() );
 }
 
 QgsSymbolLayerV2* QgsLineDecorationSymbolLayerV2Widget::symbolLayer()
@@ -601,6 +637,12 @@ void QgsLineDecorationSymbolLayerV2Widget::colorChanged()
     return;
   mLayer->setColor( color );
   btnChangeColor->setColor( mLayer->color() );
+  emit changed();
+}
+
+void QgsLineDecorationSymbolLayerV2Widget::penWidthChanged()
+{
+  mLayer->setWidth( spinWidth->value() );
   emit changed();
 }
 
@@ -784,4 +826,51 @@ void QgsFontMarkerSymbolLayerV2Widget::setCharacter( const QChar& chr )
 {
   mLayer->setCharacter( chr );
   emit changed();
+}
+
+
+///////////////
+
+
+QgsCentroidFillSymbolLayerV2Widget::QgsCentroidFillSymbolLayerV2Widget( QWidget* parent )
+    : QgsSymbolLayerV2Widget( parent )
+{
+  mLayer = NULL;
+
+  setupUi( this );
+
+  connect( btnChangeMarker, SIGNAL( clicked() ), this, SLOT( setMarker() ) );
+}
+
+void QgsCentroidFillSymbolLayerV2Widget::setSymbolLayer( QgsSymbolLayerV2* layer )
+{
+  if ( layer->layerType() != "CentroidFill" )
+    return;
+
+  // layer type is correct, we can do the cast
+  mLayer = static_cast<QgsCentroidFillSymbolLayerV2*>( layer );
+
+  // set values
+  updateMarker();
+}
+
+QgsSymbolLayerV2* QgsCentroidFillSymbolLayerV2Widget::symbolLayer()
+{
+  return mLayer;
+}
+
+void QgsCentroidFillSymbolLayerV2Widget::setMarker()
+{
+  QgsSymbolV2PropertiesDialog dlg( mLayer->subSymbol(), this );
+  if ( dlg.exec() == 0 )
+    return;
+  updateMarker();
+
+  emit changed();
+}
+
+void QgsCentroidFillSymbolLayerV2Widget::updateMarker()
+{
+  QIcon icon = QgsSymbolLayerV2Utils::symbolPreviewIcon( mLayer->subSymbol(), btnChangeMarker->iconSize() );
+  btnChangeMarker->setIcon( icon );
 }

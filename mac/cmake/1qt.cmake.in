@@ -3,9 +3,6 @@
 #   so we configure it first to do substitutions
 #   make sure to use @varname@
 
-# need part of BundleUtilities
-INCLUDE (GetPrerequisites)
-
 # kill boolean warnings
 CMAKE_POLICY (SET CMP0012 NEW)
 
@@ -26,30 +23,7 @@ SET (QT_FWVER @QT_VERSION_MAJOR@)
 SET (ATEXECUTABLE "@executable_path")
 SET (ATLOADER "@loader_path")
 
-# helper functions
-
-FUNCTION (GET_INSTALL_NAME LIBFILE LIBNAME OUTVAR)
-    get_prerequisites ("${LIBFILE}" LIBLIST 1 0 "" "")
-    FOREACH (L ${LIBLIST})
-        STRING (REGEX MATCH ".*${LIBNAME}.+" LL ${L})
-        IF (LL)
-            SET (${OUTVAR} ${LL} PARENT_SCOPE)
-        ENDIF (LL)
-    ENDFOREACH ()
-ENDFUNCTION (GET_INSTALL_NAME)
-
-# message only if verbose makefiles
-FUNCTION (MYMESSAGE MSG)
-    IF (@CMAKE_VERBOSE_MAKEFILE@)
-        MESSAGE (STATUS "${MSG}")
-    ENDIF (@CMAKE_VERBOSE_MAKEFILE@)
-ENDFUNCTION (MYMESSAGE)
-
-# install_name_tool -change CHANGE CHANGETO CHANGEBIN
-FUNCTION (INSTALLNAMETOOL_CHANGE CHANGE CHANGETO CHANGEBIN)
-	MYMESSAGE ("install_name_tool -change ${CHANGE} ${CHANGETO} \"${CHANGEBIN}\"")
-	EXECUTE_PROCESS (COMMAND install_name_tool -change ${CHANGE} ${CHANGETO} "${CHANGEBIN}")
-ENDFUNCTION (INSTALLNAMETOOL_CHANGE)
+INCLUDE (@CMAKE_SOURCE_DIR@/cmake/MacBundleMacros.cmake)
 
 # build list of Qt frameworks to bundle
 
@@ -246,10 +220,12 @@ FOREACH (QFW ${QTLISTQG})
     # applications behave better that way
     INSTALLNAMETOOL_CHANGE (${QFW_CHG} ${QFW_CHG_TO} "${QBINDIR}/qgis_help.app/Contents/MacOS/qgis_help")
     # qgis-mapserver
-    IF (@OSX_HAVE_LOADERPATH@)
-        SET (QFW_CHG_TO "${ATEXECUTABLE}/@QGIS_CGIBIN_SUBDIR_REV@/@QGIS_FW_SUBDIR@/${QFW}.framework/${QFW}")
-    ENDIF (@OSX_HAVE_LOADERPATH@)
-    INSTALLNAMETOOL_CHANGE (${QFW_CHG} ${QFW_CHG_TO} "${QCGIDIR}/qgis_mapserv.fcgi")
+    IF (@WITH_MAPSERVER@)
+        IF (@OSX_HAVE_LOADERPATH@)
+            SET (QFW_CHG_TO "${ATEXECUTABLE}/@QGIS_CGIBIN_SUBDIR_REV@/@QGIS_FW_SUBDIR@/${QFW}.framework/${QFW}")
+        ENDIF (@OSX_HAVE_LOADERPATH@)
+        INSTALLNAMETOOL_CHANGE (${QFW_CHG} ${QFW_CHG_TO} "${QCGIDIR}/qgis_mapserv.fcgi")
+    ENDIF ()
     # libs
     IF (@OSX_HAVE_LOADERPATH@)
         SET (QFW_CHG_TO "${ATLOADER}/@QGIS_LIB_SUBDIR_REV@/@QGIS_FW_SUBDIR@/${QFW}.framework/${QFW}")
@@ -296,13 +272,6 @@ FOREACH (QFW ${QTLISTQG})
     FOREACH (PG ${QGPYLIST})
         INSTALLNAMETOOL_CHANGE (${QFW_CHG} ${QFW_CHG_TO} "${PG}")
     ENDFOREACH (PG)
-    # bin - PyQt utils
-    IF (@OSX_HAVE_LOADERPATH@)
-        SET (QFW_CHG_TO "${ATLOADER}/@QGIS_BIN_SUBDIR_REV@/@QGIS_FW_SUBDIR@/${QFW}.framework/${QFW}")
-    ENDIF (@OSX_HAVE_LOADERPATH@)
-    FOREACH (PB pylupdate4;pyrcc4)
-        INSTALLNAMETOOL_CHANGE (${QFW_CHG} ${QFW_CHG_TO} "${QBINDIR}/${PB}")
-    ENDFOREACH (PB)
     # PyQwt
     IF (@OSX_HAVE_LOADERPATH@)
         SET (QFW_CHG_TO "${ATLOADER}/../../../@QGIS_DATA_SUBDIR_REV@/@QGIS_FW_SUBDIR@/${QFW}.framework/${QFW}")
@@ -310,4 +279,9 @@ FOREACH (QFW ${QTLISTQG})
     FOREACH (PW _iqt;Qwt)
         INSTALLNAMETOOL_CHANGE (${QFW_CHG} ${QFW_CHG_TO} "${QGISPYDIR}/PyQt${QT_FWVER}/Qwt5/${PW}.so")
     ENDFOREACH (PW)
+    # bin - PyQt utils
+    SET (QFW_CHG_TO "${ATEXECUTABLE}/@QGIS_BIN_SUBDIR_REV@/@QGIS_FW_SUBDIR@/${QFW}.framework/${QFW}")
+    FOREACH (PB pylupdate4;pyrcc4)
+        INSTALLNAMETOOL_CHANGE (${QFW_CHG} ${QFW_CHG_TO} "${QBINDIR}/${PB}")
+    ENDFOREACH (PB)
 ENDFOREACH (QFW)

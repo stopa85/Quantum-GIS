@@ -54,6 +54,7 @@
 #include <QSettings>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QHeaderView>
 
 #include "qgsrendererv2propertiesdialog.h"
 #include "qgsstylev2.h"
@@ -124,7 +125,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(
 
   updateButtons();
 
-  leSpatialRefSys->setText( layer->srs().toProj4() );
+  leSpatialRefSys->setText( "EPSG:" + QString::number( layer->crs().epsg() ) + " - " + layer->srs().description() );
   leSpatialRefSys->setCursorPosition( 0 );
 
   leEditForm->setText( layer->editForm() );
@@ -140,19 +141,16 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(
   for ( ; it != overlayPluginList.constEnd(); ++it )
   {
     QgsApplyDialog* d = ( *it )->dialog( lyr );
-    position = stackedWidget->insertWidget( stackedWidget->count(), qobject_cast<QDialog*>( d ) );
-    stackedWidget->setCurrentIndex( position ); //ugly, but otherwise the properties dialog is a mess
+    position = tabWidget->insertTab( tabWidget->count(), qobject_cast<QDialog*>( d ), QgisApp::getThemeIcon( "propertyicons/diagram.png" ), tr( "Overlay" ) );
+    tabWidget->setCurrentIndex( position ); //ugly, but otherwise the properties dialog is a mess
     mOverlayDialogs.push_back( d );
-    //shamelessly hard coded - what will we do if other types of layer plugins exist? TS
-    QListWidgetItem * mypItem = new QListWidgetItem( QgisApp::getThemeIcon( "propertyicons/diagram.png" ), ( *it )->name() );
-    listWidget->insertItem( stackedWidget->count() - 1, mypItem );
   }
 
-  stackedWidget->setCurrentIndex( 0 );
+  tabWidget->setCurrentIndex( 0 );
 
   QSettings settings;
   restoreGeometry( settings.value( "/Windows/VectorLayerProperties/geometry" ).toByteArray() );
-  listWidget->setCurrentRow( settings.value( "/Windows/VectorLayerProperties/row" ).toInt() );
+  tabWidget->setCurrentIndex( settings.value( "/Windows/VectorLayerProperties/row" ).toInt() );
 
   setWindowTitle( tr( "Layer Properties - %1" ).arg( layer->name() ) );
 } // QgsVectorLayerProperties ctor
@@ -165,15 +163,17 @@ void QgsVectorLayerProperties::loadRows()
 
   tblAttributes->setColumnCount( attrColCount );
   tblAttributes->setRowCount( fields.size() );
-  tblAttributes->setHorizontalHeaderItem( attrIdCol, new QTableWidgetItem( tr( "id" ) ) );
-  tblAttributes->setHorizontalHeaderItem( attrNameCol, new QTableWidgetItem( tr( "name" ) ) );
-  tblAttributes->setHorizontalHeaderItem( attrTypeCol, new QTableWidgetItem( tr( "type" ) ) );
-  tblAttributes->setHorizontalHeaderItem( attrLengthCol, new QTableWidgetItem( tr( "length" ) ) );
-  tblAttributes->setHorizontalHeaderItem( attrPrecCol, new QTableWidgetItem( tr( "precision" ) ) );
-  tblAttributes->setHorizontalHeaderItem( attrCommentCol, new QTableWidgetItem( tr( "comment" ) ) );
-  tblAttributes->setHorizontalHeaderItem( attrEditTypeCol, new QTableWidgetItem( tr( "edit widget" ) ) );
-  tblAttributes->setHorizontalHeaderItem( attrAliasCol, new QTableWidgetItem( tr( "alias" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrIdCol, new QTableWidgetItem( tr( "Id" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrNameCol, new QTableWidgetItem( tr( "Name" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrTypeCol, new QTableWidgetItem( tr( "Type" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrLengthCol, new QTableWidgetItem( tr( "Length" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrPrecCol, new QTableWidgetItem( tr( "Precision" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrCommentCol, new QTableWidgetItem( tr( "Comment" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrEditTypeCol, new QTableWidgetItem( tr( "Edit widget" ) ) );
+  tblAttributes->setHorizontalHeaderItem( attrAliasCol, new QTableWidgetItem( tr( "Alias" ) ) );
 
+  tblAttributes->horizontalHeader()->setResizeMode( 1, QHeaderView::Stretch );
+  tblAttributes->horizontalHeader()->setResizeMode( 7, QHeaderView::Stretch );
   tblAttributes->setSelectionBehavior( QAbstractItemView::SelectRows );
   tblAttributes->setSelectionMode( QAbstractItemView::MultiSelection );
 
@@ -211,7 +211,7 @@ QgsVectorLayerProperties::~QgsVectorLayerProperties()
 
   QSettings settings;
   settings.setValue( "/Windows/VectorLayerProperties/geometry", saveGeometry() );
-  settings.setValue( "/Windows/VectorLayerProperties/row", listWidget->currentRow() );
+  settings.setValue( "/Windows/VectorLayerProperties/row", tabWidget->currentIndex() );
 }
 
 void QgsVectorLayerProperties::attributeTypeDialog( )
@@ -519,6 +519,7 @@ void QgsVectorLayerProperties::reset( void )
 
   loadRows();
   QObject::connect( tblAttributes, SIGNAL( cellChanged( int, int ) ), this, SLOT( on_tblAttributes_cellChanged( int, int ) ) );
+  QObject::connect( labelCheckBox, SIGNAL( clicked( bool ) ), this, SLOT( enableLabelOptions( bool ) ) );
 } // reset()
 
 
@@ -804,7 +805,7 @@ QString QgsVectorLayerProperties::metadata()
 
   QString xMin, yMin, xMax, yMax;
   double changeoverValue = 99999; // The 'largest' 5 digit number
-  if ( fabs( myExtent.xMinimum() ) > changeoverValue )
+  if ( qAbs( myExtent.xMinimum() ) > changeoverValue )
   {
     xMin = QString( "%1" ).arg( myExtent.xMinimum(), 0, 'f', 2 );
   }
@@ -813,7 +814,7 @@ QString QgsVectorLayerProperties::metadata()
     xMin = QString( "%1" ).arg( myExtent.xMinimum() );
   }
 
-  if ( fabs( myExtent.yMinimum() ) > changeoverValue )
+  if ( qAbs( myExtent.yMinimum() ) > changeoverValue )
   {
     yMin = QString( "%1" ).arg( myExtent.yMinimum(), 0, 'f', 2 );
   }
@@ -822,7 +823,7 @@ QString QgsVectorLayerProperties::metadata()
     yMin = QString( "%1" ).arg( myExtent.yMinimum() );
   }
 
-  if ( fabs( myExtent.xMaximum() ) > changeoverValue )
+  if ( qAbs( myExtent.xMaximum() ) > changeoverValue )
   {
     xMax = QString( "%1" ).arg( myExtent.xMaximum(), 0, 'f', 2 );
   }
@@ -831,7 +832,7 @@ QString QgsVectorLayerProperties::metadata()
     xMax = QString( "%1" ).arg( myExtent.xMaximum() );
   }
 
-  if ( fabs( myExtent.yMaximum() ) > changeoverValue )
+  if ( qAbs( myExtent.yMaximum() ) > changeoverValue )
   {
     yMax = QString( "%1" ).arg( myExtent.yMaximum(), 0, 'f', 2 );
   }
@@ -980,7 +981,7 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
   }
   delete mySelector;
 
-  leSpatialRefSys->setText( layer->srs().toProj4() );
+  leSpatialRefSys->setText( "EPSG:" + QString::number( layer->crs().epsg() ) + " - " + layer->srs().description() );
   leSpatialRefSys->setCursorPosition( 0 );
 }
 
@@ -1233,12 +1234,12 @@ void QgsVectorLayerProperties::updateSymbologyPage()
   }
   else
   {
-    if ( listWidget->currentRow() == 0 )
+    if ( tabWidget->currentIndex() == 0 )
     {
-      listWidget->setCurrentRow( 1 );
+      tabWidget->setCurrentIndex( 1 );
     }
 
-    listWidget->setItemHidden( listWidget->item( 0 ), true ); // hide symbology item
+    tabWidget->setTabEnabled( 0, true ); // hide symbology item
   }
 
   if ( mRendererDialog )
@@ -1248,7 +1249,7 @@ void QgsVectorLayerProperties::updateSymbologyPage()
   }
 }
 
-void QgsVectorLayerProperties::on_stackedWidget_currentChanged( int index )
+void QgsVectorLayerProperties::on_tabWidget_currentChanged( int index )
 {
   if ( index != 4 || mMetadataFilled )
     return;
@@ -1259,4 +1260,9 @@ void QgsVectorLayerProperties::on_stackedWidget_currentChanged( int index )
   teMetadata->document()->setDefaultStyleSheet( myStyle );
   teMetadata->setHtml( metadata() );
   mMetadataFilled = true;
+}
+
+void QgsVectorLayerProperties::enableLabelOptions( bool theFlag )
+{
+  labelOptionsFrame->setEnabled( theFlag );
 }

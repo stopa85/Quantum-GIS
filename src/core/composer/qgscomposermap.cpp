@@ -43,7 +43,8 @@
 QgsComposerMap::QgsComposerMap( QgsComposition *composition, int x, int y, int width, int height )
     : QgsComposerItem( x, y, width, height, composition ), mKeepLayerSet( false ), mGridEnabled( false ), mGridStyle( Solid ), \
     mGridIntervalX( 0.0 ), mGridIntervalY( 0.0 ), mGridOffsetX( 0.0 ), mGridOffsetY( 0.0 ), mGridAnnotationPrecision( 3 ), mShowGridAnnotation( false ), \
-    mGridAnnotationPosition( OutsideMapFrame ), mAnnotationFrameDistance( 1.0 ), mGridAnnotationDirection( Horizontal ), mCrossLength( 3 ), mMapCanvas( 0 )
+    mGridAnnotationPosition( OutsideMapFrame ), mAnnotationFrameDistance( 1.0 ), mGridAnnotationDirection( Horizontal ),
+    mCrossLength( 3 ), mMapCanvas( 0 ), mDrawCanvasItems( true )
 {
   mComposition = composition;
   mId = mComposition->composerMapItems().size();
@@ -74,7 +75,8 @@ QgsComposerMap::QgsComposerMap( QgsComposition *composition, int x, int y, int w
 QgsComposerMap::QgsComposerMap( QgsComposition *composition )
     : QgsComposerItem( 0, 0, 10, 10, composition ), mKeepLayerSet( false ), mGridEnabled( false ), mGridStyle( Solid ), \
     mGridIntervalX( 0.0 ), mGridIntervalY( 0.0 ), mGridOffsetX( 0.0 ), mGridOffsetY( 0.0 ), mGridAnnotationPrecision( 3 ), mShowGridAnnotation( false ), \
-    mGridAnnotationPosition( OutsideMapFrame ), mAnnotationFrameDistance( 1.0 ), mGridAnnotationDirection( Horizontal ), mCrossLength( 3 ), mMapCanvas( 0 )
+    mGridAnnotationPosition( OutsideMapFrame ), mAnnotationFrameDistance( 1.0 ), mGridAnnotationDirection( Horizontal ), mCrossLength( 3 ),
+    mMapCanvas( 0 ), mDrawCanvasItems( true )
 {
   //Offset
   mXOffset = 0.0;
@@ -388,6 +390,7 @@ void QgsComposerMap::moveContent( double dx, double dy )
     mExtent.setYMaximum( mExtent.yMaximum() + dy );
     cache();
     update();
+    emit itemChanged();
     emit extentChanged();
   }
 }
@@ -456,6 +459,7 @@ void QgsComposerMap::zoomContent( int delta, double x, double y )
 
   cache();
   update();
+  emit itemChanged();
   emit extentChanged();
 }
 
@@ -478,6 +482,7 @@ void QgsComposerMap::setSceneRect( const QRectF& rectangle )
   }
   updateBoundingRect();
   update();
+  emit itemChanged();
   emit extentChanged();
 }
 
@@ -511,6 +516,7 @@ void QgsComposerMap::setNewScale( double scaleDenominator )
   mCacheUpdated = false;
   cache();
   update();
+  emit itemChanged();
   emit extentChanged();
 }
 
@@ -602,6 +608,15 @@ bool QgsComposerMap::writeXML( QDomElement& elem, QDomDocument & doc ) const
   else
   {
     composerMapElem.setAttribute( "keepLayerSet", "false" );
+  }
+
+  if ( mDrawCanvasItems )
+  {
+    composerMapElem.setAttribute( "drawCanvasItems", "true" );
+  }
+  else
+  {
+    composerMapElem.setAttribute( "drawCanvasItems", "false" );
   }
 
   //extent
@@ -708,6 +723,16 @@ bool QgsComposerMap::readXML( const QDomElement& itemElem, const QDomDocument& d
     mKeepLayerSet = false;
   }
 
+  QString drawCanvasItemsFlag = itemElem.attribute( "drawCanvasItems" );
+  if ( drawCanvasItemsFlag.compare( "true", Qt::CaseInsensitive ) == 0 )
+  {
+    mDrawCanvasItems = true;
+  }
+  else
+  {
+    mDrawCanvasItems = false;
+  }
+
   //mLayerSet
   QDomNodeList layerSetNodeList = itemElem.elementsByTagName( "LayerSet" );
   QStringList layerSet;
@@ -765,6 +790,7 @@ bool QgsComposerMap::readXML( const QDomElement& itemElem, const QDomDocument& d
   }
 
   updateBoundingRect();
+  emit itemChanged();
   return true;
 }
 
@@ -1271,16 +1297,16 @@ double QgsComposerMap::maxExtension() const
   for ( ; it != xLines.constEnd(); ++it )
   {
     currentAnnotationString = QString::number( it->first, 'f', mGridAnnotationPrecision );
-    currentExtension = std::max( textWidthMillimeters( mGridAnnotationFont, currentAnnotationString ), fontAscentMillimeters( mGridAnnotationFont ) );
-    maxExtension = std::max( maxExtension, currentExtension );
+    currentExtension = qMax( textWidthMillimeters( mGridAnnotationFont, currentAnnotationString ), fontAscentMillimeters( mGridAnnotationFont ) );
+    maxExtension = qMax( maxExtension, currentExtension );
   }
 
   it = yLines.constBegin();
   for ( ; it != yLines.constEnd(); ++it )
   {
     currentAnnotationString = QString::number( it->first, 'f', mGridAnnotationPrecision );
-    currentExtension = std::max( textWidthMillimeters( mGridAnnotationFont, currentAnnotationString ), fontAscentMillimeters( mGridAnnotationFont ) );
-    maxExtension = std::max( maxExtension, currentExtension );
+    currentExtension = qMax( textWidthMillimeters( mGridAnnotationFont, currentAnnotationString ), fontAscentMillimeters( mGridAnnotationFont ) );
+    maxExtension = qMax( maxExtension, currentExtension );
   }
 
   return maxExtension + mAnnotationFrameDistance;
@@ -1410,7 +1436,7 @@ QgsComposerMap::Border QgsComposerMap::borderForLineCoord( const QPointF& p ) co
 
 void QgsComposerMap::drawCanvasItems( QPainter* painter, const QStyleOptionGraphicsItem* itemStyle )
 {
-  if ( !mMapCanvas )
+  if ( !mMapCanvas || !mDrawCanvasItems )
   {
     return;
   }

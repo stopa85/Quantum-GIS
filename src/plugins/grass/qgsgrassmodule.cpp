@@ -305,7 +305,7 @@ QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions(
     : QWidget( parent, f ),
     QgsGrassModuleOptions( tools, module, iface )
 {
-  QgsDebugMsg( "called." );
+  //QgsDebugMsg( "called." );
   QgsDebugMsg( QString( "PATH = %1" ).arg( getenv( "PATH" ) ) );
 
   // Attention!: sh.exe (MSYS) sets $0 in scripts to file name
@@ -1047,7 +1047,7 @@ QString QgsGrassModule::label( QString path )
 
 QPixmap QgsGrassModule::pixmap( QString path, int height )
 {
-  QgsDebugMsg( QString( "path = %1" ).arg( path ) );
+  //QgsDebugMsg( QString( "path = %1" ).arg( path ) );
 
   std::vector<QPixmap> pixmaps;
 
@@ -1070,7 +1070,8 @@ QPixmap QgsGrassModule::pixmap( QString path, int height )
       int width = ( int )( scale * br.width() );
       if ( width <= 0 ) width = height; // should not happen
       QPixmap pixmap( width, height );
-      pixmap.fill( QColor( 255, 255, 255 ) );
+      pixmap.fill( Qt::transparent );
+      //pixmap.fill( QColor( 255, 255, 255 ) );
       QPainter painter( &pixmap );
       painter.setRenderHint( QPainter::Antialiasing );
 
@@ -1111,18 +1112,88 @@ QPixmap QgsGrassModule::pixmap( QString path, int height )
 
   if ( width <= 0 ) width = height; //should not happen
 
-  int plusWidth = 8; // +
-  int arrowWidth = 9; // ->
-  int buffer = 10; // buffer around a sign
+  QString iconsPath = QgsApplication::pkgDataPath() + "/grass/modules/";
+  QFileInfo iconsfi( iconsPath );
+
+  int plusWidth = 8;
+  int arrowWidth = 9;
+
+  QString arrowPath = iconsPath + "grass_arrow.png";
+  QPixmap arrowPixmap;
+  iconsfi.setFile( arrowPath );
+  if ( iconsfi.exists() && arrowPixmap.load( arrowPath, "PNG" ) )
+  {
+    double scale = 1. * height / arrowPixmap.height();
+    arrowWidth = ( int )( scale * arrowPixmap.width() );
+
+    QImage img = arrowPixmap.toImage();
+    img = img.scaled( arrowWidth, height, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
+    arrowPixmap = QPixmap::fromImage( img );
+  }
+  /*if ( iconsfi.exists() )
+  {
+    QSvgRenderer pic;
+    if ( pic.load( arrowPath ) )
+    {
+      QRect br( QPoint( 0, 0 ), pic.defaultSize() );
+
+      double scale = 1. * height / br.height();
+
+      arrowWidth = ( int )( scale * br.width() );
+      if ( arrowWidth <= 0 ) arrowWidth = height; // should not happen
+      arrowPixmap = QPixmap( arrowWidth, height );
+      arrowPixmap.fill( Qt::transparent );
+      QPainter painter( &arrowPixmap );
+      painter.setRenderHint( QPainter::Antialiasing );
+
+      pic.render( &painter );
+      painter.end();
+    }
+  }*/
+
+  QString plusPath = iconsPath + "grass_plus.svg";
+  QPixmap plusPixmap;
+  iconsfi.setFile( plusPath );
+  /*if ( iconsfi.exists() && plusPixmap.load( plusPath, "PNG" ) )
+  {
+    double scale = 1. * height / plusPixmap.height();
+    plusWidth = ( int )( scale * plusPixmap.width() );
+
+    QImage img = plusPixmap.toImage();
+    img = img.scaled( plusWidth, height, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
+    plusPixmap = QPixmap::fromImage( img );
+  }*/
+  if ( iconsfi.exists() )
+  {
+    QSvgRenderer pic;
+    if ( pic.load( plusPath ) )
+    {
+      QRect br( QPoint( 0, 0 ), pic.defaultSize() );
+
+      double scale = 1. * height / br.height();
+
+      plusWidth = ( int )( scale * br.width() );
+      if ( plusWidth <= 0 ) plusWidth = height; // should not happen
+      plusPixmap = QPixmap( plusWidth, height );
+      plusPixmap.fill( Qt::transparent );
+      QPainter painter( &plusPixmap );
+      painter.setRenderHint( QPainter::Antialiasing );
+
+      pic.render( &painter );
+      painter.end();
+    }
+  }
+  int buffer = height/3; // buffer around a sign
   if ( pixmaps.size() > 1 ) width += arrowWidth + 2 * buffer; // ->
   if ( pixmaps.size() > 2 ) width += plusWidth + 2 * buffer; // +
 
   QPixmap pixmap( width, height );
-  pixmap.fill( QColor( 255, 255, 255 ) );
+  pixmap.fill( Qt::transparent );
+  //pixmap.fill( QColor( 255, 255, 255 ) );
   QPainter painter( &pixmap );
 
-  QColor color( 200, 200, 200 );
-  painter.setBrush( QBrush( color ) );
+  //QColor color( 255, 255, 255 );
+  //painter.setBrush( QBrush( color ) );
 
   painter.setRenderHint( QPainter::Antialiasing );
 
@@ -1132,25 +1203,13 @@ QPixmap QgsGrassModule::pixmap( QString path, int height )
     if ( i == 1 && pixmaps.size() == 3 )   // +
     {
       pos += buffer;
-
-      painter.setPen( QPen( color, 3 ) );
-      painter.drawLine( pos, height / 2, pos + plusWidth, height / 2 );
-      painter.drawLine( pos + plusWidth / 2, height / 2 - plusWidth / 2, pos + plusWidth / 2, height / 2 + plusWidth / 2 );
+      painter.drawPixmap( pos, 0, plusPixmap );
       pos += buffer + plusWidth;
     }
     if (( i == 1 && pixmaps.size() == 2 ) || ( i == 2 && pixmaps.size() == 3 ) ) // ->
     {
       pos += buffer;
-      painter.setPen( QPen( color, 3 ) );
-      painter.drawLine( pos, height / 2, pos + arrowWidth - arrowWidth / 2, height / 2 );
-
-      QPolygon pa( 3 );
-      pa.setPoint( 0, pos + arrowWidth / 2 + 1, height / 2 - arrowWidth / 2 );
-      pa.setPoint( 1, pos + arrowWidth, height / 2 );
-      pa.setPoint( 2, pos + arrowWidth / 2 + 1, height / 2 + arrowWidth / 2 );
-      painter.setPen( QPen( color, 1 ) );
-      painter.drawPolygon( pa );
-
+      painter.drawPixmap( pos, 0, arrowPixmap );
       pos += buffer + arrowWidth;
     }
     painter.drawPixmap( pos, 0, pixmaps[i] );

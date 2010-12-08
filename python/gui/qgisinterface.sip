@@ -94,7 +94,14 @@ class QgisInterface : QObject
     /** Remove action from the plugins menu */
     virtual void removePluginMenu(QString name, QAction* action)=0;
 
-    /** Add a dock widget to the main window */
+    /** Add action to the Database menu
+       @note added in version 1.7 */
+    virtual void addPluginToDatabaseMenu(QString name, QAction* action)=0;
+    /** Remove action from the Database menu */
+    virtual void removePluginDatabaseMenu(QString name, QAction* action)=0;
+
+    /** Add a dock widget to the main window
+       @note added in version 1.7 */
     virtual void addDockWidget ( Qt::DockWidgetArea area, QDockWidget * dockwidget )=0;
 
     /** Remove specified dock widget from main window (doesn't delete it). Added in QGIS 1.1. */
@@ -109,6 +116,11 @@ class QgisInterface : QObject
       \note added in 1.5
      */
     virtual void showLayerProperties( QgsMapLayer * layer )=0;
+
+    /** open attribute table 
+      \note added in 1.7
+     */
+    virtual void showAttributeTable( QgsVectorLayer * layer )=0;
 
     /** Add window to Window menu. The action title is the window title
      * and the action should raise, unminimize and activate the window. */

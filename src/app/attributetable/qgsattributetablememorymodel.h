@@ -39,8 +39,12 @@ class QgsAttributeTableMemoryModel : public QgsAttributeTableModel
      */
     QgsAttributeTableMemoryModel( QgsVectorLayer *theLayer );
 
+    /**
+     * Remove rows
+     */
+    bool removeRows( int row, int count, const QModelIndex &parent = QModelIndex() );
+
   protected slots:
-#if 0
     /**
      * Launched when a feature has been deleted
      * @param fid feature id
@@ -51,7 +55,6 @@ class QgsAttributeTableMemoryModel : public QgsAttributeTableModel
      * @param fid feature id
      */
     virtual void featureAdded( int fid );
-#endif
     /**
      * Launched when layer has been deleted
      */

@@ -169,7 +169,7 @@ QgsVectorLayer::QgsVectorLayer( QString vectorLayerPath,
 
 QgsVectorLayer::~QgsVectorLayer()
 {
-  QgsDebugMsg( "In QgsVectorLayer destructor" );
+  QgsDebugMsg( "entered." );
 
   emit layerDeleted();
 
@@ -426,8 +426,8 @@ unsigned char *QgsVectorLayer::drawLineString( unsigned char *feature, QgsRender
   // the rest of them so end the loop at that point.
   for ( register unsigned int i = 0; i < nPoints; ++i )
   {
-    if ( std::abs( x[i] ) > QgsClipper::MAX_X ||
-         std::abs( y[i] ) > QgsClipper::MAX_Y )
+    if ( qAbs( x[i] ) > QgsClipper::MAX_X ||
+         qAbs( y[i] ) > QgsClipper::MAX_Y )
     {
       QgsClipper::trimFeature( x, y, true ); // true = polyline
       nPoints = x.size(); // trimming may change nPoints.
@@ -546,8 +546,8 @@ unsigned char *QgsVectorLayer::drawPolygon( unsigned char *feature, QgsRenderCon
     // the rest of them so end the loop at that point.
     for ( register unsigned int i = 0; i < nPoints; ++i )
     {
-      if ( std::abs( ring->first[i] ) > QgsClipper::MAX_X ||
-           std::abs( ring->second[i] ) > QgsClipper::MAX_Y )
+      if ( qAbs( ring->first[i] ) > QgsClipper::MAX_X ||
+           qAbs( ring->second[i] ) > QgsClipper::MAX_Y )
       {
         QgsClipper::trimFeature( ring->first, ring->second, false );
         break;
@@ -668,10 +668,10 @@ unsigned char *QgsVectorLayer::drawPolygon( unsigned char *feature, QgsRenderCon
 
       for ( int i = 0; i < pa.size(); ++i )
       {
-        largestX  = std::max( largestX,  pa.point( i ).x() );
-        smallestX = std::min( smallestX, pa.point( i ).x() );
-        largestY  = std::max( largestY,  pa.point( i ).y() );
-        smallestY = std::min( smallestY, pa.point( i ).y() );
+        largestX  = qMax( largestX,  pa.point( i ).x() );
+        smallestX = qMin( smallestX, pa.point( i ).x() );
+        largestY  = qMax( largestY,  pa.point( i ).y() );
+        smallestY = qMin( smallestY, pa.point( i ).y() );
       }
       QgsDebugMsg( QString( "Largest  X coordinate was %1" ).arg( largestX ) );
       QgsDebugMsg( QString( "Smallest X coordinate was %1" ).arg( smallestX ) );
@@ -1130,7 +1130,7 @@ void QgsVectorLayer::drawVertexMarker( double x, double y, QPainter& p, QgsVecto
   {
     p.setPen( QColor( 50, 100, 120, 200 ) );
     p.setBrush( QColor( 200, 200, 210, 120 ) );
-    p.drawEllipse( x - m, y - m, m*2 + 1, m*2 + 1 );
+    p.drawEllipse( x - m, y - m, m * 2 + 1, m * 2 + 1 );
   }
   else if ( type == QgsVectorLayer::Cross )
   {
@@ -1358,7 +1358,7 @@ QGis::WkbType QgsVectorLayer::wkbType() const
 
 QgsRectangle QgsVectorLayer::boundingBoxOfSelected()
 {
-  if ( mSelectedFeatureIds.size() == 0 )//no selected features
+  if ( mSelectedFeatureIds.size() == 0 ) //no selected features
   {
     return QgsRectangle( 0, 0, 0, 0 );
   }
@@ -1813,6 +1813,8 @@ bool QgsVectorLayer::addFeature( QgsFeature& f, bool alsoUpdateExtent )
     updateExtents();
   }
 
+  emit featureAdded( f.id() );
+
   return true;
 }
 
@@ -2157,7 +2159,7 @@ int QgsVectorLayer::splitFeatures( const QList<QgsPoint>& splitLine, bool topolo
   QgsFeatureList featureList;
   const QgsFeatureIds selectedIds = selectedFeaturesIds();
 
-  if ( selectedIds.size() > 0 )//consider only the selected features if there is a selection
+  if ( selectedIds.size() > 0 ) //consider only the selected features if there is a selection
   {
     featureList = selectedFeatures();
   }
@@ -2560,12 +2562,9 @@ bool QgsVectorLayer::readXml( QDomNode & layer_node )
   }
 
   QString errorMsg;
-  if ( geometryType() != QGis::NoGeometry )
+  if ( !readSymbology( layer_node, errorMsg ) )
   {
-    if ( !readSymbology( layer_node, errorMsg ) )
-    {
-      return false;
-    }
+    return false;
   }
 
   return mValid;               // should be true if read successfully
@@ -3838,8 +3837,6 @@ int QgsVectorLayer::snapWithContext( const QgsPoint& startPoint, double snapping
 
   if ( mCachedGeometriesRect.contains( searchRect ) )
   {
-    QgsDebugMsg( "Using cached geometries for snapping." );
-
     QgsGeometryMap::iterator it = mCachedGeometries.begin();
     for ( ; it != mCachedGeometries.end() ; ++it )
     {
@@ -4039,15 +4036,15 @@ void QgsVectorLayer::drawFeature( QgsRenderContext &renderContext,
       double y = *(( double * )( feature + 5 + sizeof( double ) ) );
 
       transformPoint( x, y, &renderContext.mapToPixel(), renderContext.coordinateTransform() );
-      if ( std::abs( x ) > QgsClipper::MAX_X ||
-           std::abs( y ) > QgsClipper::MAX_Y )
+      if ( qAbs( x ) > QgsClipper::MAX_X ||
+           qAbs( y ) > QgsClipper::MAX_Y )
       {
         break;
       }
 
       //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
-      QPointF pt( x*renderContext.rasterScaleFactor() - ( marker->width() / 2 ),
-                  y*renderContext.rasterScaleFactor() - ( marker->height() / 2 ) );
+      QPointF pt( x * renderContext.rasterScaleFactor() - ( marker->width() / 2 ),
+                  y * renderContext.rasterScaleFactor() - ( marker->height() / 2 ) );
 
       p->save();
       //p->scale(markerScaleFactor,markerScaleFactor);
@@ -4082,13 +4079,13 @@ void QgsVectorLayer::drawFeature( QgsRenderContext &renderContext,
         transformPoint( x, y, &renderContext.mapToPixel(), renderContext.coordinateTransform() );
         //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
         //QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
-        QPointF pt( x*renderContext.rasterScaleFactor() - ( marker->width() / 2 ),
-                    y*renderContext.rasterScaleFactor() - ( marker->height() / 2 ) );
+        QPointF pt( x * renderContext.rasterScaleFactor() - ( marker->width() / 2 ),
+                    y * renderContext.rasterScaleFactor() - ( marker->height() / 2 ) );
         //QPointF pt( x, y );
 
         // Work around a +/- 32768 limitation on coordinates
-        if ( std::abs( x ) > QgsClipper::MAX_X ||
-             std::abs( y ) > QgsClipper::MAX_Y )
+        if ( qAbs( x ) > QgsClipper::MAX_X ||
+             qAbs( y ) > QgsClipper::MAX_Y )
           needToTrim = true;
         else
           p->drawImage( pt, *marker );
@@ -4511,6 +4508,7 @@ void QgsVectorLayer::redoEditCommand( QgsUndoCommand* cmd )
   for ( ; delIt != deletedFeatureIdChange.end(); ++delIt )
   {
     mDeletedFeatureIds.insert( *delIt );
+    emit featureDeleted( *delIt );
   }
 
   // added features
@@ -4518,6 +4516,7 @@ void QgsVectorLayer::redoEditCommand( QgsUndoCommand* cmd )
   for ( ; addIt != addedFeatures.end(); ++addIt )
   {
     mAddedFeatures.append( *addIt );
+    emit featureAdded( addIt->id() );
   }
 
   // changed attributes
@@ -4555,9 +4554,8 @@ void QgsVectorLayer::redoEditCommand( QgsUndoCommand* cmd )
             break;
           }
         }
-
       }
-
+      emit attributeValueChanged( fid, attrChIt.key(), attrChIt.value().target );
     }
   }
 
@@ -4568,6 +4566,7 @@ void QgsVectorLayer::redoEditCommand( QgsUndoCommand* cmd )
     int attrIndex = attrIt.key();
     mAddedAttributeIds.insert( attrIndex );
     mUpdatedFields.insert( attrIndex, attrIt.value() );
+    emit attributeAdded( attrIndex );
   }
 
   // deleted attributes
@@ -4577,6 +4576,7 @@ void QgsVectorLayer::redoEditCommand( QgsUndoCommand* cmd )
     int attrIndex = dAttrIt.key();
     mDeletedAttributeIds.insert( attrIndex );
     mUpdatedFields.remove( attrIndex );
+    emit attributeDeleted( attrIndex );
   }
   setModified( true );
 
@@ -4600,6 +4600,7 @@ void QgsVectorLayer::undoEditCommand( QgsUndoCommand* cmd )
     int attrIndex = dAttrIt.key();
     mDeletedAttributeIds.remove( attrIndex );
     mUpdatedFields.insert( attrIndex, dAttrIt.value() );
+    emit attributeAdded( attrIndex );
   }
 
   // added attributes
@@ -4609,6 +4610,7 @@ void QgsVectorLayer::undoEditCommand( QgsUndoCommand* cmd )
     int attrIndex = attrIt.key();
     mAddedAttributeIds.remove( attrIndex );
     mUpdatedFields.remove( attrIndex );
+    emit attributeDeleted( attrIndex );
   }
 
   // geometry changes
@@ -4630,6 +4632,7 @@ void QgsVectorLayer::undoEditCommand( QgsUndoCommand* cmd )
   for ( ; delIt != deletedFeatureIdChange.end(); ++delIt )
   {
     mDeletedFeatureIds.remove( *delIt );
+    emit featureAdded( *delIt );
   }
 
   // added features
@@ -4642,6 +4645,7 @@ void QgsVectorLayer::undoEditCommand( QgsUndoCommand* cmd )
       if ( addedIt->id() == addIt->id() )
       {
         mAddedFeatures.erase( addedIt );
+        emit featureDeleted( addIt->id() );
         break; // feature was found so move to next one
       }
     }
@@ -4677,9 +4681,15 @@ void QgsVectorLayer::undoEditCommand( QgsUndoCommand* cmd )
             break;
           }
         }
-
       }
-      emit attributeValueChanged( fid, attrChIt.key(), attrChIt.value().original );
+      QVariant original = attrChIt.value().original;
+      if ( attrChIt.value().isFirstChange )
+      {
+        QgsFeature tmp;
+        mDataProvider->featureAtId( fid, tmp, false, QgsAttributeList() << attrChIt.key() );
+        original = tmp.attributeMap()[ attrChIt.key()];
+      }
+      emit attributeValueChanged( fid, attrChIt.key(), original );
     }
   }
   setModified( true );

@@ -78,8 +78,8 @@ QgsGrassTools::QgsGrassTools( QgisInterface *iface,
   mModelProxy->setFilterRole( Qt::UserRole + 2 );
 
   mListView->setModel( mModelProxy );
-  mListView->setItemDelegateForColumn( 0, new QgsDetailedItemDelegate() );
-  mListView->setUniformItemSizes( false );
+  //mListView->setItemDelegateForColumn( 0, new QgsDetailedItemDelegate() );
+  //mListView->setUniformItemSizes( false );
   //mListView2 = new QListView(this);
   //mDockWidget = new QDockWidget(tr("Grass Tools"), 0);
   //mDockWidget->setWidget(mListView2);
@@ -291,7 +291,7 @@ void QgsGrassTools::addModules( QTreeWidgetItem *parent, QDomElement &element )
 
         QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
         QString label = QgsGrassModule::label( path );
-        QPixmap pixmap = QgsGrassModule::pixmap( path, 25 );
+        QPixmap pixmap = QgsGrassModule::pixmap( path, 32 );
 
         item->setText( 0, name + " - " + label );
         item->setIcon( 0, QIcon( pixmap ) );
@@ -302,7 +302,7 @@ void QgsGrassTools::addModules( QTreeWidgetItem *parent, QDomElement &element )
         //
         // Experimental work by Tim - add this item to our list model
         //
-        QStandardItem * mypDetailItem = new QStandardItem( name );
+        QStandardItem * mypDetailItem = new QStandardItem( name + "\n" + label );
         mypDetailItem->setData( name, Qt::UserRole + 1 ); //for calling runModule later
         QString mySearchText = name + " - " + label;
         mypDetailItem->setData( mySearchText, Qt::UserRole + 2 ); //for filtering later
@@ -315,7 +315,7 @@ void QgsGrassTools::addModules( QTreeWidgetItem *parent, QDomElement &element )
         myData.setDetail( label );
         myData.setIcon( pixmap );
         myData.setCheckable( false );
-        myData.setRenderAsWidget( true );
+        myData.setRenderAsWidget( false );
         QVariant myVariant = qVariantFromValue( myData );
         mypDetailItem->setData( myVariant, Qt::UserRole );
         mModelTools->appendRow( mypDetailItem );

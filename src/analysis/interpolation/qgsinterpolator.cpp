@@ -18,15 +18,6 @@
 #include "qgsinterpolator.h"
 #include "qgsvectordataprovider.h"
 #include "qgsgeometry.h"
-#ifndef Q_OS_MACX
-#include <cmath>
-#else
-#include <math.h>
-#endif
-#ifdef WIN32
-#include <float.h>
-#define isnan(f) _isnan(f)
-#endif
 
 QgsInterpolator::QgsInterpolator( const QList<LayerData>& layerData ): mDataIsCached( false ), mLayerData( layerData )
 {
@@ -92,7 +83,7 @@ int QgsInterpolator::cacheBaseData()
           continue;
         }
         attributeValue = att_it.value().toDouble( &attributeConversionOk );
-        if ( !attributeConversionOk || isnan( attributeValue ) ) //don't consider vertices with attributes like 'nan' for the interpolation
+        if ( !attributeConversionOk || qIsNaN( attributeValue ) ) //don't consider vertices with attributes like 'nan' for the interpolation
         {
           continue;
         }

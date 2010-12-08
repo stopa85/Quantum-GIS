@@ -6,6 +6,9 @@
 <section label="GRASS MODULES">
 	<grass name="shell"/>
 	<section label="File">
+                <section label="Create new GRASS location from metadata file">
+                        <grass name="g.proj.wkt"/>
+                </section>
 		<section label="Import">
 			<section label="Import raster">
                                 <grass name="r.in.gdal.qgis"/>
@@ -33,6 +36,7 @@
                                 <grass name="v.in.ogr.all.loc"/> 
 				<grass name="v.in.dxf"/>
 				<grass name="v.in.e00"/>
+                                <grass name="v.in.ascii"/>
 				<grass name="v.in.mapgen"/>
 				<grass name="v.in.db"/>
 				<grass name="v.in.garmin"/>
@@ -180,7 +184,9 @@
                                 <grass name="r.sunmask.date.time"/> 
 			</section>
 			<section label="Terrain analysis">
-				<grass name="r.cost"/>
+				<grass name="r.cost.coord"/>
+				<grass name="r.cost.rast"/>
+				<grass name="r.cost.vect"/>
 				<grass name="r.drain"/>
 				<grass name="r.shaded.relief"/>
 				<grass name="r.slope.aspect.slope"/>
@@ -189,6 +195,9 @@
 				<grass name="r.texture"/>
 				<grass name="r.texture.bis"/>
 				<grass name="r.los"/>
+				<grass name="r.grow.distance"/>
+				<grass name="r.walk.coord"/>
+				<grass name="r.walk.vect"/>
 			</section>
 			<section label="Transform features">
 				<grass name="r.clump"/>
@@ -260,6 +269,7 @@
 				<grass name="r.covar"/>
 				<grass name="r.regression.line"/>
 				<grass name="r.coin"/>
+				<grass name="r.distance"/>
 			</section>
 		</section>
 	</section>

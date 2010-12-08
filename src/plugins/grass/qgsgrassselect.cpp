@@ -34,6 +34,8 @@ QgsGrassSelect::QgsGrassSelect( int type ): QgsGrassSelectBase()
   QgsDebugMsg( QString( "QgsGrassSelect() type = %1" ).arg( type ) );
 
   setupUi( this );
+  connect( buttonBox, SIGNAL( accepted() ), SLOT( on_ok_clicked() ) );
+  connect( buttonBox, SIGNAL( rejected() ), this, SLOT( on_cancel_clicked() ) );
 
   if ( first )
   {
@@ -90,28 +92,11 @@ QgsGrassSelect::QgsGrassSelect( int type ): QgsGrassSelectBase()
   egisdbase->setText( lastGisdbase );
 
   setLocations();
-
-  restorePosition();
+  adjustSize();
 }
 
 QgsGrassSelect::~QgsGrassSelect()
 {
-  saveWindowLocation();
-}
-
-void QgsGrassSelect::restorePosition()
-{
-  optionsFrame->adjustSize();
-  adjustSize();
-
-  QSettings settings;
-  restoreGeometry( settings.value( "/GRASS/windows/select/geometry" ).toByteArray() );
-}
-
-void QgsGrassSelect::saveWindowLocation()
-{
-  QSettings settings;
-  settings.setValue( "/GRASS/windows/select/geometry", saveGeometry() );
 }
 
 bool QgsGrassSelect::first = true;
@@ -185,7 +170,7 @@ void QgsGrassSelect::setLocations()
   {
     elocation->setCurrentIndex( sel );
   }
-  ok->setDefault( true );
+  buttonBox->button(QDialogButtonBox::Ok)->setDefault( true );
   GisdbaseBrowse->setDefault( elocation->count() == 0 );
 
   setMapsets();
@@ -228,7 +213,7 @@ void QgsGrassSelect::setMapsets()
   }
   if ( emap->isHidden() )
   {
-    ok->setDefault( emapset->count() > 0 );
+    buttonBox->button(QDialogButtonBox::Ok)->setDefault( emapset->count() > 0 );
   }
 
   setMaps();
@@ -323,7 +308,7 @@ void QgsGrassSelect::setMaps()
   */
   if ( !emap->isHidden() )
   {
-    ok->setDefault( emap->count() > 0 );
+    buttonBox->button(QDialogButtonBox::Ok)->setDefault( emap->count() > 0 );
   }
 
   setLayers();
@@ -491,8 +476,6 @@ void QgsGrassSelect::on_GisdbaseBrowse_clicked()
 
 void QgsGrassSelect::on_ok_clicked()
 {
-  saveWindowLocation();
-
   gisdbase = egisdbase->text();
   lastGisdbase = QString( gisdbase );
 
@@ -556,6 +539,5 @@ void QgsGrassSelect::on_ok_clicked()
 
 void QgsGrassSelect::on_cancel_clicked()
 {
-  saveWindowLocation();
   QDialog::reject();
 }

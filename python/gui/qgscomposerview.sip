@@ -62,9 +62,17 @@ class QgsComposerView: QGraphicsView
     void addComposerPicture( QgsComposerPicture* picture );
     /**Adds a composer shape to the graphics scene and advices composer to create a widget for it (through signal)*/
     void addComposerShape( QgsComposerShape* shape );
+    /**Adds a composer table to the graphics scene and advices composer to create a widget for it (through signal)*/
+    void addComposerTable( QgsComposerAttributeTable* table );
 
     /**Returns the composer main window*/
     QMainWindow* composerWindow();
+
+    void setPaintingEnabled( bool enabled );
+    bool paintingEnabled() const;
+
+    /**Convenience function to create a QgsAddRemoveItemCommand, connect its signals and push it to the undo stack*/
+    void pushAddRemoveCommand( QgsComposerItem* item, const QString& text, QgsAddRemoveItemCommand::State state = QgsAddRemoveItemCommand::Added );
 
   protected:
     void mousePressEvent( QMouseEvent* );
@@ -78,12 +86,12 @@ class QgsComposerView: QGraphicsView
     
 
   public slots:
-    /**For QgsComposerItemGroup to send its signals to QgsComposer (or other classes that keep track of input widgets)*/
-    void sendItemRemovedSignal( QgsComposerItem* item );
+    /**Casts object to the proper subclass type and calls corresponding itemAdded signal*/
+    void sendItemAddedSignal( QgsComposerItem* item );
 
   signals:
     /**Is emitted when selected item changed. If 0, no item is selected*/
-    void selectedItemChanged( const QgsComposerItem* selected );
+    void selectedItemChanged( QgsComposerItem* selected );
     /**Ist emittted when new composer label has been added to the view*/
     void composerLabelAdded( QgsComposerLabel* label );
     /**Is emitted when new composer map has been added to the view*/

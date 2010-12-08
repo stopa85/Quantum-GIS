@@ -1,8 +1,8 @@
 Quantum GIS (QGIS)
 Building QGIS from source - step by step
 
-Last update: 20101031
-Last change: 20101028
+Last update: 20101120
+Last change: 20101114
 
   1. Introduction
   2. Overview
@@ -705,8 +705,8 @@ and needs to be copied into the VC\include directory of your Visual C++
 installation.
 
 Earlier versions of this document also covered how to build all above
-dependencies.  If you're interested in that, check history of this page in Wiki
-or the SVN.
+dependencies.  If you're interested in that, check the history of this page in the Wiki
+or the SVN repository.
 
 
     4.1.3. Setting up the Visual Studio project with CMake
@@ -775,6 +775,41 @@ CMAKE_INSTALL_PREFIX variable in cmake-gui).
 
 You will also either need to add all the dependency DLLs to the QGIS install
 directory or add their respective directories to your PATH.
+
+
+    4.1.4. Packaging
+    ================
+
+To create a windows 'all in one' standalone  package ''under ubuntu'' (yes you
+read correctly) do the following:
+
+
+  sudo apt-get install nsis
+
+
+Now 
+
+
+  cd qgis/ms-windows/osgeo4w
+
+
+And run the nsis creation script:
+
+
+  creatensis.pl
+
+
+When the script completes, it should have created a QGIS installer executable
+in the ms-windows directory.
+
+
+    4.1.5. Osgeo4w packaging
+    ========================
+
+The actual packaging process is currently not documented, for now please take a
+look at:
+
+ms-windows/osgeo4w/package.cmd
 
 
   4.2. Building using MinGW
@@ -1733,6 +1768,8 @@ In a Terminal cd to the qgis source folder previously downloaded, then:
   cd build
   cmake -D CMAKE_INSTALL_PREFIX=~/Applications -D CMAKE_BUILD_TYPE=Release \
   -D CMAKE_BUILD_TYPE=MinSizeRel -D WITH_INTERNAL_SPATIALITE=FALSE \
+  -D QWT_LIBRARY=/usr/local/qwt-5.2.1-svn/lib/libqwt.dylib \
+  -D QWT_INCLUDE_DIR=/usr/local/qwt-5.2.1-svn/include \
   ..
 
 
@@ -1746,6 +1783,8 @@ path and version as required):
 
   cmake -D CMAKE_INSTALL_PREFIX=~/Applications -D CMAKE_BUILD_TYPE=Release \
   -D CMAKE_BUILD_TYPE=MinSizeRel -D WITH_INTERNAL_SPATIALITE=FALSE \
+  -D QWT_LIBRARY=/usr/local/qwt-5.2.1-svn/lib/libqwt.dylib \
+  -D QWT_INCLUDE_DIR=/usr/local/qwt-5.2.1-svn/include \
   -D GRASS_PREFIX=/user/local/grass-6.4.0 \
   ..
 
@@ -1763,13 +1802,15 @@ script and add arch flags to the configuration:
   
   cmake -D CMAKE_INSTALL_PREFIX=~/Applications -D CMAKE_BUILD_TYPE=Release \
   -D CMAKE_BUILD_TYPE=MinSizeRel -D WITH_INTERNAL_SPATIALITE=FALSE \
+  -D QWT_LIBRARY=/usr/local/qwt-5.2.1-svn/lib/libqwt.dylib \
+  -D QWT_INCLUDE_DIR=/usr/local/qwt-5.2.1-svn/include \
   -D CMAKE_OSX_ARCHITECTURES=i386 -D PYTHON_EXECUTABLE=/usr/local/bin/python32 \
   ..
 
 
 Bundling note: Older Qt versions may have problems with some Qt plugins and Qgis.
-The way to handle this is bundle Qt inside the Qgis application.  You can do this now
-or wait to see if there are immediate crahses when running Qgis.  It's also a good
+The way to handle this is to bundle Qt inside the Qgis application.  You can do this now
+or wait to see if there are immediate crashes when running Qgis.  It's also a good
 idea to bundle Qt if you need to copy Qgis to other Macs (where you would have to
 install Xcode just so Qt would install!).
 

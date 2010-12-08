@@ -20,7 +20,7 @@ class VisualDialog( QDialog, Ui_Dialog ):
     self.progressBar.setValue( 0 )
     self.partProgressBar.setValue( 0 )
     self.partProgressBar.setVisible( False )
-    
+
   def keyPressEvent( self, e ):
     '''
     Reimplemented key press event:
@@ -55,7 +55,7 @@ class VisualDialog( QDialog, Ui_Dialog ):
       # add all fields in combobox because now we can work with text fields too
       for i in changedField:
         self.cmbField.addItem( unicode( changedField[i].name() ) )
-        
+
   def accept( self ):
     if self.inShape.currentText() == "":
       QMessageBox.information( self, self.tr("Error!"), self.tr( "Please specify input vector layer" ) )
@@ -63,16 +63,9 @@ class VisualDialog( QDialog, Ui_Dialog ):
       QMessageBox.information( self, self.tr("Error!"), self.tr( "Please specify input field" ) )
     else:
       self.visual( self.inShape.currentText(), self.cmbField.currentText(), self.useSelected.checkState() )
-  
+
   def manageGui( self ):
-    if self.myFunction == 1: # Check geometry validity
-      self.setWindowTitle( self.tr( "Check geometry validity" ) )
-      self.cmbField.setVisible( False )
-      self.label.setVisible( False )
-      self.useSelected.setVisible( False )
-      self.label_2.setText( self.tr( "Geometry errors" ) )
-      self.label_4.setText( self.tr( "Total encountered errors" ) )
-    elif self.myFunction == 2: # List unique values
+    if self.myFunction == 2: # List unique values
       self.setWindowTitle( self.tr( "List unique values" ) )
       self.label_2.setText( self.tr( "Unique values" ) )
       self.label_4.setText(self.tr(  "Total unique values" ) )
@@ -93,16 +86,14 @@ class VisualDialog( QDialog, Ui_Dialog ):
       self.lstCount.setVisible( False )
       self.resize( 381, 200 )
     self.inShape.clear()
-    if self.myFunction == 1:
-      myList = ftools_utils.getLayerNames( [ QGis.Polygon ] )
-    elif self.myFunction == 4:
+    if self.myFunction == 4:
       myList = ftools_utils.getLayerNames( [ QGis.Point ] )
     else:
-      myList = ftools_utils.getLayerNames( [ QGis.Point, QGis.Line, QGis.Polygon ] )    
+      myList = ftools_utils.getLayerNames( [ QGis.Point, QGis.Line, QGis.Polygon ] )
     self.inShape.addItems( myList )
     return
 
-#1:  Check geometry
+#1:  Check geometry (disabled)
 #2:  List unique values
 #3:  Basic statistics
 #4:  Nearest neighbour analysis
@@ -130,7 +121,7 @@ class VisualDialog( QDialog, Ui_Dialog ):
     self.testThread.stop()
     QApplication.restoreOverrideCursor()
     self.buttonOk.setEnabled( True )
-    
+
   def runFinishedFromThread( self, output ):
     self.testThread.stop()
     QApplication.restoreOverrideCursor()
@@ -156,15 +147,15 @@ class VisualDialog( QDialog, Ui_Dialog ):
       self.tblUnique.horizontalHeader().show()
     self.tblUnique.horizontalHeader().setResizeMode( 0, QHeaderView.Stretch )
     self.tblUnique.resizeRowsToContents()
-    
+
     self.lstCount.insert( unicode( output[ 1 ] ) )
     self.cancel_close.setText( "Close" )
     QObject.disconnect( self.cancel_close, SIGNAL( "clicked()" ), self.cancelThread )
     return True
-    
+
   def runStatusFromThread( self, status ):
     self.progressBar.setValue( status )
-        
+
   def runRangeFromThread( self, range_vals ):
     self.progressBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
 
@@ -172,12 +163,12 @@ class VisualDialog( QDialog, Ui_Dialog ):
     self.partProgressBar.setValue( status )
     if status >= self.part_max:
       self.partProgressBar.setVisible( False )
-        
+
   def runPartRangeFromThread( self, range_vals ):
     self.part_max = range_vals[ 1 ]
     self.partProgressBar.setVisible( True )
     self.partProgressBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
-    
+
 class visualThread( QThread ):
   def __init__( self, parentThread, parentObject, function, vlayer, myField, mySelection ):
     QThread.__init__( self, parentThread )
@@ -192,9 +183,8 @@ class visualThread( QThread ):
 
   def run( self ):
     self.running = True
-    if self.myFunction == 1: # Check geometry
-      ( lst, cnt ) = self.check_geometry( self.vlayer )
-    elif self.myFunction == 2: # List unique values
+    # note that 1 used to be associated with check_geometry
+    if self.myFunction == 2: # List unique values
       ( lst, cnt ) = self.list_unique_values( self.vlayer, self.myField )
     elif self.myFunction == 3: # Basic statistics
       ( lst, cnt ) = self.basic_statistics( self.vlayer, self.myField )
@@ -369,7 +359,7 @@ class visualThread( QThread ):
             if ( nVal % 2 ) == 0:
                 medianVal = 0.5 * ( lstVal[ int( ( nVal - 1 ) / 2 ) ] + lstVal[ int( ( nVal ) / 2 ) ] )
             else:
-                medianVal = lstVal[ int( ( nVal + 1 ) / 2 ) ]
+                medianVal = lstVal[ int( ( nVal + 1 ) / 2 - 1 ) ]
         lstStats = []
         lstStats.append( self.tr( "Mean:" ) + unicode( meanVal ) )
         lstStats.append( self.tr( "StdDev:" ) + unicode( stdVal ) )
@@ -422,128 +412,3 @@ class visualThread( QThread ):
     lstStats.append( self.tr( "N:" ) + unicode( nVal ) )
     lstStats.append( self.tr( "Z-Score:" ) + unicode( zscore ) )
     return ( lstStats, [] )
-
-  def check_geometry( self, vlayer ):
-    vprovider = vlayer.dataProvider()
-    allAttrs = vprovider.attributeIndexes()
-    vprovider.select( allAttrs )
-    feat = QgsFeature()
-    geom = QgsGeometry()
-    count = 0
-    lstErrors = []
-    nFeat = vprovider.featureCount()
-    nElement = 0
-    if nFeat > 0:
-      self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
-      self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
-
-    while vprovider.nextFeature( feat ):
-      geom = QgsGeometry( feat.geometry() )
-      self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), nElement )
-      nElement += 1
-      if geom.isMultipart():
-        polygons = geom.asMultiPolygon()
-        for polygon in polygons:
-          if not self.isHoleNested( polygon ):
-            lstErrors.append( self.tr( "Feature %1 contains an unnested hole" ).arg( unicode( feat.id() ) ) )
-            count += 1
-          if not self.isPolygonClosed( polygon ):
-            lstErrors.append( self.tr( "Feature %1 is not closed" ).arg( unicode( feat.id() ) ) )
-            count += 1
-          if self.isSelfIntersecting( polygon ):
-            lstErrors.append( self.tr( "Feature %1 is self intersecting" ).arg( unicode( feat.id() ) ) )
-            count += 1
-          if not self.isCorrectOrientation( polygon ):
-            lstErrors.append( self.tr( "Feature %1 has incorrect node ordering" ).arg( unicode( feat.id() ) ) )
-            count += 1
-          
-      else:
-        geom = geom.asPolygon()
-        if not self.isHoleNested( geom ):
-          lstErrors.append( self.tr( "Feature %1 contains an unnested hole" ).arg( unicode( feat.id() ) ) )
-          count += 1
-        if not self.isPolygonClosed( geom ):
-          lstErrors.append( self.tr( "Feature %1 is not closed" ).arg( unicode( feat.id() ) ) )
-          count += 1
-        if self.isSelfIntersecting( geom ):
-          lstErrors.append( self.tr( "Feature %1 is self intersecting" ).arg( unicode( feat.id() ) ) )
-          count += 1
-        if not self.isCorrectOrientation( geom ):
-          lstErrors.append( self.tr( "Feature %1 has incorrect node ordering" ).arg( unicode( feat.id() ) ) )
-          count += 1
-    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), nFeat )
-    return ( lstErrors, count )
-
-  def isHoleNested( self, polygon ):
-    if len( polygon ) <= 1:
-      return True
-    else:
-      outer = polygon[ 0 ]
-      for i in polygon[ 1: len( polygon ) ]:
-        if not self.arePointsInside( i, outer ):
-          return False
-    return True
-
-  def arePointsInside( self, inner, outer ):
-    outer = QgsGeometry().fromPolygon( [ outer ] )
-    for j in inner:
-      if not outer.contains(j):
-        return False
-    return True
-
-  def isPolygonClosed( self, polygon ):
-    for i in polygon:
-      first = i[ 0 ]
-      last = i[ len( i )-1 ]
-      if not first == last:
-        return False
-    return True
-
-  def isSelfIntersecting( self, polygon ):
-    cPart = 0
-    for h in polygon:
-      cPart += len(h)
-
-    self.emit( SIGNAL( "runPartRange(PyQt_PyObject)" ), ( 0, cPart ) )
-
-    nPart = 0
-    for h in polygon:
-      for i in range( 0, len(h)-1 ):
-        self.emit( SIGNAL( "runPartStatus(PyQt_PyObject)" ), nPart )
-
-        count = 0
-        for j in range( i+1, len(h)-1 ):
-          if QgsGeometry().fromPolyline( [ h[ i ], h[ i + 1 ] ] ).intersects( QgsGeometry().fromPolyline( [ h[ j ], h[ j + 1 ] ] ) ):
-            count += 1
-
-        if (i==0 and count>2) or (i>0 and count>1):
-          self.emit( SIGNAL( "runPartStatus(PyQt_PyObject)" ), cPart )
-          return True
-
-        nPart += 1
-
-    self.emit( SIGNAL( "runPartStatus(PyQt_PyObject)" ), cPart )
-
-    return False
-
-  def isCorrectOrientation( self, polygon ):
-    outer = True
-    for h in polygon:
-      if outer:
-        outer = False
-        if not self.isClockwise( h ):
-          return False
-      else:
-        if self.isClockwise(h):
-          return False
-    return True
-
-  def isClockwise( self, temp ):
-    area = 0
-    for pt in range( 0, len( temp ) -1 ):
-      area += ( temp[ pt ].x() * temp[ pt + 1 ].y() - temp[ pt + 1 ].x() * temp[ pt ].y() )
-    area = area / 2
-    if area <= 0:
-      return True
-    else:
-      return False

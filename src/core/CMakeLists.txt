@@ -53,6 +53,7 @@ SET(QGIS_CORE_SRCS
   qgshttptransaction.cpp
   qgslabel.cpp
   qgslabelattributes.cpp
+  qgslabelsearchtree.cpp
   qgslogger.cpp
   qgsmaplayer.cpp
   qgsmaplayerregistry.cpp
@@ -93,8 +94,10 @@ SET(QGIS_CORE_SRCS
 
   qgsnetworkaccessmanager.cpp
 
+  composer/qgsaddremoveitemcommand.cpp
   composer/qgscomposerarrow.cpp
   composer/qgscomposeritem.cpp
+  composer/qgscomposeritemcommand.cpp
   composer/qgscomposeritemgroup.cpp
   composer/qgscomposerlabel.cpp
   composer/qgscomposerlegenditem.cpp
@@ -241,6 +244,7 @@ SET(QGIS_CORE_MOC_HDRS
   qgsnetworkaccessmanager.h
   qgsvectordataprovider.h
 
+  composer/qgsaddremoveitemcommand.h
   composer/qgscomposerlegend.h
   composer/qgscomposermap.h
   composer/qgscomposerpicture.h

@@ -96,7 +96,7 @@ void QgsMapToolSimplify::toleranceChanged( int tolerance )
       QgsSimplifyFeature::simplifyPolygon( f, mTolerance );
     }
   }
-  mRubberBand->setToGeometry( f.geometry(), false );
+  mRubberBand->setToGeometry( f.geometry(), 0 );
 }
 
 
@@ -287,7 +287,7 @@ void QgsMapToolSimplify::canvasPressEvent( QMouseEvent * e )
     }
 
     mRubberBand = new QgsRubberBand( mCanvas );
-    mRubberBand->setToGeometry( mSelectedFeature.geometry(), false );
+    mRubberBand->setToGeometry( mSelectedFeature.geometry(), 0 );
     mRubberBand->setColor( Qt::red );
     mRubberBand->setWidth( 2 );
     mRubberBand->show();
@@ -446,7 +446,7 @@ QVector<QgsPoint> QgsSimplifyFeature::simplifyPoints( const QVector<QgsPoint>& p
         }
         else
         {  // calculate perpendicular distance to line (pythagorean theorem):
-          dist_to_seg = sqrt( fabs( seg_len * seg_len - proj * proj ) );
+          dist_to_seg = sqrt( qAbs( seg_len * seg_len - proj * proj ) );
         }
         if ( max_dist < dist_to_seg )
         {

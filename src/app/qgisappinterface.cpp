@@ -36,6 +36,7 @@
 #include "qgsvectordataprovider.h"
 #include "qgsfeatureaction.h"
 #include "qgsattributeaction.h"
+#include "qgsattributetabledialog.h"
 
 QgisAppInterface::QgisAppInterface( QgisApp * _qgis )
     : qgis( _qgis ),
@@ -144,6 +145,16 @@ void QgisAppInterface::removePluginMenu( QString name, QAction* action )
   qgis->removePluginMenu( name, action );
 }
 
+void QgisAppInterface::addPluginToDatabaseMenu( QString name, QAction* action )
+{
+  qgis->addPluginToDatabaseMenu( name, action );
+}
+
+void QgisAppInterface::removePluginDatabaseMenu( QString name, QAction* action )
+{
+  qgis->removePluginDatabaseMenu( name, action );
+}
+
 int QgisAppInterface::addToolBarIcon( QAction * qAction )
 {
   // add the menu to the master Plugins menu
@@ -221,9 +232,24 @@ void QgisAppInterface::showLayerProperties( QgsMapLayer *l )
   }
 }
 
-void QgisAppInterface::addWindow( QAction *action ) { qgis->addWindow( action ); }
-void QgisAppInterface::removeWindow( QAction *action ) { qgis->removeWindow( action ); }
+void QgisAppInterface::showAttributeTable( QgsVectorLayer *l )
+{
+  if ( l )
+  {
+    QgsAttributeTableDialog *dialog = new QgsAttributeTableDialog( l );
+    dialog->show();
+  }
+}
 
+void QgisAppInterface::addWindow( QAction *action )
+{
+  qgis->addWindow( action );
+}
+
+void QgisAppInterface::removeWindow( QAction *action )
+{
+  qgis->removeWindow( action );
+}
 
 bool QgisAppInterface::registerMainWindowAction( QAction* action, QString defaultShortcut )
 {
@@ -242,6 +268,7 @@ QMenu *QgisAppInterface::viewMenu() { return qgis->viewMenu(); }
 QMenu *QgisAppInterface::layerMenu() { return qgis->layerMenu(); }
 QMenu *QgisAppInterface::settingsMenu() { return qgis->settingsMenu(); }
 QMenu *QgisAppInterface::pluginMenu() { return qgis->pluginMenu(); }
+QMenu *QgisAppInterface::databaseMenu() { return qgis->databaseMenu(); }
 QMenu *QgisAppInterface::firstRightStandardMenu() { return qgis->firstRightStandardMenu(); }
 QMenu *QgisAppInterface::windowMenu() { return qgis->windowMenu(); }
 QMenu *QgisAppInterface::helpMenu() { return qgis->helpMenu(); }
@@ -369,73 +396,6 @@ bool QgisAppInterface::openFeatureForm( QgsVectorLayer *vlayer, QgsFeature &f, b
   if ( !vlayer )
     return false;
 
-  QgsVectorDataProvider *dp = vlayer->dataProvider();
-  if ( dp )
-  {
-    // add the fields to the QgsFeature
-    const QgsFieldMap fields = vlayer->pendingFields();
-    for ( QgsFieldMap::const_iterator it = fields.constBegin(); it != fields.constEnd(); ++it )
-    {
-      if ( !f.attributeMap().contains( it.key() ) )
-        f.addAttribute( it.key(), dp->defaultValue( it.key() ) );
-    }
-  }
-
-  QgsAttributeMap src = f.attributeMap();
-
-  if ( !updateFeatureOnly && vlayer->isEditable() )
-    vlayer->beginEditCommand( tr( "Feature form edit" ) );
-
-  QgsAttributeDialog *ad = new QgsAttributeDialog( vlayer, &f );
-
-  if ( vlayer->actions()->size() > 0 )
-  {
-    ad->dialog()->setContextMenuPolicy( Qt::ActionsContextMenu );
-
-    QAction *a = new QAction( tr( "Run actions" ), ad->dialog() );
-    a->setEnabled( false );
-    ad->dialog()->addAction( a );
-
-    for ( int i = 0; i < vlayer->actions()->size(); i++ )
-    {
-      const QgsAction &action = vlayer->actions()->at( i );
-
-      if ( !action.runable() )
-        continue;
-
-      QgsFeatureAction *a = new QgsFeatureAction( action.name(), f, vlayer, i, ad->dialog() );
-      ad->dialog()->addAction( a );
-      connect( a, SIGNAL( triggered() ), a, SLOT( execute() ) );
-
-      QAbstractButton *pb = ad->dialog()->findChild<QAbstractButton *>( action.name() );
-      if ( pb )
-        connect( pb, SIGNAL( clicked() ), a, SLOT( execute() ) );
-    }
-  }
-
-  bool res = ad->exec();
-
-  if ( !updateFeatureOnly && vlayer->isEditable() )
-  {
-    if ( res )
-    {
-      const QgsAttributeMap &dst = f.attributeMap();
-      for ( QgsAttributeMap::const_iterator it = dst.begin(); it != dst.end(); it++ )
-      {
-        if ( !src.contains( it.key() ) || it.value() != src[it.key()] )
-        {
-          vlayer->changeAttributeValue( f.id(), it.key(), it.value() );
-        }
-      }
-      vlayer->endEditCommand();
-    }
-    else
-    {
-      vlayer->destroyEditCommand();
-    }
-  }
-
-  delete ad;
-
-  return res;
+  QgsFeatureAction action( tr( "Attributes changed" ), f, vlayer, -1, QgisApp::instance() );
+  return action.editFeature();
 }

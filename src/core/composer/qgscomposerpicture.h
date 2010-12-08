@@ -31,6 +31,9 @@ class CORE_EXPORT QgsComposerPicture: public QgsComposerItem
     QgsComposerPicture( QgsComposition *composition );
     ~QgsComposerPicture();
 
+    /** return correct graphics item type. Added in v1.7 */
+    virtual int type() const { return ComposerPicture; }
+
     /**Reimplementation of QCanvasItem::paint*/
     void paint( QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget );
 
@@ -101,10 +104,6 @@ class CORE_EXPORT QgsComposerPicture: public QgsComposerItem
     double mPictureWidth;
     /**Height of the picture (in mm)*/
     double mPictureHeight;
-
-  signals:
-    /**Tell the configuration widget that the settings need to be updated*/
-    void settingsChanged();
 };
 
 #endif

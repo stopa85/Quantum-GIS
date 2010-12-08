@@ -31,11 +31,7 @@
 #include "qgsrectangle.h" //just for debugging
 #include "qgslogger.h"
 
-#ifndef Q_OS_MACX
 #include <cmath>
-#else
-#include <math.h>
-#endif
 
 #define FONT_WORKAROUND_SCALE 10 //scale factor for upscaling fontsize and downscaling painter
 
@@ -275,6 +271,30 @@ bool QgsComposerItem::_readXML( const QDomElement& itemElem, const QDomDocument&
   return true;
 }
 
+void QgsComposerItem::beginCommand( const QString& commandText, QgsComposerMergeCommand::Context c )
+{
+  if ( mComposition )
+  {
+    mComposition->beginCommand( this, commandText, c );
+  }
+}
+
+void QgsComposerItem::endCommand()
+{
+  if ( mComposition )
+  {
+    mComposition->endCommand();
+  }
+}
+
+void QgsComposerItem::cancelCommand()
+{
+  if ( mComposition )
+  {
+    mComposition->cancelCommand();
+  }
+}
+
 void QgsComposerItem::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
 {
   if ( mItemPositionLocked )
@@ -346,12 +366,14 @@ void QgsComposerItem::mouseReleaseEvent( QGraphicsSceneMouseEvent * event )
   double diffY = mouseMoveStopPoint.y() - mMouseMoveStartPos.y();
 
   //it was only a click
-  if ( abs( diffX ) < std::numeric_limits<double>::min() && abs( diffY ) < std::numeric_limits<double>::min() )
+  if ( qAbs( diffX ) < std::numeric_limits<double>::min() && qAbs( diffY ) < std::numeric_limits<double>::min() )
   {
     return;
   }
 
+  beginCommand( tr( "Change item position" ) );
   changeItemRectangle( mouseMoveStopPoint, mMouseMoveStartPos, this, diffX, diffY, this );
+  endCommand();
 
   //reset default action
   mCurrentMouseMoveAction = QgsComposerItem::MoveItem;
@@ -892,7 +914,7 @@ void QgsComposerItem::setRotation( double r )
 
 bool QgsComposerItem::imageSizeConsideringRotation( double& width, double& height ) const
 {
-  if ( abs( mRotation ) <= 0 ) //width and height stays the same if there is no rotation
+  if ( qAbs( mRotation ) <= 0.0 ) //width and height stays the same if there is no rotation
   {
     return true;
   }

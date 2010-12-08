@@ -86,6 +86,7 @@ if errorlevel 1 goto error
 cmake -G "Visual Studio 9 2008" ^
 	-D PEDANTIC=TRUE ^
 	-D WITH_SPATIALITE=TRUE ^
+	-D WITH_MAPSERVER=TRUE ^
 	-D WITH_INTERNAL_SPATIALITE=TRUE ^
 	-D CMAKE_BUILD_TYPE=%BUILDCONF% ^
 	-D CMAKE_CONFIGURATION_TYPES=%BUILDCONF% ^
@@ -146,6 +147,7 @@ touch exclude
 
 tar -C %OSGEO4W_ROOT% -cjf %PACKAGENAME%-%VERSION%-%PACKAGE%.tar.bz2 ^
 	--exclude-from exclude ^
+	--exclude "*.pyc" ^
 	--exclude "apps/%PACKAGENAME%/themes/classic/grass" ^
 	--exclude "apps/%PACKAGENAME%/themes/default/grass" ^
 	--exclude "apps/%PACKAGENAME%/themes/qgis/grass" ^
@@ -161,8 +163,9 @@ tar -C %OSGEO4W_ROOT% -cjf %PACKAGENAME%-%VERSION%-%PACKAGE%.tar.bz2 ^
 	>>%LOG% 2>&1
 if errorlevel 1 goto error
 
-tar -C %OSGEO4W_ROOT% -cjf %PACKAGENAME%-grass-%VERSION%-%PACKAGE%.tar.bz2 ^
+tar -C %OSGEO4W_ROOT% -cjf %PACKAGENAME%-grass-plugin-%VERSION%-%PACKAGE%.tar.bz2 ^
 	--exclude-from exclude ^
+	--exclude "*.pyc" ^
 	"apps/%PACKAGENAME%/themes/classic/grass" ^
 	"apps/%PACKAGENAME%/themes/default/grass" ^
 	"apps/%PACKAGENAME%/themes/gis/grass" ^

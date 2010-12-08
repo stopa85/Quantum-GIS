@@ -1,5 +1,5 @@
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
-SET(CPACK_PACKAGE_VERSION_MINOR "6")
+SET(CPACK_PACKAGE_VERSION_MINOR "7")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 SET(RELEASE_NAME "Trunk")
@@ -54,8 +54,8 @@ IF (WITH_GRASS)
   SET (GRASS_PREFIX ${GRASS_PREFIX} CACHE PATH "Path to GRASS base directory")
 ENDIF (WITH_GRASS)
 
-# try to configure and build mapserver by default
-SET (WITH_MAPSERVER TRUE CACHE BOOL "Determines whether QGIS mapserver should be built")
+# mapserver by us disabled default because it needs FastCGI (which is optional dependency)
+SET (WITH_MAPSERVER FALSE CACHE BOOL "Determines whether QGIS mapserver should be built")
 
 # try to configure and build POSTGRESQL support
 SET (WITH_POSTGRESQL TRUE CACHE BOOL "Determines whether POSTGRESQL support should be built")
@@ -429,6 +429,7 @@ LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/src/core ${CMAKE_BINARY_DIR}/src/gui)
 # create qgssvnversion.h
 
 FIND_FILE(SVN_MARKER entries PATHS ${CMAKE_SOURCE_DIR}/.svn)
+FIND_FILE(GIT_MARKER index PATHS ${CMAKE_SOURCE_DIR}/.git)
 
 IF (SVN_MARKER)
   # See if we have svn installed
@@ -436,26 +437,41 @@ IF (SVN_MARKER)
 
   IF(SVNVERSION)
     IF(MSVC)
-	ADD_CUSTOM_COMMAND(
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
-		COMMAND for /f usebackq %%a in "(`\"${SVNVERSION}\"`)" do echo \#define QGSSVNVERSION \"%%a\" >${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
-		MAIN_DEPENDENCY ${SVN_MARKER}
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	)
+      ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
+        COMMAND for /f usebackq %%a in "(`\"${SVNVERSION}\"`)" do echo \#define QGSSVNVERSION \"%%a\" >${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
+        MAIN_DEPENDENCY ${SVN_MARKER}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
     ELSE(MSVC)
-	ADD_CUSTOM_COMMAND(
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
-		COMMAND echo \\\#define QGSSVNVERSION \\\"`${SVNVERSION}`\\\" >${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
-		MAIN_DEPENDENCY ${SVN_MARKER}
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	)
+      ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
+        COMMAND echo \\\#define QGSSVNVERSION \\\"`${SVNVERSION}`\\\" >${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
+        MAIN_DEPENDENCY ${SVN_MARKER}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
     ENDIF(MSVC)
   ELSE(SVNVERSION)
     MESSAGE(STATUS "svnversion not found - version will be unknown")
     FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h "#define QGSSVNVERSION \"unknown\"")
   ENDIF (SVNVERSION)
 ELSE (SVN_MARKER)
-  FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h "#define QGSSVNVERSION \"exported\"")
+  IF (GIT_MARKER)
+    FIND_PROGRAM(GIT git PATHS c:/cygwin/bin)
+    IF(GIT)
+      ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
+        COMMAND echo \\\#define QGSSVNVERSION \\\"`${GIT} svn info | sed -ne "s/Revision: //p"`\\\" >${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
+        MAIN_DEPENDENCY ${GIT_MARKER}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+    ELSE(GIT)
+      MESSAGE(STATUS "git marker, but no git found - version will be unknown")
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h "#define QGSSVNVERSION \"unknown\"")
+    ENDIF(GIT)
+  ELSE (GIT_MARKER)
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h "#define QGSSVNVERSION \"exported\"")
+  ENDIF (GIT_MARKER)
 ENDIF (SVN_MARKER)
 
 ADD_CUSTOM_TARGET(svnversion ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h)

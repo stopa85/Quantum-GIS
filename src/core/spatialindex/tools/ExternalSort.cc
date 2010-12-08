@@ -20,7 +20,6 @@
 //    mhadji@gmail.com
 
 #include <stdio.h>
-#include <unistd.h>
 
 #include <Tools.h>
 
@@ -213,7 +212,7 @@ void Tools::ExternalSort::mergeRuns()
         // if there are no more records in the file, do nothing.
       }
 
-      cMaxRun = std::max( cRun, cMaxRun );
+      cMaxRun = qMax( cRun, cMaxRun );
       cRun++;
       if ( cRun == runs.size() ) cRun = 0;
     }

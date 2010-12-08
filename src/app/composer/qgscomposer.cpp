@@ -38,6 +38,7 @@
 #include "qgscomposerattributetable.h"
 #include "qgscomposertablewidget.h"
 #include "qgsexception.h"
+#include "qgslogger.h"
 #include "qgsproject.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaprenderer.h"
@@ -46,28 +47,31 @@
 #include "qgscursors.h"
 
 #include <QCloseEvent>
+#include <QCheckBox>
 #include <QDesktopWidget>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QIcon>
+#include <QImageWriter>
 #include <QMatrix>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPageSetupDialog>
 #include <QPainter>
-
+#include <QPixmap>
 #include <QPrintDialog>
 #include <QSettings>
-#include <QIcon>
-#include <QPixmap>
+#include <QSizeGrip>
 #include <QSvgGenerator>
 #include <QToolBar>
 #include <QToolButton>
-#include <QImageWriter>
-#include <QCheckBox>
-#include <QSizeGrip>
-#include "qgslogger.h"
+#include <QUndoView>
 
-QgsComposer::QgsComposer( QgisApp *qgis, const QString& title ): QMainWindow(), mTitle( title )
+
+
+
+
+QgsComposer::QgsComposer( QgisApp *qgis, const QString& title ): QMainWindow(), mTitle( title ), mUndoView( 0 )
 {
   setupUi( this );
   setWindowTitle( mTitle );
@@ -151,6 +155,9 @@ QgsComposer::QgsComposer( QgisApp *qgis, const QString& title ): QMainWindow(), 
   viewMenu->addAction( mActionRefreshView );
 
   QMenu *layoutMenu = menuBar()->addMenu( tr( "Layout" ) );
+  layoutMenu->addAction( mActionUndo );
+  layoutMenu->addAction( mActionRedo );
+  layoutMenu->addSeparator();
   layoutMenu->addAction( mActionAddNewMap );
   layoutMenu->addAction( mActionAddNewLabel );
   layoutMenu->addAction( mActionAddNewScalebar );
@@ -194,7 +201,17 @@ QgsComposer::QgsComposer( QgisApp *qgis, const QString& title ): QMainWindow(), 
   mView = new QgsComposerView( mViewFrame );
   connectSlots();
 
+  //init undo/redo buttons
   mComposition  = new QgsComposition( mQgis->mapCanvas()->mapRenderer() );
+  mActionUndo->setEnabled( false );
+  mActionRedo->setEnabled( false );
+  if ( mComposition->undoStack() )
+  {
+    connect( mComposition->undoStack(), SIGNAL( canUndoChanged( bool ) ), mActionUndo, SLOT( setEnabled( bool ) ) );
+    connect( mComposition->undoStack(), SIGNAL( canRedoChanged( bool ) ), mActionRedo, SLOT( setEnabled( bool ) ) );
+  }
+
+
   mComposition->setParent( mView );
   mView->setComposition( mComposition );
 
@@ -211,6 +228,10 @@ QgsComposer::QgsComposer( QgisApp *qgis, const QString& title ): QMainWindow(), 
   l->addWidget( mView, 0, 0 );
 
   mCompositionNameComboBox->insertItem( 0, tr( "Map 1" ) );
+
+  //undo widget
+  mUndoView = new QUndoView( mComposition->undoStack(), this );
+  mOptionsTabWidget->addTab( mUndoView, tr( "Command history" ) );
 
   // Create size grip (needed by Mac OS X for QMainWindow if QStatusBar is not visible)
   mSizeGrip = new QSizeGrip( this );
@@ -249,6 +270,8 @@ void QgsComposer::setupTheme()
   mActionZoomIn->setIcon( QgisApp::getThemeIcon( "/mActionZoomIn.png" ) );
   mActionZoomOut->setIcon( QgisApp::getThemeIcon( "/mActionZoomOut.png" ) );
   mActionRefreshView->setIcon( QgisApp::getThemeIcon( "/mActionDraw.png" ) );
+  mActionUndo->setIcon( QgisApp::getThemeIcon( "/mActionUndo.png" ) );
+  mActionRedo->setIcon( QgisApp::getThemeIcon( "/mActionRedo.png" ) );
   mActionAddImage->setIcon( QgisApp::getThemeIcon( "/mActionAddImage.png" ) );
   mActionAddNewMap->setIcon( QgisApp::getThemeIcon( "/mActionAddMap.png" ) );
   mActionAddNewLabel->setIcon( QgisApp::getThemeIcon( "/mActionLabel.png" ) );
@@ -275,7 +298,7 @@ void QgsComposer::setupTheme()
 
 void QgsComposer::connectSlots()
 {
-  connect( mView, SIGNAL( selectedItemChanged( const QgsComposerItem* ) ), this, SLOT( showItemOptions( const QgsComposerItem* ) ) );
+  connect( mView, SIGNAL( selectedItemChanged( QgsComposerItem* ) ), this, SLOT( showItemOptions( QgsComposerItem* ) ) );
   connect( mView, SIGNAL( composerLabelAdded( QgsComposerLabel* ) ), this, SLOT( addComposerLabel( QgsComposerLabel* ) ) );
   connect( mView, SIGNAL( composerMapAdded( QgsComposerMap* ) ), this, SLOT( addComposerMap( QgsComposerMap* ) ) );
   connect( mView, SIGNAL( itemRemoved( QgsComposerItem* ) ), this, SLOT( deleteItem( QgsComposerItem* ) ) );
@@ -360,7 +383,7 @@ void QgsComposer::showCompositionOptions( QWidget *w )
   mItemStackedWidget->addWidget( w );
 }
 
-void QgsComposer::showItemOptions( const QgsComposerItem* item )
+void QgsComposer::showItemOptions( QgsComposerItem* item )
 {
   QWidget* currentWidget = mItemStackedWidget->currentWidget();
 
@@ -371,7 +394,7 @@ void QgsComposer::showItemOptions( const QgsComposerItem* item )
     return;
   }
 
-  QMap<QgsComposerItem*, QWidget*>::iterator it = mItemWidgetMap.find( const_cast<QgsComposerItem*>( item ) );
+  QMap<QgsComposerItem*, QWidget*>::iterator it = mItemWidgetMap.find( item );
   if ( it == mItemWidgetMap.constEnd() )
   {
     return;
@@ -507,7 +530,7 @@ void QgsComposer::on_mActionPrint_triggered()
 
 void QgsComposer::print( QPrinter &printer )
 {
-  if ( !mComposition )
+  if ( !mComposition || !mView )
     return;
 
   if ( containsWMSLayer() )
@@ -530,6 +553,7 @@ void QgsComposer::print( QPrinter &printer )
   QApplication::setOverrideCursor( Qt::BusyCursor );
 
   bool printAsRaster = mComposition->printAsRaster();
+  //mView->setScene( 0 );
 
   if ( printAsRaster )
   {
@@ -545,8 +569,9 @@ void QgsComposer::print( QPrinter &printer )
       QPainter imagePainter( &image );
       QRectF sourceArea( 0, 0, mComposition->paperWidth(), mComposition->paperHeight() );
       QRectF targetArea( 0, 0, width, height );
+      mView->setPaintingEnabled( false );
       mComposition->render( &imagePainter, targetArea, sourceArea );
-      imagePainter.end();
+      mView->setPaintingEnabled( true );
       p.drawImage( targetArea, image, targetArea );
     }
     else
@@ -574,7 +599,10 @@ void QgsComposer::print( QPrinter &printer )
     //better in case of custom page size, but only possible with Qt>=4.4.0
     QRectF paperRectMM = printer.pageRect( QPrinter::Millimeter );
     QRectF paperRectPixel = printer.pageRect( QPrinter::DevicePixel );
+
+    mView->setPaintingEnabled( false );
     mComposition->render( &p, paperRectPixel, paperRectMM );
+    mView->setPaintingEnabled( true );
   }
 
   mComposition->setPlotStyle( savedPlotStyle );
@@ -707,19 +735,18 @@ void QgsComposer::on_mActionExportAsImage_triggered()
   }
 
   mComposition->setPlotStyle( QgsComposition::Print );
-  mView->setScene( 0 );
   image.setDotsPerMeterX( mComposition->printResolution() / 25.4 * 1000 );
   image.setDotsPerMeterY( mComposition->printResolution() / 25.4 * 1000 );
   image.fill( 0 );
   QPainter p( &image );
   QRectF sourceArea( 0, 0, mComposition->paperWidth(), mComposition->paperHeight() );
   QRectF targetArea( 0, 0, width, height );
+  mView->setPaintingEnabled( false );
   mComposition->render( &p, targetArea, sourceArea );
   p.end();
-
   mComposition->setPlotStyle( QgsComposition::Preview );
+  mView->setPaintingEnabled( true );
   image.save( myOutputFileNameQString, myFilterMap[myFilterString].toLocal8Bit().data() );
-  mView->setScene( mComposition );
 }
 
 
@@ -779,8 +806,6 @@ void QgsComposer::on_mActionExportAsSVG_triggered()
   }
 
   myQSettings.setValue( "/UI/lastSaveAsSvgFile", myOutputFileNameQString );
-
-  //mView->setScene(0);//don't redraw the scene on the display while we render
   mComposition->setPlotStyle( QgsComposition::Print );
 
   QSvgGenerator generator;
@@ -799,12 +824,11 @@ void QgsComposer::on_mActionExportAsSVG_triggered()
 
   QRectF sourceArea( 0, 0, mComposition->paperWidth(), mComposition->paperHeight() );
   QRectF targetArea( 0, 0, width, height );
+  mView->setPaintingEnabled( false );
   mComposition->render( &p, targetArea, sourceArea );
-
   p.end();
-
   mComposition->setPlotStyle( QgsComposition::Preview );
-  //mView->setScene(mComposition->canvas()); //now that we're done, set the view to show the scene again
+  mView->setPaintingEnabled( true );
 }
 
 void QgsComposer::on_mActionSelectMoveItem_triggered()
@@ -1047,6 +1071,22 @@ void QgsComposer::on_mActionAlignBottom_triggered()
   if ( mComposition )
   {
     mComposition->alignSelectedItemsBottom();
+  }
+}
+
+void QgsComposer::on_mActionUndo_triggered()
+{
+  if ( mComposition && mComposition->undoStack() )
+  {
+    mComposition->undoStack()->undo();
+  }
+}
+
+void QgsComposer::on_mActionRedo_triggered()
+{
+  if ( mComposition && mComposition->undoStack() )
+  {
+    mComposition->undoStack()->redo();
   }
 }
 
@@ -1321,6 +1361,21 @@ void QgsComposer::readXML( const QDomElement& composerElem, const QDomDocument& 
   mComposition->sortZList();
   mView->setComposition( mComposition );
 
+  if ( mUndoView )
+  {
+    //init undo/redo buttons
+    mActionUndo->setEnabled( false );
+    mActionRedo->setEnabled( false );
+    if ( mComposition->undoStack() )
+    {
+      mUndoView->setStack( mComposition->undoStack() );
+      connect( mComposition->undoStack(), SIGNAL( canUndoChanged( bool ) ), mActionUndo, SLOT( setEnabled( bool ) ) );
+      connect( mComposition->undoStack(), SIGNAL( canRedoChanged( bool ) ), mActionRedo, SLOT( setEnabled( bool ) ) );
+    }
+  }
+
+
+
   setSelectionTool();
 }
 
@@ -1437,7 +1492,7 @@ void QgsComposer::deleteItem( QgsComposerItem* item )
     return;
   }
 
-  delete( it.key() );
+  //the item itself is not deleted here (usually, this is done in the destructor of QgsAddRemoveItemCommand)
   delete( it.value() );
   mItemWidgetMap.remove( it.key() );
 }

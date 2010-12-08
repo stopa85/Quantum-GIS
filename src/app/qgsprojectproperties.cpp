@@ -20,7 +20,6 @@
 #include "qgsprojectproperties.h"
 
 //qgis includes
-#include "qgsavoidintersectionsdialog.h"
 #include "qgscontexthelp.h"
 #include "qgscoordinatetransform.h"
 #include "qgslogger.h"
@@ -79,6 +78,8 @@ QgsProjectProperties::QgsProjectProperties( QgsMapCanvas* mapCanvas, QWidget *pa
   if ( automaticPrecision )
   {
     radAutomatic->setChecked( true );
+    spinBoxDP->setDisabled( true );
+    labelDP->setDisabled( true );
   }
   else
   {
@@ -94,7 +95,8 @@ QgsProjectProperties::QgsProjectProperties( QgsMapCanvas* mapCanvas, QWidget *pa
   int myRedInt = QgsProject::instance()->readNumEntry( "Gui", "/SelectionColorRedPart", 255 );
   int myGreenInt = QgsProject::instance()->readNumEntry( "Gui", "/SelectionColorGreenPart", 255 );
   int myBlueInt = QgsProject::instance()->readNumEntry( "Gui", "/SelectionColorBluePart", 0 );
-  QColor myColor = QColor( myRedInt, myGreenInt, myBlueInt );
+  int myAlphaInt = QgsProject::instance()->readNumEntry( "Gui", "/SelectionColorAlphaPart", 255 );
+  QColor myColor = QColor( myRedInt, myGreenInt, myBlueInt, myAlphaInt );
   pbnSelectionColor->setColor( myColor );
 
   //get the color for map canvas background and set button color accordingly (default white)
@@ -104,113 +106,7 @@ QgsProjectProperties::QgsProjectProperties( QgsMapCanvas* mapCanvas, QWidget *pa
   myColor = QColor( myRedInt, myGreenInt, myBlueInt );
   pbnCanvasColor->setColor( myColor );
 
-  //read the digitizing settings
-  int topologicalEditing = QgsProject::instance()->readNumEntry( "Digitizing", "/TopologicalEditing", 0 );
-  if ( topologicalEditing != 0 )
-  {
-    mEnableTopologicalEditingCheckBox->setCheckState( Qt::Checked );
-  }
-  else
-  {
-    mEnableTopologicalEditingCheckBox->setCheckState( Qt::Unchecked );
-  }
-
-  bool avoidIntersectionListOk;
-  mAvoidIntersectionsSettings.clear();
-  QStringList avoidIntersectionsList = QgsProject::instance()->readListEntry( "Digitizing", "/AvoidIntersectionsList", &avoidIntersectionListOk );
-  if ( avoidIntersectionListOk )
-  {
-    QStringList::const_iterator avoidIt = avoidIntersectionsList.constBegin();
-    for ( ; avoidIt != avoidIntersectionsList.constEnd(); ++avoidIt )
-    {
-      mAvoidIntersectionsSettings.insert( *avoidIt );
-    }
-  }
-
-  bool layerIdListOk, enabledListOk, toleranceListOk, toleranceUnitListOk, snapToListOk;
-  QStringList layerIdList = QgsProject::instance()->readListEntry( "Digitizing", "/LayerSnappingList", &layerIdListOk );
-  QStringList enabledList = QgsProject::instance()->readListEntry( "Digitizing", "/LayerSnappingEnabledList", &enabledListOk );
-  QStringList toleranceList = QgsProject::instance()->readListEntry( "Digitizing", "/LayerSnappingToleranceList", & toleranceListOk );
-  QStringList toleranceUnitList = QgsProject::instance()->readListEntry( "Digitizing", "/LayerSnappingToleranceUnitList", & toleranceUnitListOk );
-  QStringList snapToList = QgsProject::instance()->readListEntry( "Digitizing", "/LayerSnapToList", &snapToListOk );
-
-  QStringList::const_iterator idIter = layerIdList.constBegin();
-  QStringList::const_iterator enabledIter = enabledList.constBegin();
-  QStringList::const_iterator tolIter = toleranceList.constBegin();
-  QStringList::const_iterator tolUnitIter = toleranceUnitList.constBegin();
-  QStringList::const_iterator snapToIter = snapToList.constBegin();
-
   QgsMapLayer* currentLayer = 0;
-
-  //create the new layer entries
-  for ( ; idIter != layerIdList.constEnd(); ++idIter, ++enabledIter, ++tolIter, ++tolUnitIter, ++snapToIter )
-  {
-    if ( layerIdListOk )
-    {
-      currentLayer = QgsMapLayerRegistry::instance()->mapLayer( *idIter );
-    }
-    else
-    {
-      break;
-    }
-
-    if ( currentLayer )
-    {
-      LayerEntry newEntry;
-      newEntry.layerName = currentLayer->name();
-
-      newEntry.checked = false;
-      if ( enabledListOk && enabledIter != enabledList.constEnd() )
-      {
-        if (( *enabledIter ) == "enabled" )
-        {
-          newEntry.checked = true;
-        }
-      }
-
-      //snap to vertex / segment / vertex and segment
-      if ( snapToListOk && snapToIter != snapToList.constEnd() )
-      {
-        if (( *snapToIter ) == "to_vertex" )
-        {
-          newEntry.snapTo = 0;
-        }
-        else if (( *snapToIter ) == "to_segment" )
-        {
-          newEntry.snapTo = 1;
-        }
-        else //to vertex and segment
-        {
-          newEntry.snapTo = 2;
-        }
-      }
-      else
-      {
-        newEntry.snapTo = 0;
-      }
-
-      //snap tolerance
-      if ( toleranceListOk && tolIter != toleranceList.constEnd() )
-      {
-        newEntry.tolerance = tolIter->toDouble();
-      }
-      else
-      {
-        newEntry.tolerance = 0;
-      }
-
-      //snap tolerance unit
-      if ( toleranceUnitListOk && tolUnitIter != toleranceUnitList.constEnd() )
-      {
-        newEntry.toleranceUnit = tolUnitIter->toInt();
-      }
-      else
-      {
-        newEntry.toleranceUnit = 0;
-      }
-      mSnappingLayerSettings.insert( *idIter, newEntry );
-    }
-  }
 
   QStringList noIdentifyLayerIdList = QgsProject::instance()->readListEntry( "Identify", "/disabledLayers" );
 
@@ -396,6 +292,7 @@ void QgsProjectProperties::apply()
   QgsProject::instance()->writeEntry( "Gui", "/SelectionColorRedPart", myColor.red() );
   QgsProject::instance()->writeEntry( "Gui", "/SelectionColorGreenPart", myColor.green() );
   QgsProject::instance()->writeEntry( "Gui", "/SelectionColorBluePart", myColor.blue() );
+  QgsProject::instance()->writeEntry( "Gui", "/SelectionColorAlphaPart", myColor.alpha() );
   QgsRenderer::setSelectionColor( myColor );
 
   //set the color for canvas
@@ -403,65 +300,6 @@ void QgsProjectProperties::apply()
   QgsProject::instance()->writeEntry( "Gui", "/CanvasColorRedPart", myColor.red() );
   QgsProject::instance()->writeEntry( "Gui", "/CanvasColorGreenPart", myColor.green() );
   QgsProject::instance()->writeEntry( "Gui", "/CanvasColorBluePart", myColor.blue() );
-
-  //write the digitizing settings
-  int topologicalEditingEnabled = ( mEnableTopologicalEditingCheckBox->checkState() == Qt::Checked ) ? 1 : 0;
-  QgsProject::instance()->writeEntry( "Digitizing", "/TopologicalEditing", topologicalEditingEnabled );
-
-  //store avoid intersection layers
-  QStringList avoidIntersectionList;
-  QSet<QString>::const_iterator avoidIt = mAvoidIntersectionsSettings.constBegin();
-  for ( ; avoidIt != mAvoidIntersectionsSettings.constEnd(); ++avoidIt )
-  {
-    avoidIntersectionList.append( *avoidIt );
-  }
-  QgsProject::instance()->writeEntry( "Digitizing", "/AvoidIntersectionsList", avoidIntersectionList );
-
-
-  QMap<QString, LayerEntry>::const_iterator layerEntryIt;
-
-  //store the layer snapping settings as string lists
-  QStringList layerIdList;
-  QStringList snapToList;
-  QStringList toleranceList;
-  QStringList enabledList;
-  QStringList toleranceUnitList;
-
-  for ( layerEntryIt = mSnappingLayerSettings.constBegin(); layerEntryIt != mSnappingLayerSettings.constEnd(); ++layerEntryIt )
-  {
-    layerIdList << layerEntryIt.key();
-    toleranceList << QString::number( layerEntryIt->tolerance, 'f' );
-    toleranceUnitList << QString::number(( int )layerEntryIt->toleranceUnit );
-    if ( layerEntryIt->checked )
-    {
-      enabledList << "enabled";
-    }
-    else
-    {
-      enabledList << "disabled";
-    }
-    if ( layerEntryIt->snapTo == 0 )
-    {
-      snapToList << "to_vertex";
-    }
-    else if ( layerEntryIt->snapTo == 1 )
-    {
-      snapToList << "to_segment";
-    }
-    else //to vertex and segment
-    {
-      snapToList << "to_vertex_and_segment";
-    }
-  }
-
-  if ( mSnappingLayerSettings.size() > 0 )
-  {
-    QgsProject::instance()->writeEntry( "Digitizing", "/LayerSnappingList", layerIdList );
-    QgsProject::instance()->writeEntry( "Digitizing", "/LayerSnapToList", snapToList );
-    QgsProject::instance()->writeEntry( "Digitizing", "/LayerSnappingToleranceList", toleranceList );
-    QgsProject::instance()->writeEntry( "Digitizing", "/LayerSnappingToleranceUnitList", toleranceUnitList );
-    QgsProject::instance()->writeEntry( "Digitizing", "/LayerSnappingEnabledList", enabledList );
-  }
 
   QStringList noIdentifyLayerList;
   for ( int i = 0; i < twIdentifyLayers->rowCount(); i++ )
@@ -492,7 +330,12 @@ void QgsProjectProperties::showProjectionsTab()
 
 void QgsProjectProperties::on_pbnSelectionColor_clicked()
 {
-  QColor color = QColorDialog::getColor( pbnSelectionColor->color(), this );
+#if QT_VERSION >= 0x040500
+  QColor color = QColorDialog::getColor( pbnSelectionColor->color(), 0, tr( "Selection color" ), QColorDialog::ShowAlphaChannel );
+#else
+  QColor color = QColorDialog::getColor( pbnSelectionColor->color() );
+#endif
+
   if ( color.isValid() )
   {
     pbnSelectionColor->setColor( color );
@@ -505,25 +348,6 @@ void QgsProjectProperties::on_pbnCanvasColor_clicked()
   if ( color.isValid() )
   {
     pbnCanvasColor->setColor( color );
-  }
-}
-
-void QgsProjectProperties::on_mAvoidIntersectionsPushButton_clicked()
-{
-  QgsAvoidIntersectionsDialog d( mMapCanvas, mAvoidIntersectionsSettings );
-  if ( d.exec() == QDialog::Accepted )
-  {
-    d.enabledLayers( mAvoidIntersectionsSettings );
-  }
-}
-
-void QgsProjectProperties::on_mSnappingOptionsPushButton_clicked()
-{
-  QgsSnappingDialog d( mMapCanvas, mSnappingLayerSettings );
-  if ( d.exec() == QDialog::Accepted )
-  {
-    //retrieve the new layer snapping settings from the dialog
-    d.layerSettings( mSnappingLayerSettings );
   }
 }
 

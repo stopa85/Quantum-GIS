@@ -226,10 +226,10 @@ QPixmap QgsSymbolLayerV2Utils::symbolPreviewPixmap( QgsSymbolV2* symbol, QSize s
   Q_ASSERT( symbol );
 
   QPixmap pixmap( size );
+  pixmap.fill( Qt::transparent );
   QPainter painter;
   painter.begin( &pixmap );
   painter.setRenderHint( QPainter::Antialiasing );
-  painter.eraseRect( QRect( QPoint( 0, 0 ), size ) );
   symbol->drawPreviewIcon( &painter, size );
   painter.end();
   return pixmap;
@@ -239,10 +239,10 @@ QPixmap QgsSymbolLayerV2Utils::symbolPreviewPixmap( QgsSymbolV2* symbol, QSize s
 QIcon QgsSymbolLayerV2Utils::symbolLayerPreviewIcon( QgsSymbolLayerV2* layer, QgsSymbolV2::OutputUnit u, QSize size )
 {
   QPixmap pixmap( size );
+  pixmap.fill( Qt::transparent );
   QPainter painter;
   painter.begin( &pixmap );
   painter.setRenderHint( QPainter::Antialiasing );
-  painter.eraseRect( QRect( QPoint( 0, 0 ), size ) );
   QgsRenderContext renderContext = createRenderContext( &painter );
   QgsSymbolV2RenderContext symbolContext( renderContext, u );
   layer->drawPreviewIcon( symbolContext, size );
@@ -313,7 +313,7 @@ static QPointF offsetPoint( QPointF pt, double angle, double dist )
 static QPointF linesIntersection( QPointF p1, double t1, QPointF p2, double t2 )
 {
   // parallel lines? (or the difference between angles is less than cca 0.1 degree)
-  if (( t1 == DBL_MAX && t2 == DBL_MAX ) || fabs( t1 - t2 ) < 0.001 )
+  if (( t1 == DBL_MAX && t2 == DBL_MAX ) || qAbs( t1 - t2 ) < 0.001 )
     return QPointF();
 
   double x, y;

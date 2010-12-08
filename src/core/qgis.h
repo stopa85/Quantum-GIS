@@ -18,9 +18,12 @@
 
 #ifndef QGIS_H
 #define QGIS_H
+
 #include <QEvent>
 #include <QString>
 #include <cfloat>
+#include <cmath>
+#include <qnumeric.h>
 
 /** \ingroup core
  * The QGis class provides global constants for use throughout the application.

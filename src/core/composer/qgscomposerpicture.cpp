@@ -86,8 +86,8 @@ void QgsComposerPicture::paint( QPainter* painter, const QStyleOptionGraphicsIte
         //make nicer preview
         if ( mComposition && mComposition->plotStyle() == QgsComposition::Preview )
         {
-          boundImageWidth *= std::min( viewScaleFactor, 10.0 );
-          boundImageHeight *= std::min( viewScaleFactor, 10.0 );
+          boundImageWidth *= qMin( viewScaleFactor, 10.0 );
+          boundImageHeight *= qMin( viewScaleFactor, 10.0 );
         }
         mImage = QImage( boundImageWidth, boundImageHeight, QImage::Format_ARGB32 );
         updateImageFromSvg();
@@ -161,7 +161,7 @@ void QgsComposerPicture::setPictureFile( const QString& path )
   {
     setSceneRect( QRectF( transform().dx(), transform().dy(), rect().width(), rect().height() ) );
   }
-  emit settingsChanged();
+  emit itemChanged();
 }
 
 QRectF QgsComposerPicture::boundedImageRect( double deviceWidth, double deviceHeight )
@@ -241,7 +241,7 @@ void QgsComposerPicture::setSceneRect( const QRectF& rectangle )
   mPictureWidth = newPictureWidth;
   mPictureHeight = newPictureHeight;
 
-  emit settingsChanged();
+  emit itemChanged();
 }
 
 void QgsComposerPicture::setRotation( double r )
@@ -357,6 +357,7 @@ bool QgsComposerPicture::readXML( const QDomElement& itemElem, const QDomDocumen
     QObject::connect( mRotationMap, SIGNAL( rotationChanged( double ) ), this, SLOT( setRotation( double ) ) );
   }
 
+  emit itemChanged();
   return true;
 }
 

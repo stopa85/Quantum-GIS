@@ -9,7 +9,6 @@ SET(QGIS_APP_SRCS
   qgsattributedialog.cpp
   qgsattributetypedialog.cpp
   qgsattributetypeloaddialog.cpp
-  qgsavoidintersectionsdialog.cpp
   qgsbookmarkitem.cpp
   qgsbookmarks.cpp
   qgsclipboard.cpp
@@ -28,6 +27,7 @@ SET(QGIS_APP_SRCS
   qgsidentifyresults.cpp
   qgsfeatureaction.cpp
   qgslabeldialog.cpp
+  qgslabelpropertydialog.cpp
   qgslabelengineconfigdialog.cpp
   qgslabelinggui.cpp
   qgslabelpreview.cpp
@@ -37,17 +37,21 @@ SET(QGIS_APP_SRCS
   qgsmaptooladdring.cpp
   qgsmaptoolannotation.cpp
   qgsmaptoolcapture.cpp
+  qgsmaptoolchangelabelproperties.cpp
   qgsmaptooldeletering.cpp
   qgsmaptooldeletepart.cpp
   qgsmaptooldeletevertex.cpp
   qgsmaptooledit.cpp
   qgsmaptoolformannotation.cpp
   qgsmaptoolidentify.cpp
+  qgsmaptoollabel.cpp
   qgsmaptoolmeasureangle.cpp
   qgsmaptoolmovefeature.cpp
+  qgsmaptoolmovelabel.cpp
   qgsmaptoolmovevertex.cpp
   qgsmaptoolnodetool.cpp
   qgsmaptoolreshape.cpp
+  qgsmaptoolrotatelabel.cpp
   qgsmaptoolrotatepointsymbols.cpp
   qgsmaptoolselect.cpp
   qgsmaptoolselectrectangle.cpp
@@ -158,7 +162,6 @@ SET (QGIS_APP_MOC_HDRS
   qgsattributedialog.h
   qgsattributetypedialog.h
   qgsattributetypeloaddialog.h
-  qgsavoidintersectionsdialog.h
   qgsbookmarks.h
   qgscontinuouscolordialog.h
   qgsconfigureshortcutsdialog.h
@@ -175,6 +178,7 @@ SET (QGIS_APP_MOC_HDRS
   qgsidentifyresults.h
   qgsfeatureaction.h
   qgslabeldialog.h
+  qgslabelpropertydialog.h
   qgsmanageconnectionsdialog.h
   qgsmaptoolidentify.h
   qgsmaptoolsplitfeatures.h
@@ -183,8 +187,10 @@ SET (QGIS_APP_MOC_HDRS
   qgsmaptooladdisland.h
   qgsmaptooladdring.h
   qgsmaptoolmovefeature.h
+  qgsmaptoolmovelabel.h
   qgsmaptoolnodetool.h
   qgsmaptoolreshape.h
+  qgsmaptoolrotatelabel.h
   qgsmaptoolrotatepointsymbols.h
   qgsmaptoolselect.h
   qgsmaptoolselectrectangle.h
@@ -192,6 +198,7 @@ SET (QGIS_APP_MOC_HDRS
   qgsmaptoolselectpolygon.h
   qgsmaptoolselectradius.h
   qgsmaptooladdvertex.h
+  qgsmaptoolchangelabelproperties.h
   qgsmaptooldeletering.h
   qgsmaptooldeletepart.h
   qgsmaptooldeletevertex.h
@@ -294,8 +301,6 @@ QT4_ADD_RESOURCES(IMAGE_RCC_SRCS ${IMAGE_RCCS})
 
 QT4_WRAP_CPP(QGIS_APP_MOC_SRCS ${QGIS_APP_MOC_HDRS})
 
-
-
 IF (WIN32)
   IF (MSVC)
     SET (QGIS_APP_SRCS ${QGIS_APP_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/qgis_win32.rc)
@@ -373,6 +378,7 @@ ELSE (WIN32)
 ENDIF (WIN32)
 
 TARGET_LINK_LIBRARIES(${QGIS_APP_NAME}
+  ${QWT_LIBRARY}
   ${QT_QTSQL_LIBRARY}
   ${QT_QTUITOOLS_LIBRARY}
   #should only be needed for win
@@ -385,8 +391,6 @@ TARGET_LINK_LIBRARIES(${QGIS_APP_NAME}
 IF( WIN32 )
   ADD_DEFINITIONS(-DQWT_DLL)
 ENDIF( WIN32 ) 
-INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
-TARGET_LINK_LIBRARIES(${QGIS_APP_NAME} ${QWT_LIBRARY})
 
 IF(NOT WITH_INTERNAL_SPATIALITE)
   TARGET_LINK_LIBRARIES(${QGIS_APP_NAME} ${SQLITE_LIBRARY})

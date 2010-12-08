@@ -15,13 +15,16 @@
 /* $Id$ */
 
 #include "qgsmaptoolcapture.h"
+#include "qgsfeature.h"
 
 /**This tool adds new point/line/polygon features to already existing vector layers*/
-class QgsMapToolAddFeature: public QgsMapToolCapture
+class QgsMapToolAddFeature : public QgsMapToolCapture
 {
     Q_OBJECT
   public:
     QgsMapToolAddFeature( QgsMapCanvas* canvas, CaptureMode mode );
     virtual ~QgsMapToolAddFeature();
     void canvasReleaseEvent( QMouseEvent * e );
+
+    bool addFeature( QgsVectorLayer *vlayer, QgsFeature *f );
 };

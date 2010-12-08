@@ -215,6 +215,7 @@ QgsMarkerLineSymbolLayerV2::QgsMarkerLineSymbolLayerV2( bool rotateMarker, doubl
   mInterval = interval;
   mMarker = NULL;
   mOffset = 0;
+  mPlacement = Interval;
 
   setSubSymbol( new QgsMarkerSymbolV2() );
 }
@@ -236,7 +237,23 @@ QgsSymbolLayerV2* QgsMarkerLineSymbolLayerV2::create( const QgsStringMap& props 
 
   QgsMarkerLineSymbolLayerV2* x = new QgsMarkerLineSymbolLayerV2( rotate, interval );
   if ( props.contains( "offset" ) )
+  {
     x->setOffset( props["offset"].toDouble() );
+  }
+
+  if ( props.contains( "placement" ) )
+  {
+    if ( props["placement"] == "vertex" )
+      x->setPlacement( Vertex );
+    else if ( props["placement"] == "lastvertex" )
+      x->setPlacement( LastVertex );
+    else if ( props["placement"] == "firstvertex" )
+      x->setPlacement( FirstVertex );
+    else if ( props["placement"] == "centralpoint" )
+      x->setPlacement( CentralPoint );
+    else
+      x->setPlacement( Interval );
+  }
   return x;
 }
 
@@ -245,7 +262,7 @@ QString QgsMarkerLineSymbolLayerV2::layerType() const
   return "MarkerLine";
 }
 
-void QgsMarkerLineSymbolLayerV2::setColor( QColor color )
+void QgsMarkerLineSymbolLayerV2::setColor( const QColor& color )
 {
   mMarker->setColor( color );
   mColor = color;
@@ -276,16 +293,26 @@ void QgsMarkerLineSymbolLayerV2::renderPolyline( const QPolygonF& points, QgsSym
 {
   if ( mOffset == 0 )
   {
-    renderPolylineNoOffset( points, context );
+    if ( mPlacement == Interval )
+      renderPolylineInterval( points, context );
+    else if ( mPlacement == CentralPoint )
+      renderPolylineCentral( points, context );
+    else
+      renderPolylineVertex( points, context );
   }
   else
   {
     QPolygonF points2 = ::offsetLine( points, context.outputLineWidth( mOffset ) );
-    renderPolylineNoOffset( points2, context );
+    if ( mPlacement == Interval )
+      renderPolylineInterval( points2, context );
+    else if ( mPlacement == CentralPoint )
+      renderPolylineCentral( points2, context );
+    else
+      renderPolylineVertex( points2, context );
   }
 }
 
-void QgsMarkerLineSymbolLayerV2::renderPolylineNoOffset( const QPolygonF& points, QgsSymbolV2RenderContext& context )
+void QgsMarkerLineSymbolLayerV2::renderPolylineInterval( const QPolygonF& points, QgsSymbolV2RenderContext& context )
 {
   QPointF lastPt = points[0];
   double lengthLeft = 0; // how much is left until next marker
@@ -344,12 +371,137 @@ void QgsMarkerLineSymbolLayerV2::renderPolylineNoOffset( const QPolygonF& points
 
 }
 
+void QgsMarkerLineSymbolLayerV2::renderPolylineVertex( const QPolygonF& points, QgsSymbolV2RenderContext& context )
+{
+  QPointF lastPt = points[0];
+  QgsRenderContext& rc = context.renderContext();
+
+  double origAngle = mMarker->angle();
+  double angle;
+  int i, maxCount;
+
+  if ( mPlacement == FirstVertex )
+  {
+    i = 0;
+    maxCount = 1;
+  }
+  else if ( mPlacement == LastVertex )
+  {
+    i = points.count() - 1;
+    maxCount = points.count();
+  }
+  else
+  {
+    i = 0;
+    maxCount = points.count();
+  }
+
+  for ( ; i < maxCount; ++i )
+  {
+    const QPointF& pt = points[i];
+
+    // rotate marker (if desired)
+    if ( mRotateMarker )
+    {
+      if ( i == 0 )
+      {
+        const QPointF& nextPt = points[i+1];
+        if ( pt == nextPt )
+          continue;
+        angle = MyLine( pt, nextPt ).angle();
+      }
+      else if ( i == points.count() - 1 )
+      {
+        const QPointF& prevPt = points[i-1];
+        if ( pt == prevPt )
+          continue;
+        angle = MyLine( prevPt, pt ).angle();
+      }
+      else
+      {
+        const QPointF& prevPt = points[i-1];
+        const QPointF& nextPt = points[i+1];
+        if ( prevPt == pt || nextPt == pt )
+          continue;
+
+        // calc average angle between the previous and next point
+        double a1 = MyLine( prevPt, pt ).angle();
+        double a2 = MyLine( pt, nextPt ).angle();
+        double unitX = cos( a1 ) + cos( a2 ), unitY = sin( a1 ) + sin( a2 );
+        angle = atan2( unitY, unitX );
+      }
+      mMarker->setAngle( origAngle + angle * 180 / M_PI );
+    }
+
+    mMarker->renderPoint( points.at( i ), rc, -1, context.selected() );
+  }
+
+  // restore original rotation
+  mMarker->setAngle( origAngle );
+}
+
+void QgsMarkerLineSymbolLayerV2::renderPolylineCentral( const QPolygonF& points, QgsSymbolV2RenderContext& context )
+{
+  // calc length
+  qreal length = 0;
+  QPolygonF::const_iterator it = points.constBegin();
+  QPointF last = *it;
+  for ( ++it; it != points.constEnd(); ++it )
+  {
+    length += sqrt(( last.x() - it->x() ) * ( last.x() - it->x() ) +
+                   ( last.y() - it->y() ) * ( last.y() - it->y() ) );
+    last = *it;
+  }
+
+  // find the segment where the central point lies
+  it = points.constBegin();
+  last = *it;
+  qreal last_at = 0, next_at;
+  QPointF next;
+  int segment = 0;
+  for ( ++it; it != points.constEnd(); ++it )
+  {
+    next = *it;
+    next_at += sqrt(( last.x() - it->x() ) * ( last.x() - it->x() ) +
+                    ( last.y() - it->y() ) * ( last.y() - it->y() ) );
+    if ( next_at >= length / 2 )
+      break; // we have reached the center
+    last = *it;
+    last_at = next_at;
+    segment++;
+  }
+
+  // find out the central point on segment
+  MyLine l( last, next ); // for line angle
+  qreal k = ( length * 0.5 - last_at ) / ( next_at - last_at );
+  QPointF pt = last + ( next - last ) * k;
+
+  // draw the marker
+  double origAngle = mMarker->angle();
+  if ( mRotateMarker )
+    mMarker->setAngle( origAngle + l.angle() * 180 / M_PI );
+  mMarker->renderPoint( pt, context.renderContext(), -1, context.selected() );
+  if ( mRotateMarker )
+    mMarker->setAngle( origAngle );
+}
+
+
 QgsStringMap QgsMarkerLineSymbolLayerV2::properties() const
 {
   QgsStringMap map;
   map["rotate"] = ( mRotateMarker ? "1" : "0" );
   map["interval"] = QString::number( mInterval );
   map["offset"] = QString::number( mOffset );
+  if ( mPlacement == Vertex )
+    map["placement"] = "vertex";
+  else if ( mPlacement == LastVertex )
+    map["placement"] = "lastvertex";
+  else if ( mPlacement == FirstVertex )
+    map["placement"] = "firstvertex";
+  else if ( mPlacement == CentralPoint )
+    map["placement"] = "centralpoint";
+  else
+    map["placement"] = "interval";
   return map;
 }
 
@@ -377,6 +529,7 @@ QgsSymbolLayerV2* QgsMarkerLineSymbolLayerV2::clone() const
   QgsMarkerLineSymbolLayerV2* x = new QgsMarkerLineSymbolLayerV2( mRotateMarker, mInterval );
   x->setSubSymbol( mMarker->clone() );
   x->setOffset( mOffset );
+  x->setPlacement( mPlacement );
   return x;
 }
 
@@ -392,9 +545,10 @@ double QgsMarkerLineSymbolLayerV2::width() const
 
 /////////////
 
-QgsLineDecorationSymbolLayerV2::QgsLineDecorationSymbolLayerV2( QColor color )
+QgsLineDecorationSymbolLayerV2::QgsLineDecorationSymbolLayerV2( QColor color, double width )
 {
   mColor = color;
+  mWidth = width;
 }
 
 QgsLineDecorationSymbolLayerV2::~QgsLineDecorationSymbolLayerV2()
@@ -404,11 +558,14 @@ QgsLineDecorationSymbolLayerV2::~QgsLineDecorationSymbolLayerV2()
 QgsSymbolLayerV2* QgsLineDecorationSymbolLayerV2::create( const QgsStringMap& props )
 {
   QColor color = DEFAULT_LINEDECORATION_COLOR;
+  double width = DEFAULT_LINEDECORATION_WIDTH;
 
   if ( props.contains( "color" ) )
     color = QgsSymbolLayerV2Utils::decodeColor( props["color"] );
+  if ( props.contains( "width" ) )
+    width = props["width"].toDouble();
 
-  return new QgsLineDecorationSymbolLayerV2( color );
+  return new QgsLineDecorationSymbolLayerV2( color, width );
 }
 
 QString QgsLineDecorationSymbolLayerV2::layerType() const
@@ -420,9 +577,11 @@ void QgsLineDecorationSymbolLayerV2::startRender( QgsSymbolV2RenderContext& cont
 {
   QColor penColor = mColor;
   penColor.setAlphaF( context.alpha() );
+  mPen.setWidth( context.outputLineWidth( mWidth ) );
   mPen.setColor( penColor );
   QColor selColor = context.selectionColor();
   if ( ! selectionIsOpaque ) selColor.setAlphaF( context.alpha() );
+  mSelPen.setWidth( context.outputLineWidth( mWidth ) );
   mSelPen.setColor( selColor );
 }
 
@@ -458,7 +617,7 @@ void QgsLineDecorationSymbolLayerV2::renderPolyline( const QPolygonF& points, Qg
   QPointF p2 = points.at( cnt - 1 );
   double angle = _calculateAngle( p1.x(), p1.y(), p2.x(), p2.y() );
 
-  double size = context.outputLineWidth( 2 );
+  double size = context.outputLineWidth( mWidth * 8 );
   double angle1 = angle + M_PI / 6;
   double angle2 = angle - M_PI / 6;
 
@@ -474,10 +633,11 @@ QgsStringMap QgsLineDecorationSymbolLayerV2::properties() const
 {
   QgsStringMap map;
   map["color"] = QgsSymbolLayerV2Utils::encodeColor( mColor );
+  map["width"] = QString::number( mWidth );
   return map;
 }
 
 QgsSymbolLayerV2* QgsLineDecorationSymbolLayerV2::clone() const
 {
-  return new QgsLineDecorationSymbolLayerV2( mColor );
+  return new QgsLineDecorationSymbolLayerV2( mColor, mWidth );
 }

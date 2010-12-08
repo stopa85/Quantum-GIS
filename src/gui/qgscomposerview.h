@@ -19,6 +19,7 @@
 #define QGSCOMPOSERVIEW_H
 
 #include <QGraphicsView>
+#include "qgsaddremoveitemcommand.h"
 
 class QKeyEvent;
 class QMainWindow;
@@ -98,6 +99,12 @@ class GUI_EXPORT QgsComposerView: public QGraphicsView
     /**Returns the composer main window*/
     QMainWindow* composerWindow();
 
+    void setPaintingEnabled( bool enabled ) { mPaintingEnabled = enabled; }
+    bool paintingEnabled() const { return mPaintingEnabled; }
+
+    /**Convenience function to create a QgsAddRemoveItemCommand, connect its signals and push it to the undo stack*/
+    void pushAddRemoveCommand( QgsComposerItem* item, const QString& text, QgsAddRemoveItemCommand::State state = QgsAddRemoveItemCommand::Added );
+
   protected:
     void mousePressEvent( QMouseEvent* );
     void mouseReleaseEvent( QMouseEvent* );
@@ -108,6 +115,9 @@ class GUI_EXPORT QgsComposerView: public QGraphicsView
     void keyReleaseEvent( QKeyEvent * e );
 
     void wheelEvent( QWheelEvent* event );
+
+    void paintEvent( QPaintEvent* event );
+
 
   private:
     /**Status of shift key (used for multiple selection)*/
@@ -125,13 +135,18 @@ class GUI_EXPORT QgsComposerView: public QGraphicsView
     /**Start of rubber band creation*/
     QPointF mRubberBandStartPos;
 
+    bool mPaintingEnabled;
+
+    void connectAddRemoveCommandSignals( QgsAddRemoveItemCommand* c );
+
+
   public slots:
-    /**For QgsComposerItemGroup to send its signals to QgsComposer (or other classes that keep track of input widgets)*/
-    void sendItemRemovedSignal( QgsComposerItem* item );
+    /**Casts object to the proper subclass type and calls corresponding itemAdded signal*/
+    void sendItemAddedSignal( QgsComposerItem* item );
 
   signals:
     /**Is emitted when selected item changed. If 0, no item is selected*/
-    void selectedItemChanged( const QgsComposerItem* selected );
+    void selectedItemChanged( QgsComposerItem* selected );
     /**Is emitted when new composer arrow has been added to the view*/
     void composerArrowAdded( QgsComposerArrow* arrow );
     /**Is emitted when new composer label has been added to the view*/

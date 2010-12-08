@@ -107,6 +107,11 @@ class QgisAppInterface : public QgisInterface
     /** Remove action from the plugins menu */
     void removePluginMenu( QString name, QAction* action );
 
+    /** Add action to the Database menu */
+    void addPluginToDatabaseMenu( QString name, QAction* action );
+    /** Remove action from the Database menu */
+    void removePluginDatabaseMenu( QString name, QAction* action );
+
     /** Add a dock widget to the main window */
     void addDockWidget( Qt::DockWidgetArea area, QDockWidget * dockwidget );
 
@@ -115,7 +120,17 @@ class QgisAppInterface : public QgisInterface
 
     virtual void refreshLegend( QgsMapLayer *l );
 
+    /** show layer properties dialog for layer
+     * @param l layer to show properties table for
+     * @note added in added in 1.5
+     */
     virtual void showLayerProperties( QgsMapLayer *l );
+
+    /** show layer attribute dialog for layer
+     * @param l layer to show attribute table for
+     * @note added in added in 1.7
+     */
+    virtual void showAttributeTable( QgsVectorLayer *l );
 
     /** Add window to Window menu. The action title is the window title
      * and the action should raise, unminimize and activate the window. */
@@ -143,6 +158,7 @@ class QgisAppInterface : public QgisInterface
     virtual QMenu *layerMenu();
     virtual QMenu *settingsMenu();
     virtual QMenu *pluginMenu();
+    virtual QMenu *databaseMenu();
     virtual QMenu *firstRightStandardMenu();
     virtual QMenu *windowMenu();
     virtual QMenu *helpMenu();

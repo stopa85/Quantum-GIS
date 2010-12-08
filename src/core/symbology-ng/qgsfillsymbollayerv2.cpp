@@ -1,7 +1,7 @@
 #include "qgsfillsymbollayerv2.h"
+#include "qgsmarkersymbollayerv2.h"
 #include "qgssymbollayerv2utils.h"
 
-#include "qgsapplication.h"
 #include "qgsrendercontext.h"
 #include "qgsproject.h"
 
@@ -159,7 +159,9 @@ QgsSymbolLayerV2* QgsSVGFillSymbolLayer::create( const QgsStringMap& properties 
   }
   if ( properties.contains( "svgFile" ) )
   {
-    svgFilePath = QgsApplication::relativePathToAbsolutePath( properties["svgFile"], QgsApplication::svgPath() );
+    QString svgName = properties["svgFile"];
+    QString savePath = QgsSvgMarkerSymbolLayerV2::symbolNameToPath( svgName );
+    svgFilePath = ( savePath.isEmpty() ? svgName : savePath );
   }
 
   if ( !svgFilePath.isEmpty() )
@@ -265,7 +267,7 @@ QgsStringMap QgsSVGFillSymbolLayer::properties() const
   QgsStringMap map;
   if ( !mSvgFilePath.isEmpty() )
   {
-    map.insert( "svgFile", QgsApplication::absolutePathToRelativePath( mSvgFilePath, QgsApplication::svgPath() ) );
+    map.insert( "svgFile", QgsSvgMarkerSymbolLayerV2::symbolPathToName( mSvgFilePath ) );
   }
   else
   {
@@ -329,4 +331,101 @@ bool QgsSVGFillSymbolLayer::setSubSymbol( QgsSymbolV2* symbol )
 
   delete symbol;
   return false;
+}
+
+
+//////////////
+
+
+QgsCentroidFillSymbolLayerV2::QgsCentroidFillSymbolLayerV2()
+{
+  mMarker = NULL;
+  setSubSymbol( new QgsMarkerSymbolV2() );
+}
+
+QgsCentroidFillSymbolLayerV2::~QgsCentroidFillSymbolLayerV2()
+{
+  delete mMarker;
+}
+
+QgsSymbolLayerV2* QgsCentroidFillSymbolLayerV2::create( const QgsStringMap& /*properties*/ )
+{
+  return new QgsCentroidFillSymbolLayerV2();
+}
+
+QString QgsCentroidFillSymbolLayerV2::layerType() const
+{
+  return "CentroidFill";
+}
+
+void QgsCentroidFillSymbolLayerV2::setColor( const QColor& color )
+{
+  mMarker->setColor( color );
+  mColor = color;
+}
+
+void QgsCentroidFillSymbolLayerV2::startRender( QgsSymbolV2RenderContext& context )
+{
+  mMarker->setAlpha( context.alpha() );
+  mMarker->setOutputUnit( context.outputUnit() );
+
+  mMarker->startRender( context.renderContext() );
+}
+
+void QgsCentroidFillSymbolLayerV2::stopRender( QgsSymbolV2RenderContext& context )
+{
+  mMarker->stopRender( context.renderContext() );
+}
+
+void QgsCentroidFillSymbolLayerV2::renderPolygon( const QPolygonF& points, QList<QPolygonF>* rings, QgsSymbolV2RenderContext& context )
+{
+  // calculate centroid
+  double cx = 0, cy = 0;
+  double area, sum = 0;
+  for ( int i = points.count() - 1, j = 0; j < points.count(); i = j++ )
+  {
+    const QPointF& p1 = points[i];
+    const QPointF& p2 = points[j];
+    area = p1.x() * p2.y() - p1.y() * p2.x();
+    sum += area;
+    cx += ( p1.x() + p2.x() ) * area;
+    cy += ( p1.y() + p2.y() ) * area;
+  }
+  sum *= 3.0;
+  cx /= sum;
+  cy /= sum;
+
+  mMarker->renderPoint( QPointF( cx, cy ), context.renderContext(), -1, context.selected() );
+}
+
+QgsStringMap QgsCentroidFillSymbolLayerV2::properties() const
+{
+  return QgsStringMap();
+}
+
+QgsSymbolLayerV2* QgsCentroidFillSymbolLayerV2::clone() const
+{
+  QgsCentroidFillSymbolLayerV2* x = new QgsCentroidFillSymbolLayerV2();
+  x->setSubSymbol( mMarker->clone() );
+  return x;
+}
+
+
+QgsSymbolV2* QgsCentroidFillSymbolLayerV2::subSymbol()
+{
+  return mMarker;
+}
+
+bool QgsCentroidFillSymbolLayerV2::setSubSymbol( QgsSymbolV2* symbol )
+{
+  if ( symbol == NULL || symbol->type() != QgsSymbolV2::Marker )
+  {
+    delete symbol;
+    return false;
+  }
+
+  delete mMarker;
+  mMarker = static_cast<QgsMarkerSymbolV2*>( symbol );
+  mColor = mMarker->color();
+  return true;
 }

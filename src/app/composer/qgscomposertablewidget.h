@@ -32,15 +32,13 @@ class QgsComposerTableWidget: public QWidget, private Ui::QgsComposerTableWidget
   private:
     QgsComposerAttributeTable* mComposerTable;
 
-    /**Sets the GUI elements to the values of mComposerTable*/
-    void updateGuiElements();
     /**Blocks / unblocks the signals of all GUI elements*/
     void blockAllSignals( bool b );
 
   private slots:
     void on_mLayerComboBox_currentIndexChanged( int index );
     void on_mAttributesPushButton_clicked();
-    void on_mComposerMapComboBox_currentIndexChanged( int index );
+    void on_mComposerMapComboBox_activated( int index );
     void on_mMaximumColumnsSpinBox_valueChanged( int i );
     void on_mMarginSpinBox_valueChanged( double d );
     void on_mGridStrokeWidthSpinBox_valueChanged( double d );
@@ -52,6 +50,9 @@ class QgsComposerTableWidget: public QWidget, private Ui::QgsComposerTableWidget
 
     /**Inserts a new maximum number of features into the spin box (without the spinbox emitting a signal)*/
     void setMaximumNumberOfFeatures( int n );
+
+    /**Sets the GUI elements to the values of mComposerTable*/
+    void updateGuiElements();
 };
 
 #endif // QGSCOMPOSERTABLEWIDGET_H

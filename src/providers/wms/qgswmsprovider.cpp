@@ -26,7 +26,7 @@
 #include "qgslogger.h"
 #include "qgswmsprovider.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "qgscoordinatetransform.h"
 #include "qgsrectangle.h"
@@ -554,10 +554,10 @@ QImage *QgsWmsProvider::draw( QgsRectangle  const &viewExtent, int pixelWidth, i
     double tres = mResolutions[i];
 
     // clip view extent to layer extent
-    double xmin = std::max( viewExtent.xMinimum(), layerExtent.xMinimum() );
-    double ymin = std::max( viewExtent.yMinimum(), layerExtent.yMinimum() );
-    double xmax = std::min( viewExtent.xMaximum(), layerExtent.xMaximum() );
-    double ymax = std::min( viewExtent.yMaximum(), layerExtent.yMaximum() );
+    double xmin = qMax( viewExtent.xMinimum(), layerExtent.xMinimum() );
+    double ymin = qMax( viewExtent.yMinimum(), layerExtent.yMinimum() );
+    double xmax = qMin( viewExtent.xMaximum(), layerExtent.xMaximum() );
+    double ymax = qMin( viewExtent.yMaximum(), layerExtent.yMaximum() );
 
     // snap to tile coordinates
     double x0 = floor(( xmin - layerExtent.xMinimum() ) / mTileWidth / tres ) * mTileWidth * tres + layerExtent.xMinimum() + mTileWidth * tres * 0.001;
@@ -706,9 +706,8 @@ void QgsWmsProvider::tileReplyFinished()
 {
   QNetworkReply *reply = qobject_cast<QNetworkReply*>( sender() );
 
-  bool fromCache;
-#if QT_VERSION >= 0x40500
-  fromCache = reply->attribute( QNetworkRequest::SourceIsFromCacheAttribute ).toBool();
+#if defined(QGISDEBUG) && (QT_VERSION >= 0x40500)
+  bool fromCache = reply->attribute( QNetworkRequest::SourceIsFromCacheAttribute ).toBool();
   if ( fromCache )
     mCacheHits++;
   else
@@ -1715,7 +1714,7 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
     mLayerParents[ layerProperty.orderId ] = parentProperty->orderId;
   }
 
-  if ( layerProperty.layer.empty() )
+  if ( !layerProperty.name.isEmpty() )
   {
     // We have all the information we need to properly evaluate a layer definition
     // TODO: Save this somewhere
@@ -1758,7 +1757,8 @@ void QgsWmsProvider::parseLayer( QDomElement const & e, QgsWmsLayerProperty& lay
       layerProperty.style.clear();
     }
   }
-  else
+
+  if ( !layerProperty.layer.empty() )
   {
     mLayerParentNames[ layerProperty.orderId ] = QStringList() << layerProperty.name << layerProperty.title << layerProperty.abstract;
   }
@@ -2288,7 +2288,7 @@ QString QgsWmsProvider::layerMetadata( QgsWmsLayerProperty &layer )
   myMetadataQString += "</td></tr>";
 
   // Layer Coordinate Reference Systems
-  for ( int j = 0; j < std::min( layer.crs.size(), 10 ); j++ )
+  for ( int j = 0; j < qMin( layer.crs.size(), 10 ); j++ )
   {
     myMetadataQString += "<tr><td bgcolor=\"gray\">";
     myMetadataQString += tr( "Available in CRS" );

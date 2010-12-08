@@ -67,6 +67,7 @@ class QNetworkReply;
 class QNetworkProxy;
 class QAuthenticator;
 
+class QgsSnappingDialog;
 class QgsGPSInformationWidget;
 
 #include <QMainWindow>
@@ -78,6 +79,7 @@ class QgsGPSInformationWidget;
 #include "qgsconfig.h"
 #include "qgsfeature.h"
 #include "qgspoint.h"
+#include "qgssnappingdialog.h"
 
 /*! \class QgisApp
  * \brief Main window for the Qgis application
@@ -242,6 +244,7 @@ class QgisApp : public QMainWindow
     QAction *actionDeletePart() { return mActionDeletePart; }
     QAction *actionNodeTool() { return mActionNodeTool; }
     QAction *actionEditSeparator2() { return mActionEditSeparator2; }
+    QAction *actionSnappingOptions() { return mActionSnappingOptions; }
 
     QAction *actionPan() { return mActionPan; }
     QAction *actionZoomIn() { return mActionZoomIn; }
@@ -329,6 +332,8 @@ class QgisApp : public QMainWindow
     QMenu *layerMenu() { return mLayerMenu; }
     QMenu *settingsMenu() { return mSettingsMenu; }
     QMenu *pluginMenu() { return mPluginMenu; }
+    QMenu *databaseMenu() { return mDatabaseMenu; }
+    QMenu *rasterMenu() { return mRasterMenu; }
 #ifdef Q_WS_MAC
     QMenu *firstRightStandardMenu() { return mWindowMenu; }
     QMenu *windowMenu() { return mWindowMenu; }
@@ -494,12 +499,18 @@ class QgisApp : public QMainWindow
     void showPluginManager();
     //! load python support if possible
     void loadPythonSupport();
-    //! Find the QMenu with the given name (ie the user visible text on the menu item)
+    //! Find the QMenu with the given name within plugin menu (ie the user visible text on the menu item)
     QMenu* getPluginMenu( QString menuName );
     //! Add the action to the submenu with the given name under the plugin menu
     void addPluginToMenu( QString name, QAction* action );
     //! Remove the action to the submenu with the given name under the plugin menu
     void removePluginMenu( QString name, QAction* action );
+    //! Find the QMenu with the given name within the Database menu (ie the user visible text on the menu item)
+    QMenu* getDatabaseMenu( QString menuName );
+    //! Add the action to the submenu with the given name under the Database menu
+    void addPluginToDatabaseMenu( QString name, QAction* action );
+    //! Remove the action to the submenu with the given name under the Database menu
+    void removePluginDatabaseMenu( QString name, QAction* action );
     //! Add an icon to the plugin toolbar
     int addPluginToolBarIcon( QAction * qAction );
     //! Remove an icon from the plugin toolbar
@@ -612,10 +623,14 @@ class QgisApp : public QMainWindow
     void deletePart();
     //! merges the selected features together
     void mergeSelectedFeatures();
+    //! merges the attributes of selected features
+    void mergeAttributesOfSelectedFeatures();
     //! provides operations with nodes
     void nodeTool();
     //! activates the rotate points tool
     void rotatePointSymbols();
+    //! shows the snapping Options
+    void snappingOptions();
 
     //! activates the selection tool
     void select();
@@ -742,6 +757,13 @@ class QgisApp : public QMainWindow
 
     bool loadAnnotationItemsFromProject( const QDomDocument& doc );
 
+    //! Activates the move label tool
+    void moveLabel();
+    //! Activates rotate label tool
+    void rotateLabel();
+    //! Activates label property tool
+    void changeLabelProperties();
+
   signals:
     /** emitted when a key is pressed and we want non widget sublasses to be able
       to pick up on this (e.g. maplayer) */
@@ -851,6 +873,7 @@ class QgisApp : public QMainWindow
     QToolBar *mAttributesToolBar;
     QToolBar *mPluginToolBar;
     QToolBar *mHelpToolBar;
+    QToolBar *mLabelToolBar;
 
     // actions for menus and toolbars -----------------
 
@@ -894,9 +917,11 @@ class QgisApp : public QMainWindow
     QAction *mActionDeleteRing;
     QAction *mActionDeletePart;
     QAction *mActionMergeFeatures;
+    QAction *mActionMergeFeatureAttributes;
     QAction *mActionNodeTool;
     QAction *mActionRotatePointSymbols;
     QAction *mActionEditSeparator3;
+    QAction *mActionSnappingOptions;
 
     QAction *mActionPan;
     QAction *mActionZoomIn;
@@ -985,6 +1010,10 @@ class QgisApp : public QMainWindow
     QAction *mActionHelpSeparator2;
     QAction *mActionAbout;
 
+    QAction *mActionMoveLabel;
+    QAction *mActionRotateLabel;
+    QAction *mActionChangeLabelProperties;
+
     QAction *mActionUseRendererV2;
     QAction *mActionStyleManagerV2;
 
@@ -1011,6 +1040,7 @@ class QgisApp : public QMainWindow
     QDockWidget *mOverviewDock;
     QDockWidget *mpTileScaleDock;
     QDockWidget *mpGpsDock;
+
 
 #ifdef Q_WS_MAC
     //! Window menu action to select this window
@@ -1051,6 +1081,9 @@ class QgisApp : public QMainWindow
         QgsMapTool* mAnnotation;
         QgsMapTool* mFormAnnotation;
         QgsMapTool* mTextAnnotation;
+        QgsMapTool* mMoveLabel;
+        QgsMapTool* mRotateLabel;
+        QgsMapTool* mChangeLabelProperties;
     } mMapTools;
 
     QgsMapTool *mNonEditMapTool;
@@ -1081,6 +1114,10 @@ class QgisApp : public QMainWindow
     QMenu * mPopupMenu;
     //! Top level plugin menu
     QMenu *mPluginMenu;
+    //! Top level database menu
+    QMenu *mDatabaseMenu;
+    //! Top level raster menu
+    QMenu *mRasterMenu;
     //! Popup menu for the map overview tools
     QMenu *toolPopupOverviews;
     //! Popup menu for the display tools
@@ -1161,6 +1198,8 @@ class QgisApp : public QMainWindow
     static QgisApp *smInstance;
 
     QgsUndoWidget* mUndoWidget;
+
+    QgsSnappingDialog* mSnappingDialog;
 
     //! Persistent tile scale slider
     QgsTileScaleWidget * mpTileScaleWidget;

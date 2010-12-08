@@ -12,11 +12,9 @@
 		<section label="Create new GRASS location from raster data">
 			<grass name="r.in.gdal.qgis.loc"/>
 			<grass name="r.in.gdal.qgis"/>
-			<grass name="r.external.qgis"/>
 		</section>
 		<section label="Create new GRASS location from vector data">
 			<grass name="v.in.ogr.qgis.loc"/>
-			<grass name="v.in.ogr.qgis"/>
 		</section>
 		<section label="Print projection information from a georeferenced file and create a new location based on it">
 			<grass name="g.proj.geo.new"/>
@@ -53,24 +51,20 @@
 				</section>
 			</section>
 			<section label="Import vector into GRASS">
-				<section label="Import vector into GRASS from QGIS view">
 	                                <grass name="v.in.ogr.qgis"/>
-        	                        <grass name="v.in.ogr.qgis.loc"/>
-				</section>
-				<section label="Import vector into GRASS from external data sources in GRASS">
 					<grass name="v.in.ogr"/>
 					<grass name="v.in.ogr.loc"/>
                 	                <grass name="v.in.ogr.all"/> 
                         	        <grass name="v.in.ogr.all.loc"/> 
 					<grass name="v.in.dxf"/>
 					<grass name="v.in.e00"/>
+					<grass name="v.in.ascii"/>
 					<grass name="v.in.mapgen"/>
 					<grass name="v.in.db"/>
 					<grass name="v.in.garmin"/>
 					<grass name="v.in.gpsbabel"/>
 					<grass name="v.in.geonames"/>
 					<grass name="v.in.gns"/>
-				</section>
 			</section>
 			<section label="Import from database into GRASS">
 				<grass name="db.in.ogr"/>
@@ -206,7 +200,9 @@
                                 <grass name="r.sunmask.date.time"/> 
 			</section>
 			<section label="Terrain analysis">
-				<grass name="r.cost"/>
+				<grass name="r.cost.coord"/>
+				<grass name="r.cost.rast"/>
+				<grass name="r.cost.vect"/>
 				<grass name="r.drain"/>
 				<grass name="r.shaded.relief"/>
 				<grass name="r.slope.aspect.slope"/>
@@ -215,7 +211,9 @@
 				<grass name="r.texture"/>
 				<grass name="r.texture.bis"/>
 				<grass name="r.los"/>
-			      <grass name="r.grow.distance"/>
+				<grass name="r.grow.distance"/>
+				<grass name="r.walk.coord"/>
+				<grass name="r.walk.vect"/>
 			</section>
 			<section label="Transform features">
 				<grass name="r.clump"/>
@@ -288,6 +286,7 @@
 				<grass name="r.covar"/>
 				<grass name="r.regression.line"/>
 				<grass name="r.coin"/>
+				<grass name="r.distance"/>
 			</section>
 		</section>
 	</section>

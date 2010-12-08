@@ -13,6 +13,11 @@
 # Download OSGeo4W packages
 #
 
+unless(-f "nsis/System.dll") {
+	mkdir "nsis", 0755 unless -d "nsis";
+	system "wget -q -Onsis/System.dll http://qgis.org/downloads/System.dll";
+}
+
 mkdir "packages", 0755 unless -d "packages";
 chdir "packages";
 
@@ -52,16 +57,16 @@ sub getDeps {
 	}
 }
 
-getDeps("qgis-dev");
+getDeps("qgis-full");
 
-if(-f "../addons/bin/NCSEcw.dll") {
+if(-f "../addons/bin/NCSEcw4_RO.dll") {
 	print "Enabling ECW support...\n";
-	getDeps("gdal16-ecw")
+	getDeps("gdal17-ecw")
 }
 
 if(-f "../addons/bin/lti_dsdk_dll.dll") {
 	print "Enabling MrSID support...\n";
-	getDeps("gdal16-mrsid")
+	getDeps("gdal17-mrsid")
 }
 
 
@@ -104,7 +109,7 @@ unless(-d "unpacked") {
 
 	system "cd apps/nircmd; unzip ../../../packages/nircmd.zip && mv nircmd.exe ../../bin";
 
-	system "tar -C ../addons -cf . | tar -xf -" if -d "../addons";
+	system "tar -C ../addons -cf - . | tar -xf -" if -d "../addons";
 
 	chdir "..";
 }
@@ -113,63 +118,59 @@ unless(-d "unpacked") {
 # Create postinstall.bat
 #
 
-unless(-f "../Installer-Files/postinstall.bat") {
-	open F, ">../Installer-Files/postinstall.bat";
+open F, ">../Installer-Files/postinstall.bat";
 
-	print F "\@echo off\r\n";
-	print F "del postinstall.log>>postinstall.log\r\n";
-	print F "echo OSGEO4W_ROOT=%OSGEO4W_ROOT%>>postinstall.log 2>&1\r\n";
-	print F "echo OSGEO4W_STARTMENU=%OSGEO4W_STARTMENU%>>postinstall.log 2>&1\r\n";
-	print F "set OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT:\\=/%\r\n";
-	print F "if \"%OSGEO4W_ROOT_MSYS:~1,1%\"==\":\" set OSGEO4W_ROOT_MSYS=/%OSGEO4W_ROOT_MSYS:~0,1%/%OSGEO4W_ROOT_MSYS:~3%\r\n";
-	print F "echo OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT_MSYS%>>postinstall.log 2>&1\r\n";
-	print F "PATH %OSGEO4W_ROOT%\\bin;%PATH%>>postinstall.log 2>&1\r\n";
-	print F "cd %OSGEO4W_ROOT%>>postinstall.log 2>&1\r\n";
+print F "\@echo off\r\n";
+print F "del postinstall.log>>postinstall.log\r\n";
+print F "echo OSGEO4W_ROOT=%OSGEO4W_ROOT%>>postinstall.log 2>&1\r\n";
+print F "echo OSGEO4W_STARTMENU=%OSGEO4W_STARTMENU%>>postinstall.log 2>&1\r\n";
+print F "set OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT:\\=/%\r\n";
+print F "if \"%OSGEO4W_ROOT_MSYS:~1,1%\"==\":\" set OSGEO4W_ROOT_MSYS=/%OSGEO4W_ROOT_MSYS:~0,1%/%OSGEO4W_ROOT_MSYS:~3%\r\n";
+print F "echo OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT_MSYS%>>postinstall.log 2>&1\r\n";
+print F "PATH %OSGEO4W_ROOT%\\bin;%PATH%>>postinstall.log 2>&1\r\n";
+print F "cd %OSGEO4W_ROOT%>>postinstall.log 2>&1\r\n";
 
-	chdir "unpacked";
-	for my $p (<etc/postinstall/*.bat>) {
-		$p =~ s/\//\\/g;
-		my($dir,$file) = $p =~ /^(.+)\\([^\\]+)$/;
+chdir "unpacked";
+for my $p (<etc/postinstall/*.bat>) {
+	$p =~ s/\//\\/g;
+	my($dir,$file) = $p =~ /^(.+)\\([^\\]+)$/;
 
-		print F "echo Running postinstall $file...\r\n";
-		print F "%COMSPEC% /c $p>>postinstall.log 2>&1\r\n";
-		print F "ren $p $file.done>>postinstall.log 2>&1\r\n";
-	}
-	chdir "..";
-
-	print F "ren postinstall.bat postinstall.bat.done\r\n";
-
-	close F;
+	print F "echo Running postinstall $file...\r\n";
+	print F "%COMSPEC% /c $p>>postinstall.log 2>&1\r\n";
+	print F "ren $p $file.done>>postinstall.log 2>&1\r\n";
 }
+chdir "..";
 
-unless(-f "../Installer-Files/preremove.bat") {
-	open F, ">../Installer-Files/preremove.bat";
+print F "ren postinstall.bat postinstall.bat.done\r\n";
 
-	print F "\@echo off\r\n";
-	print F "del preremove.log>>preremove.log\r\n";
-	print F "echo OSGEO4W_ROOT=%OSGEO4W_ROOT%>>preremove.log 2>&1\r\n";
-	print F "echo OSGEO4W_STARTMENU=%OSGEO4W_STARTMENU%>>preremove.log 2>&1\r\n";
-	print F "set OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT:\\=/%\r\n";
-	print F "if \"%OSGEO4W_ROOT_MSYS:~1,1%\"==\":\" set OSGEO4W_ROOT_MSYS=/%OSGEO4W_ROOT_MSYS:~0,1%/%OSGEO4W_ROOT_MSYS:~3%\r\n";
-	print F "echo OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT_MSYS%>>preremove.log 2>&1\r\n";
-	print F "PATH %OSGEO4W_ROOT%\\bin;%PATH%>>preremove.log 2>&1\r\n";
-	print F "cd %OSGEO4W_ROOT%>>preremove.log 2>&1\r\n";
+close F;
 
-	chdir "unpacked";
-	for my $p (<etc/preremove/*.bat>) {
-		$p =~ s/\//\\/g;
-		my($dir,$file) = $p =~ /^(.+)\\([^\\]+)$/;
+open F, ">../Installer-Files/preremove.bat";
 
-		print F "echo Running preremove $file...\r\n";
-		print F "%COMSPEC% /c $p>>preremove.log 2>&1\r\n";
-		print F "ren $p $file.done>>preremove.log 2>&1\r\n";
-	}
-	chdir "..";
+print F "\@echo off\r\n";
+print F "del preremove.log>>preremove.log\r\n";
+print F "echo OSGEO4W_ROOT=%OSGEO4W_ROOT%>>preremove.log 2>&1\r\n";
+print F "echo OSGEO4W_STARTMENU=%OSGEO4W_STARTMENU%>>preremove.log 2>&1\r\n";
+print F "set OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT:\\=/%\r\n";
+print F "if \"%OSGEO4W_ROOT_MSYS:~1,1%\"==\":\" set OSGEO4W_ROOT_MSYS=/%OSGEO4W_ROOT_MSYS:~0,1%/%OSGEO4W_ROOT_MSYS:~3%\r\n";
+print F "echo OSGEO4W_ROOT_MSYS=%OSGEO4W_ROOT_MSYS%>>preremove.log 2>&1\r\n";
+print F "PATH %OSGEO4W_ROOT%\\bin;%PATH%>>preremove.log 2>&1\r\n";
+print F "cd %OSGEO4W_ROOT%>>preremove.log 2>&1\r\n";
 
-	print F "ren preremove.bat preremove.bat.done\r\n";
+chdir "unpacked";
+for my $p (<etc/preremove/*.bat>) {
+	$p =~ s/\//\\/g;
+	my($dir,$file) = $p =~ /^(.+)\\([^\\]+)$/;
 
-	close F;
+	print F "echo Running preremove $file...\r\n";
+	print F "%COMSPEC% /c $p>>preremove.log 2>&1\r\n";
+	print F "ren $p $file.done>>preremove.log 2>&1\r\n";
 }
+chdir "..";
+
+print F "ren preremove.bat preremove.bat.done\r\n";
+
+close F;
 
 my($major, $minor, $patch, $release, $revision);
 
@@ -193,6 +194,10 @@ $revision = <F>;
 $revision =~ s/\D+$//g;
 close F;
 
+$revision = 14615 unless $revision =~ /^\d+$/;
+
+system "unzip packages/Untgz.zip" unless -d "untgz";
+
 chdir "..";
 
 my $cmd = "makensis";
@@ -201,7 +206,7 @@ $cmd .= " -DVERSION_NAME='$release'";
 $cmd .= " -DSVN_REVISION='$revision'";
 $cmd .= " -DQGIS_BASE='Quantum GIS $release'";
 $cmd .= " -DINSTALLER_NAME='QGIS-OSGeo4W-$major.$minor.$patch-$revision-Setup.exe'";
-$cmd .= " -DDISPLAYED_NAME='Quantum GIS OSGeo4W ($release)'";
+$cmd .= " -DDISPLAYED_NAME='Quantum GIS \'$release\' ($major.$minor.$patch)'";
 $cmd .= " -DBINARY_REVISION=1";
 $cmd .= " -DINSTALLER_TYPE=OSGeo4W";
 $cmd .= " -DPACKAGE_FOLDER=osgeo4w/unpacked";

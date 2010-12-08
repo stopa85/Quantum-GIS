@@ -43,6 +43,7 @@ class QgsComposerMapWidget: public QWidget, private Ui::QgsComposerMapWidgetBase
     void on_mSetToMapCanvasExtentButton_clicked();
     void on_mUpdatePreviewButton_clicked();
     void on_mKeepLayerListCheckBox_stateChanged( int state );
+    void on_mDrawCanvasItemsCheckBox_stateChanged( int state );
 
     void on_mXMinLineEdit_editingFinished();
     void on_mXMaxLineEdit_editingFinished();
@@ -65,8 +66,10 @@ class QgsComposerMapWidget: public QWidget, private Ui::QgsComposerMapWidgetBase
     void on_mAnnotationDirectionComboBox_currentIndexChanged( const QString& text );
     void on_mCoordinatePrecisionSpinBox_valueChanged( int value );
 
-    /**Updates width and height without notify the composer map (to avoid infinite recursion)*/
-    void updateSettingsNoSignals();
+  private slots:
+
+    /**Sets the GUI elements to the values of mPicture*/
+    void setGuiElementValues();
 
   private:
     QgsComposerMap* mComposerMap;

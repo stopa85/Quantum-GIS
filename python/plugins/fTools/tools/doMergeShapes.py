@@ -18,12 +18,14 @@ class Dialog( QDialog, Ui_Dialog ):
 
     self.mergeThread = None
     self.inputFiles = None
+    self.outFileName = None
 
     self.btnOk = self.buttonBox.button( QDialogButtonBox.Ok )
     self.btnClose = self.buttonBox.button( QDialogButtonBox.Close )
 
     QObject.connect( self.btnSelectDir, SIGNAL( "clicked()" ), self.inputDir )
     QObject.connect( self.btnSelectFile, SIGNAL( "clicked()" ), self.outFile )
+    QObject.connect( self.chkListMode, SIGNAL( "stateChanged( int )" ), self.changeMode )
 
   def inputDir( self ):
     inDir = QFileDialog.getExistingDirectory( self,
@@ -33,18 +35,18 @@ class Dialog( QDialog, Ui_Dialog ):
     if inDir.isEmpty():
       return
 
-    #workDir = QDir( inDir )
-    #workDir.setFilter( QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot )
-    #nameFilter = QStringList() << "*.shp" << "*.SHP"
-    #workDir.setNameFilters( nameFilter )
-    #self.inputFiles = workDir.entryList()
-    #if self.inputFiles.count() == 0:
-    #  QMessageBox.warning( self, self.tr( "No shapefiles found" ),
-    #    self.tr( "There are no shapefiles in this directory. Please select another one." ) )
-    #  self.inputFiles = None
-    #  return
+    workDir = QDir( inDir )
+    workDir.setFilter( QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot )
+    nameFilter = QStringList() << "*.shp" << "*.SHP"
+    workDir.setNameFilters( nameFilter )
+    self.inputFiles = workDir.entryList()
+    if self.inputFiles.count() == 0:
+      QMessageBox.warning( self, self.tr( "No shapefiles found" ),
+        self.tr( "There are no shapefiles in this directory. Please select another one." ) )
+      self.inputFiles = None
+      return
 
-    #self.progressFiles.setRange( 0, self.inputFiles.count() )
+    self.progressFiles.setRange( 0, self.inputFiles.count() )
     self.leInputDir.setText( inDir )
 
   def outFile( self ):
@@ -52,6 +54,30 @@ class Dialog( QDialog, Ui_Dialog ):
     if self.outFileName is None or self.encoding is None:
       return
     self.leOutShape.setText( self.outFileName )
+
+  def inputFile( self ):
+    files = QFileDialog.getOpenFileNames( self, self.tr( "Select files to merge" ), ".", "Shapefiles(*.shp *.SHP)"  )
+    if files.isEmpty():
+      self.inputFiles = None
+      return
+
+    self.inputFiles = QStringList()
+    for f in files:
+      fileName = QFileInfo( f ).fileName()
+      self.inputFiles.append( fileName )
+
+    self.progressFiles.setRange( 0, self.inputFiles.count() )
+    self.leInputDir.setText( files.join( ";" ) )
+
+  def changeMode( self ):
+    if self.chkListMode.isChecked():
+      self.label.setText( self.tr( "Input files" ) )
+      QObject.disconnect( self.btnSelectDir, SIGNAL( "clicked()" ), self.inputDir )
+      QObject.connect( self.btnSelectDir, SIGNAL( "clicked()" ), self.inputFile )
+    else:
+      self.label.setText( self.tr( "Input directory" ) )
+      QObject.disconnect( self.btnSelectDir, SIGNAL( "clicked()" ), self.inputFile )
+      QObject.connect( self.btnSelectDir, SIGNAL( "clicked()" ), self.inputDir )
 
   def reject( self ):
     QDialog.reject( self )
@@ -71,13 +97,22 @@ class Dialog( QDialog, Ui_Dialog ):
 
       self.progressFiles.setRange( 0, self.inputFiles.count() )
 
+    if self.outFileName is None:
+      QMessageBox.warning( self, self.tr( "No output file" ),
+        self.tr( "Please specify output file." ) )
+      return
+
     outFile = QFile( self.outFileName )
     if outFile.exists():
       if not QgsVectorFileWriter.deleteShapeFile( self.outFileName ):
         QMessageBox.warning( self, self.tr( "Delete error" ), self.tr( "Can't delete file %1" ).arg( outFileName ) )
         return
 
-    baseDir = self.leInputDir.text()
+    if self.chkListMode.isChecked():
+      files = self.leInputDir.text().split( ";" )
+      baseDir = QFileInfo( files[ 0 ] ).absolutePath()
+    else:
+      baseDir = self.leInputDir.text()
 
     QApplication.setOverrideCursor( QCursor( Qt.WaitCursor ) )
     self.btnOk.setEnabled( False )
@@ -97,6 +132,7 @@ class Dialog( QDialog, Ui_Dialog ):
 
   def setProgressRange( self, max ):
     self.progressFeatures.setRange( 0, max )
+    self.progressFeatures.setValue( 0 )
 
   def featureProcessed( self ):
     self.progressFeatures.setValue( self.progressFeatures.value() + 1 )

@@ -42,6 +42,7 @@ class QMoveEvent;
 class QResizeEvent;
 class QFile;
 class QSizeGrip;
+class QUndoView;
 
 /** \ingroup MapComposer
  * \brief A gui for composing a printable map.
@@ -202,6 +203,12 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     //!Align selected composer items to bottom
     void on_mActionAlignBottom_triggered();
 
+    //!Undo last composer change
+    void on_mActionUndo_triggered();
+
+    //!Redo last composer change
+    void on_mActionRedo_triggered();
+
     //! Save window state
     void saveWindowState();
 
@@ -229,11 +236,11 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     /**Adds a composer table to the item/widget map and creates a configuration widget*/
     void addComposerTable( QgsComposerAttributeTable* table );
 
-    /**Removes item from the item/widget map and deletes the configuration widget*/
+    /**Removes item from the item/widget map and deletes the configuration widget. Does not delete the item itself*/
     void deleteItem( QgsComposerItem* item );
 
     /**Shows the configuration widget for a composer item*/
-    void showItemOptions( const QgsComposerItem* i );
+    void showItemOptions( QgsComposerItem* i );
 
     //XML, usually connected with QgsProject::readProject and QgsProject::writeProject
 
@@ -306,6 +313,8 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
 
     //! Page & Printer Setup
     QPrinter mPrinter;
+
+    QUndoView* mUndoView;
 };
 
 #endif

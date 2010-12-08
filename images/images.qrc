@@ -44,6 +44,7 @@
     <file>themes/newgis/mActionMeasure.png</file>
     <file>themes/newgis/mActionMeasureArea.png</file>
     <file>themes/newgis/mActionMergeFeatures.png</file>
+    <file>themes/newgis/mActionMergeFeatureAttributes.png</file>
     <file>themes/newgis/mActionMoveFeature.png</file>
     <file>themes/newgis/mActionMoveItemContent.png</file>
     <file>themes/newgis/mActionMoveVertex.png</file>
@@ -122,6 +123,7 @@
     <file>themes/default/mActionCaptureLine.png</file>
     <file>themes/default/mActionCapturePoint.png</file>
     <file>themes/default/mActionCapturePolygon.png</file>
+    <file>themes/default/mActionChangeLabelProperties.png</file>
     <file>themes/default/mActionCheckQgisVersion.png</file>
     <file>themes/default/mActionCollapseTree.png</file>
     <file>themes/default/mActionComposerManager.png</file>
@@ -165,7 +167,9 @@
     <file>themes/default/mActionMeasureAngle.png</file>
     <file>themes/default/mActionMeasureArea.png</file>
     <file>themes/default/mActionMergeFeatures.png</file>
+    <file>themes/default/mActionMergeFeatureAttributes.png</file>
     <file>themes/default/mActionMoveFeature.png</file>
+    <file>themes/default/mActionMoveLabel.png</file>
     <file>themes/default/mActionMoveItemContent.png</file>
     <file>themes/default/mActionMoveItemsToBottom.png</file>
     <file>themes/default/mActionMoveItemsToTop.png</file>
@@ -189,6 +193,7 @@
     <file>themes/default/mActionRemoveLayer.png</file>
     <file>themes/default/mActionRemoveSelectedFeature.png</file>
     <file>themes/default/mActionReshape.png</file>
+    <file>themes/default/mActionRotateLabel.png</file>
     <file>themes/default/mActionRotatePointSymbols.png</file>
     <file>themes/default/mActionSaveAsPDF.png</file>
     <file>themes/default/mActionSaveAsSVG.png</file>
@@ -332,6 +337,7 @@
     <file>themes/gis/mActionMeasureAngle.png</file>
     <file>themes/gis/mActionMeasureArea.png</file>
     <file>themes/gis/mActionMergeFeatures.png</file>
+    <file>themes/gis/mActionMergeFeatureAttributes.png</file>
     <file>themes/gis/mActionMoveFeature.png</file>
     <file>themes/gis/mActionMoveItemContent.png</file>
     <file>themes/gis/mActionMoveItemsToBottom.png</file>
@@ -374,7 +380,7 @@
     <file>themes/gis/plugins/copyright_label.png</file>
     <file>themes/gis/plugins/delimited_text.png</file>
     <file>themes/gis/plugins/dxf2shp_converter.png</file>
-    <file>themes/gis/plugins/georeferencer.png</file>
+    <file>themes/gis/plugins/mGeorefRun.png</file>
     <file>themes/gis/plugins/gps_importer.png</file>
     <file>themes/gis/plugins/interpolation.png</file>
     <file>themes/gis/plugins/mapserver_export.png</file>

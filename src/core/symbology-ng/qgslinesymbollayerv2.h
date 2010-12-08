@@ -85,6 +85,15 @@ class CORE_EXPORT QgsMarkerLineSymbolLayerV2 : public QgsLineSymbolLayerV2
 
     ~QgsMarkerLineSymbolLayerV2();
 
+    enum Placement
+    {
+      Interval,
+      Vertex,
+      LastVertex,
+      FirstVertex,
+      CentralPoint
+    };
+
     // static stuff
 
     static QgsSymbolLayerV2* create( const QgsStringMap& properties = QgsStringMap() );
@@ -103,7 +112,7 @@ class CORE_EXPORT QgsMarkerLineSymbolLayerV2 : public QgsLineSymbolLayerV2
 
     QgsSymbolLayerV2* clone() const;
 
-    void setColor( QColor color );
+    void setColor( const QColor& color );
 
     QgsSymbolV2* subSymbol();
     bool setSubSymbol( QgsSymbolV2* symbol );
@@ -122,24 +131,32 @@ class CORE_EXPORT QgsMarkerLineSymbolLayerV2 : public QgsLineSymbolLayerV2
     double offset() const { return mOffset; }
     void setOffset( double offset ) { mOffset = offset; }
 
+    Placement placement() const { return mPlacement; }
+    void setPlacement( Placement p ) { mPlacement = p; }
+
   protected:
 
-    void renderPolylineNoOffset( const QPolygonF& points, QgsSymbolV2RenderContext& context );
+    void renderPolylineInterval( const QPolygonF& points, QgsSymbolV2RenderContext& context );
+    void renderPolylineVertex( const QPolygonF& points, QgsSymbolV2RenderContext& context );
+    void renderPolylineCentral( const QPolygonF& points, QgsSymbolV2RenderContext& context );
 
     bool mRotateMarker;
     double mInterval;
     QgsMarkerSymbolV2* mMarker;
     double mOffset;
+    Placement mPlacement;
 };
 
 /////////
 
 #define DEFAULT_LINEDECORATION_COLOR  QColor(0,0,0)
+#define DEFAULT_LINEDECORATION_WIDTH  DEFAULT_LINE_WIDTH
 
 class CORE_EXPORT QgsLineDecorationSymbolLayerV2 : public QgsLineSymbolLayerV2
 {
   public:
-    QgsLineDecorationSymbolLayerV2( QColor color = DEFAULT_LINEDECORATION_COLOR );
+    QgsLineDecorationSymbolLayerV2( QColor color = DEFAULT_LINEDECORATION_COLOR,
+                                    double width = DEFAULT_LINEDECORATION_WIDTH );
 
     ~QgsLineDecorationSymbolLayerV2();
 

@@ -94,6 +94,7 @@ static void _initWidgetFunctions()
 
   _initWidgetFunction( "SimpleFill", QgsSimpleFillSymbolLayerV2Widget::create );
   _initWidgetFunction( "SVGFill", QgsSVGFillSymbolLayerWidget::create );
+  _initWidgetFunction( "CentroidFill", QgsCentroidFillSymbolLayerV2Widget::create );
 
   initialized = true;
 }
@@ -163,6 +164,17 @@ void QgsSymbolV2PropertiesDialog::populateLayerTypes()
   cboLayerType->clear();
   for ( int i = 0; i < types.count(); i++ )
     cboLayerType->addItem( QgsSymbolLayerV2Registry::instance()->symbolLayerMetadata( types[i] )->visibleName(), types[i] );
+
+  if ( mSymbol->type() == QgsSymbolV2::Fill )
+  {
+    QStringList typesLine = QgsSymbolLayerV2Registry::instance()->symbolLayersForType( QgsSymbolV2::Line );
+    for ( int i = 0; i < typesLine.count(); i++ )
+    {
+      QString visibleName = QgsSymbolLayerV2Registry::instance()->symbolLayerMetadata( typesLine[i] )->visibleName();
+      QString name = QString( tr( "Outline: %1" ) ).arg( visibleName );
+      cboLayerType->addItem( name, typesLine[i] );
+    }
+  }
 }
 
 
@@ -221,6 +233,10 @@ void QgsSymbolV2PropertiesDialog::loadPropertyWidgets()
   QgsSymbolLayerV2Registry* pReg = QgsSymbolLayerV2Registry::instance();
 
   QStringList layerTypes = pReg->symbolLayersForType( mSymbol->type() );
+
+  // also load line symbol layers for fill symbols
+  if ( mSymbol->type() == QgsSymbolV2::Fill )
+    layerTypes += pReg->symbolLayersForType( QgsSymbolV2::Line );
 
   for ( int i = 0; i < layerTypes.count(); i++ )
   {
@@ -355,11 +371,16 @@ void QgsSymbolV2PropertiesDialog::removeLayer()
 {
   int idx = currentLayerIndex();
   if ( idx < 0 ) return;
+  int row = currentRowIndex();
   mSymbol->deleteSymbolLayer( idx );
 
   loadSymbol();
 
   updateUi();
+
+  // set previous layer as active
+  QModelIndex newIndex = listLayers->model()->index( qMin( row, mSymbol->symbolLayerCount() - 1 ), 0 );
+  listLayers->setCurrentIndex( newIndex );
 }
 
 

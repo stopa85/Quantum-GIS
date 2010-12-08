@@ -66,10 +66,12 @@ QgsComposerTableWidget::QgsComposerTableWidget( QgsComposerAttributeTable* table
   mLayerComboBox->blockSignals( false );
 
   updateGuiElements();
+  on_mComposerMapComboBox_activated( mComposerMapComboBox->currentIndex() );
 
   if ( mComposerTable )
   {
     QObject::connect( mComposerTable, SIGNAL( maximumNumerOfFeaturesChanged( int ) ), this, SLOT( setMaximumNumberOfFeatures( int ) ) );
+    QObject::connect( mComposerTable, SIGNAL( itemChanged ), this, SLOT( updateGuiElements() ) );
   }
 }
 
@@ -99,8 +101,10 @@ void QgsComposerTableWidget::on_mLayerComboBox_currentIndexChanged( int index )
     QgsVectorLayer* vl = dynamic_cast<QgsVectorLayer*>( ml );
     if ( vl )
     {
+      mComposerTable->beginCommand( tr( "Table layer changed" ) );
       mComposerTable->setVectorLayer( vl );
       mComposerTable->update();
+      mComposerTable->endCommand();
     }
   }
 }
@@ -116,14 +120,16 @@ void QgsComposerTableWidget::on_mAttributesPushButton_clicked()
   if ( d.exec() == QDialog::Accepted )
   {
     //change displayAttributes and aliases
+    mComposerTable->beginCommand( tr( "Table attribute settings" ) );
     mComposerTable->setDisplayAttributes( d.enabledAttributes() );
     mComposerTable->setFieldAliasMap( d.aliasMap() );
     mComposerTable->setSortAttributes( d.attributeSorting() );
     mComposerTable->update();
+    mComposerTable->endCommand();
   }
 }
 
-void QgsComposerTableWidget::on_mComposerMapComboBox_currentIndexChanged( int index )
+void QgsComposerTableWidget::on_mComposerMapComboBox_activated( int index )
 {
   if ( !mComposerTable )
   {
@@ -140,8 +146,16 @@ void QgsComposerTableWidget::on_mComposerMapComboBox_currentIndexChanged( int in
   const QgsComposition* tableComposition = mComposerTable->composition();
   if ( tableComposition )
   {
+    if ( sender() ) //only create command if called from GUI
+    {
+      mComposerTable->beginCommand( tr( "Table map changed" ) );
+    }
     mComposerTable->setComposerMap( tableComposition->getComposerMapById( mapId ) );
     mComposerTable->update();
+    if ( sender() )
+    {
+      mComposerTable->endCommand();
+    }
   }
 }
 
@@ -152,8 +166,10 @@ void QgsComposerTableWidget::on_mMaximumColumnsSpinBox_valueChanged( int i )
     return;
   }
 
+  mComposerTable->beginCommand( tr( "Table maximum columns" ), QgsComposerMergeCommand::TableMaximumFeatures );
   mComposerTable->setMaximumNumberOfFeatures( i );
   mComposerTable->update();
+  mComposerTable->endCommand();
 }
 
 void QgsComposerTableWidget::on_mMarginSpinBox_valueChanged( double d )
@@ -162,8 +178,11 @@ void QgsComposerTableWidget::on_mMarginSpinBox_valueChanged( double d )
   {
     return;
   }
+
+  mComposerTable->beginCommand( tr( "Table maximum columns" ), QgsComposerMergeCommand::TableMargin );
   mComposerTable->setLineTextDistance( d );
   mComposerTable->update();
+  mComposerTable->endCommand();
 }
 
 void QgsComposerTableWidget::on_mHeaderFontPushButton_clicked()
@@ -177,7 +196,9 @@ void QgsComposerTableWidget::on_mHeaderFontPushButton_clicked()
   QFont newFont = QFontDialog::getFont( &ok, mComposerTable->headerFont(), 0, tr( "Select Font" ) );
   if ( ok )
   {
+    mComposerTable->beginCommand( tr( "Table header font" ) );
     mComposerTable->setHeaderFont( newFont );
+    mComposerTable->endCommand();
   }
 }
 
@@ -192,7 +213,9 @@ void QgsComposerTableWidget::on_mContentFontPushButton_clicked()
   QFont newFont = QFontDialog::getFont( &ok, mComposerTable->contentFont(), 0, tr( "Select Font" ) );
   if ( ok )
   {
+    mComposerTable->beginCommand( tr( "Table content font" ) );
     mComposerTable->setContentFont( newFont );
+    mComposerTable->endCommand();
   }
 }
 
@@ -202,8 +225,10 @@ void QgsComposerTableWidget::on_mGridStrokeWidthSpinBox_valueChanged( double d )
   {
     return;
   }
+  mComposerTable->beginCommand( tr( "Table grid stroke" ), QgsComposerMergeCommand::TableGridStrokeWidth );
   mComposerTable->setGridStrokeWidth( d );
   mComposerTable->update();
+  mComposerTable->endCommand();
 }
 
 void QgsComposerTableWidget::on_mGridColorButton_clicked()
@@ -222,9 +247,11 @@ void QgsComposerTableWidget::on_mGridColorButton_clicked()
   {
     return;
   }
+  mComposerTable->beginCommand( tr( "Table grid color" ) );
   mGridColorButton->setColor( newColor );
   mComposerTable->setGridColor( newColor );
   mComposerTable->update();
+  mComposerTable->endCommand();
 }
 
 void QgsComposerTableWidget::on_mShowGridCheckBox_stateChanged( int state )
@@ -239,8 +266,10 @@ void QgsComposerTableWidget::on_mShowGridCheckBox_stateChanged( int state )
   {
     showGrid = true;
   }
+  mComposerTable->beginCommand( tr( "Table grid toggled" ) );
   mComposerTable->setShowGrid( showGrid );
   mComposerTable->update();
+  mComposerTable->endCommand();
 }
 
 
@@ -324,9 +353,11 @@ void QgsComposerTableWidget::on_mShowOnlyVisibleFeaturesCheckBox_stateChanged( i
     return;
   }
 
+  mComposerTable->beginCommand( tr( "Table visible only toggled" ) );
   bool showOnlyVisibleFeatures = ( state == Qt::Checked );
   mComposerTable->setDisplayOnlyVisibleFeatures( showOnlyVisibleFeatures );
   mComposerTable->update();
+  mComposerTable->endCommand();
 }
 
 

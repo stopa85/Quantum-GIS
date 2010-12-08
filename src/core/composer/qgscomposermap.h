@@ -46,6 +46,9 @@ class CORE_EXPORT QgsComposerMap : public QgsComposerItem
     QgsComposerMap( QgsComposition *composition );
     ~QgsComposerMap();
 
+    /** return correct graphics item type. Added in v1.7 */
+    virtual int type() const { return ComposerMap; }
+
     /** \brief Preview style  */
     enum PreviewMode
     {
@@ -254,16 +257,18 @@ class CORE_EXPORT QgsComposerMap : public QgsComposerItem
     /**Sets canvas pointer (necessary to query and draw map canvas items)*/
     void setMapCanvas( QGraphicsView* canvas ) { mMapCanvas = canvas; }
 
+    void setDrawCanvasItems( bool b ) { mDrawCanvasItems = b; }
+    bool drawCanvasItems() const { return mDrawCanvasItems; }
+
+  signals:
+    void extentChanged();
+
   public slots:
 
     /**Called if map canvas has changed*/
     void updateCachedImage( );
     /**Call updateCachedImage if item is in render mode*/
     void renderModeUpdateCachedImage();
-
-  signals:
-    /**Is emitted when width/height is changed as a result of user interaction*/
-    void extentChanged();
 
   private:
 
@@ -351,6 +356,8 @@ class CORE_EXPORT QgsComposerMap : public QgsComposerItem
     /**The length of the cross sides for mGridStyle Cross*/
     double mCrossLength;
     QGraphicsView* mMapCanvas;
+    /**True if annotation items, rubber band, etc. from the main canvas should be displayed*/
+    bool mDrawCanvasItems;
 
     /**Draws the map grid*/
     void drawGrid( QPainter* p );

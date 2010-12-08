@@ -27,18 +27,14 @@
 #include "qgsvectorlayer.h"
 #include <QProgressDialog>
 
-#ifndef Q_OS_MACX
-#include <cmath>
-#else
-#include <math.h>
-#endif
-#ifdef WIN32
-#include <float.h>
-#define isnan(f) _isnan(f)
-#endif
-
-QgsTINInterpolator::QgsTINInterpolator( const QList<LayerData>& inputData, TIN_INTERPOLATION interpolation, bool showProgressDialog ): QgsInterpolator( inputData ), mTriangulation( 0 ), \
-    mTriangleInterpolator( 0 ), mIsInitialized( false ), mShowProgressDialog( showProgressDialog ), mExportTriangulationToFile( false ), mInterpolation( interpolation )
+QgsTINInterpolator::QgsTINInterpolator( const QList<LayerData>& inputData, TIN_INTERPOLATION interpolation, bool showProgressDialog )
+    : QgsInterpolator( inputData )
+    , mTriangulation( 0 )
+    , mTriangleInterpolator( 0 )
+    , mIsInitialized( false )
+    , mShowProgressDialog( showProgressDialog )
+    , mExportTriangulationToFile( false )
+    , mInterpolation( interpolation )
 {
 }
 
@@ -195,7 +191,7 @@ int QgsTINInterpolator::insertData( QgsFeature* f, bool zCoord, int attr, InputT
       return 3;
     }
     attributeValue = att_it.value().toDouble( &attributeConversionOk );
-    if ( !attributeConversionOk || isnan( attributeValue ) ) //don't consider vertices with attributes like 'nan' for the interpolation
+    if ( !attributeConversionOk || qIsNaN( attributeValue ) ) //don't consider vertices with attributes like 'nan' for the interpolation
     {
       return 4;
     }

@@ -413,16 +413,7 @@ bool QgsVectorFileWriter::addFeature( QgsFeature& feature )
 
   // build geometry from WKB
   QgsGeometry *geom = feature.geometry();
-  if ( !geom )
-  {
-    QgsDebugMsg( "invalid geometry" );
-    mErrorMessage = QObject::tr( "Invalid feature geometry" );
-    mError = ErrFeatureWriteFailed;
-    OGR_F_Destroy( poFeature );
-    return false;
-  }
-
-  if ( geom->wkbType() != mWkbType )
+  if ( geom && geom->wkbType() != mWkbType )
   {
     // there's a problem when layer type is set as wkbtype Polygon
     // although there are also features of type MultiPolygon
@@ -459,7 +450,7 @@ bool QgsVectorFileWriter::addFeature( QgsFeature& feature )
     // pass ownership to geometry
     OGR_F_SetGeometryDirectly( poFeature, mGeom2 );
   }
-  else
+  else if ( geom )
   {
     OGRErr err = OGR_G_ImportFromWkb( mGeom, geom->asWkb(), geom->wkbSize() );
     if ( err != OGRERR_NONE )
@@ -530,7 +521,8 @@ QgsVectorFileWriter::writeAsVectorFormat( QgsVectorLayer* layer,
     bool onlySelected,
     QString *errorMessage,
     const QStringList &datasourceOptions,
-    const QStringList &layerOptions )
+    const QStringList &layerOptions,
+    bool skipAttributeCreation )
 {
   const QgsCoordinateReferenceSystem* outputCRS;
   QgsCoordinateTransform* ct = 0;
@@ -548,7 +540,7 @@ QgsVectorFileWriter::writeAsVectorFormat( QgsVectorLayer* layer,
     outputCRS = &layer->srs();
   }
   QgsVectorFileWriter* writer =
-    new QgsVectorFileWriter( fileName, fileEncoding, layer->pendingFields(), layer->wkbType(), outputCRS, driverName, datasourceOptions, layerOptions );
+    new QgsVectorFileWriter( fileName, fileEncoding, skipAttributeCreation ? QgsFieldMap() : layer->pendingFields(), layer->wkbType(), outputCRS, driverName, datasourceOptions, layerOptions );
 
   // check whether file creation was successful
   WriterError err = writer->hasError();
@@ -565,7 +557,7 @@ QgsVectorFileWriter::writeAsVectorFormat( QgsVectorLayer* layer,
     errorMessage->clear();
   }
 
-  QgsAttributeList allAttr = layer->pendingAllAttributesList();
+  QgsAttributeList allAttr = skipAttributeCreation ? QgsAttributeList() : layer->pendingAllAttributesList();
   QgsFeature fet;
 
   layer->select( allAttr, QgsRectangle(), true );
@@ -614,6 +606,10 @@ QgsVectorFileWriter::writeAsVectorFormat( QgsVectorLayer* layer,
 
         return ErrProjection;
       }
+    }
+    if ( skipAttributeCreation )
+    {
+      fet.clearAttributeMap();
     }
     if ( !writer->addFeature( fet ) )
     {

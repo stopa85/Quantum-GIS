@@ -20,12 +20,11 @@
 #ifndef QGSCLIPPER_H
 #define QGSCLIPPER_H
 
+#include "qgis.h"
 #include "qgspoint.h"
 
 #include <vector>
 #include <utility>
-#include <cmath>
-#include <iostream>
 
 /** \ingroup core
  * A class to trim lines and polygons to within a rectangular region.
@@ -154,7 +153,18 @@ inline void QgsClipper::trimFeatureToBoundary(
 
   // and compare to the first point initially.
   for ( unsigned int i2 = 0; i2 < inX.size() ; ++i2 )
-  { // look at each edge of the polygon in turn
+  {
+    // look at each edge of the polygon in turn
+
+    //ignore segments with nan or inf coordinates
+    if ( qIsNaN( inX[i2] ) || qIsNaN( inY[i2] ) || qIsInf( inX[i2] ) || qIsInf( inY[i2] )
+         || qIsNaN( inX[i1] ) || qIsNaN( inY[i1] ) || qIsInf( inX[i1] ) || qIsInf( inY[i1] ) )
+    {
+      i1 = i2;
+      continue;
+    }
+
+
     if ( inside( inX[i2], inY[i2], b ) ) // end point of edge is inside boundary
     {
       if ( inside( inX[i1], inY[i1], b ) )
@@ -258,7 +268,7 @@ inline QgsPoint QgsClipper::intersect( const double x1, const double y1,
 
   QgsPoint p;
 
-  if ( std::abs( r_d ) > SMALL_NUM && std::abs( r_n ) > SMALL_NUM )
+  if ( qAbs( r_d ) > SMALL_NUM && qAbs( r_n ) > SMALL_NUM )
   { // they cross
     double r = r_n / r_d;
     p.set( x1 + r*( x2 - x1 ), y1 + r*( y2 - y1 ) );
@@ -267,7 +277,7 @@ inline QgsPoint QgsClipper::intersect( const double x1, const double y1,
   {
     // Should never get here, but if we do for some reason, cause a
     // clunk because something else is wrong if we do.
-    Q_ASSERT( std::abs( r_d ) > SMALL_NUM && std::abs( r_n ) > SMALL_NUM );
+    Q_ASSERT( qAbs( r_d ) > SMALL_NUM && qAbs( r_n ) > SMALL_NUM );
   }
 
   return p;

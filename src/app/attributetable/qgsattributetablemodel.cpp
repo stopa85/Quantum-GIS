@@ -22,14 +22,12 @@
 #include "qgisapp.h"
 #include "qgsattributeaction.h"
 #include "qgsmapcanvas.h"
+#include "qgsfeatureaction.h"
 
 #include <QtGui>
 #include <QVariant>
 #include <limits>
 
-////////////////////////////
-// QgsAttributeTableModel //
-////////////////////////////
 
 QgsAttributeTableModel::QgsAttributeTableModel( QgsVectorLayer *theLayer, QObject *parent )
     : QAbstractTableModel( parent )
@@ -38,96 +36,120 @@ QgsAttributeTableModel::QgsAttributeTableModel( QgsVectorLayer *theLayer, QObjec
   mLayer = theLayer;
   loadAttributes();
 
-  connect( mLayer, SIGNAL( layerModified( bool ) ), this, SLOT( layerModified( bool ) ) );
-  //connect(mLayer, SIGNAL(attributeValueChanged(int, int, const QVariant&)), this, SLOT( attributeValueChanged(int, int, const QVariant&)));
-  //connect(mLayer, SIGNAL(featureDeleted(int)), this, SLOT( featureDeleted(int)));
-  //connect(mLayer, SIGNAL(featureAdded(int)), this, SLOT( featureAdded(int)));
+  connect( mLayer, SIGNAL( attributeValueChanged( int, int, const QVariant& ) ), this, SLOT( attributeValueChanged( int, int, const QVariant& ) ) );
+  connect( mLayer, SIGNAL( featureAdded( int ) ), this, SLOT( featureAdded( int ) ) );
+  connect( mLayer, SIGNAL( featureDeleted( int ) ), this, SLOT( featureDeleted( int ) ) );
+  connect( mLayer, SIGNAL( attributeAdded( int ) ), this, SLOT( attributeAdded( int ) ) );
+  connect( mLayer, SIGNAL( attributeDeleted( int ) ), this, SLOT( attributeDeleted( int ) ) );
 
   loadLayer();
 }
 
 bool QgsAttributeTableModel::featureAtId( int fid ) const
 {
-  return mLayer->featureAtId( fid, mFeat, false, true );
+  QgsDebugMsgLevel( QString( "loading feature %1" ).arg( fid ), 3 );
+
+  if ( fid == std::numeric_limits<int>::min() )
+    return false;
+  else
+    return mLayer->featureAtId( fid, mFeat, false, true );
 }
 
-#if 0
 void QgsAttributeTableModel::featureDeleted( int fid )
 {
-  QgsDebugMsg( "entered." );
+  QgsDebugMsgLevel( QString( "deleted fid=%1 => row=%2" ).arg( fid ).arg( idToRow( fid ) ), 3 );
+
+  int row = idToRow( fid );
+
+  beginRemoveRows( QModelIndex(), row, row );
+  removeRow( row );
+  endRemoveRows();
+}
+
+bool QgsAttributeTableModel::removeRows( int row, int count, const QModelIndex &parent )
+{
+  QgsDebugMsgLevel( QString( "remove %2 rows at %1 (rows %3, ids %4)" ).arg( row ).arg( count ).arg( mRowIdMap.size() ).arg( mIdRowMap.size() ), 3 );
+
+  // clean old references
+  for ( int i = row; i < row + count; i++ )
+  {
+    mIdRowMap.remove( mRowIdMap[ i ] );
+    mRowIdMap.remove( i );
+  }
+
+  // update maps
+  int n = mRowIdMap.size() + count;
+  for ( int i = row + count; i < n; i++ )
+  {
+    int id = mRowIdMap[i];
+    mIdRowMap[ id ] -= count;
+    mRowIdMap[ i-count ] = id;
+    mRowIdMap.remove( i );
+  }
 
 #ifdef QGISDEBUG
-  int idx = mIdRowMap[fid];
-  QgsDebugMsg( idx );
-  QgsDebugMsg( fid );
-#endif
-
-  QgsDebugMsg( "id->row" );
   QHash<int, int>::iterator it;
+
+  QgsDebugMsgLevel( QString( "after removal rows %1, ids %2" ).arg( mRowIdMap.size() ).arg( mIdRowMap.size() ), 4 );
+  QgsDebugMsgLevel( "id->row", 4 );
   for ( it = mIdRowMap.begin(); it != mIdRowMap.end(); ++it )
-    QgsDebugMsg( QString( "%1->%2" ).arg( it.key() ).arg( *it ) );
+    QgsDebugMsgLevel( QString( "%1->%2" ).arg( it.key() ).arg( *it ), 4 );
 
-  QgsDebugMsg( "row->id" );
-
+  QgsDebugMsgLevel( "row->id", 4 );
   for ( it = mRowIdMap.begin(); it != mRowIdMap.end(); ++it )
-    QgsDebugMsg( QString( "%1->%2" ).arg( it.key() ).arg( *it ) );
-
-}
-
-void QgsAttributeTableModel::featureAdded( int fid )
-{
-  QgsDebugMsg( "BM feature added" );
-  ++mFeatureCount;
-  mIdRowMap.insert( fid, mFeatureCount - 1 );
-  mRowIdMap.insert( mFeatureCount - 1, fid );
-  QgsDebugMsg( QString( "map sizes:%1, %2" ).arg( mRowIdMap.size() ).arg( mIdRowMap.size() ) );
-  reload( index( 0, 0 ), index( rowCount(), columnCount() ) );
-}
+    QgsDebugMsgLevel( QString( "%1->%2" ).arg( it.key() ).arg( *it ), 4 );
 #endif
+
+  Q_ASSERT( mRowIdMap.size() == mIdRowMap.size() );
+
+  return true;
+}
+
+void QgsAttributeTableModel::featureAdded( int fid, bool newOperation )
+{
+  QgsDebugMsgLevel( QString( "feature %1 added (%2, rows %3, ids %4)" ).arg( fid ).arg( newOperation ).arg( mRowIdMap.size() ).arg( mIdRowMap.size() ), 3 );
+
+  int n = mRowIdMap.size();
+  if ( newOperation )
+    beginInsertRows( QModelIndex(), n, n );
+
+  mIdRowMap.insert( fid, n );
+  mRowIdMap.insert( n, fid );
+
+  if ( newOperation )
+    endInsertRows();
+
+  reload( index( rowCount() - 1, 0 ), index( rowCount() - 1, columnCount() ) );
+}
 
 void QgsAttributeTableModel::attributeAdded( int idx )
 {
-  QgsDebugMsg( "BM attribute added" );
+  QgsDebugMsg( "entered." );
+  loadAttributes();
   loadLayer();
-  QgsDebugMsg( QString( "map sizes:%1, %2" ).arg( mRowIdMap.size() ).arg( mIdRowMap.size() ) );
-  reload( index( 0, 0 ), index( rowCount(), columnCount() ) );
   emit modelChanged();
 }
 
 void QgsAttributeTableModel::attributeDeleted( int idx )
 {
-  QgsDebugMsg( "BM attribute deleted" );
+  QgsDebugMsg( "entered." );
+  loadAttributes();
   loadLayer();
-  QgsDebugMsg( QString( "map sizes:%1, %2" ).arg( mRowIdMap.size() ).arg( mIdRowMap.size() ) );
-  reload( index( 0, 0 ), index( rowCount(), columnCount() ) );
   emit modelChanged();
 }
 
 void QgsAttributeTableModel::layerDeleted()
 {
   QgsDebugMsg( "entered." );
-  mIdRowMap.clear();
-  mRowIdMap.clear();
-  QgsDebugMsg( QString( "map sizes:%1, %2" ).arg( mRowIdMap.size() ).arg( mIdRowMap.size() ) );
-  reload( index( 0, 0 ), index( rowCount(), columnCount() ) );
+
+  beginRemoveRows( QModelIndex(), 0, rowCount() - 1 );
+  removeRows( 0, rowCount() );
+  endRemoveRows();
 }
 
-//TODO: check whether caching in data()/setData() doesn't cache old value
 void QgsAttributeTableModel::attributeValueChanged( int fid, int idx, const QVariant &value )
 {
-  QgsDebugMsg( "entered." );
-  reload( index( 0, 0 ), index( rowCount(), columnCount() ) );
-}
-
-void QgsAttributeTableModel::layerModified( bool onlyGeometry )
-{
-  if ( onlyGeometry )
-    return;
-
-  loadAttributes();
-  loadLayer();
-  emit modelChanged();
-  emit headerDataChanged( Qt::Horizontal, 0, columnCount() - 1 );
+  setData( index( idToRow( fid ), mAttributes.indexOf( idx ) ), value, Qt::EditRole );
 }
 
 void QgsAttributeTableModel::loadAttributes()
@@ -187,26 +209,21 @@ void QgsAttributeTableModel::loadLayer()
 {
   QgsDebugMsg( "entered." );
 
-  QgsFeature f;
-  bool ins = false, rm = false;
-
-  int previousSize = mRowIdMap.size();
-
-  mRowIdMap.clear();
-  mIdRowMap.clear();
+  beginRemoveRows( QModelIndex(), 0, rowCount() - 1 );
+  removeRows( 0, rowCount() );
+  endRemoveRows();
 
   QSettings settings;
   int behaviour = settings.value( "/qgis/attributeTableBehaviour", 0 ).toInt();
 
   if ( behaviour == 1 )
   {
-    const QgsFeatureList &features = mLayer->selectedFeatures();
-
-    for ( int i = 0; i < features.size(); ++i )
+    beginInsertRows( QModelIndex(), 0, mLayer->selectedFeatureCount() );
+    foreach( int fid, mLayer->selectedFeaturesIds() )
     {
-      mRowIdMap.insert( i, features[i].id() );
-      mIdRowMap.insert( features[i].id(), i );
+      featureAdded( fid, false );
     }
+    endInsertRows();
   }
   else
   {
@@ -219,39 +236,14 @@ void QgsAttributeTableModel::loadLayer()
 
     mLayer->select( mAttributes, rect, false );
 
+    QgsFeature f;
     for ( int i = 0; mLayer->nextFeature( f ); ++i )
     {
-      mRowIdMap.insert( i, f.id() );
-      mIdRowMap.insert( f.id(), i );
+      featureAdded( f.id() );
     }
   }
 
-  if ( previousSize < mRowIdMap.size() )
-  {
-    QgsDebugMsg( "ins" );
-    ins = true;
-    beginInsertRows( QModelIndex(), previousSize, mRowIdMap.size() - 1 );
-  }
-  else if ( previousSize > mRowIdMap.size() )
-  {
-    QgsDebugMsg( "rm" );
-    rm = true;
-    beginRemoveRows( QModelIndex(), mRowIdMap.size(), previousSize - 1 );
-  }
-
-  // not needed when we have featureAdded signal
   mFieldCount = mAttributes.size();
-
-  if ( ins )
-  {
-    endInsertRows();
-    QgsDebugMsg( "end ins" );
-  }
-  else if ( rm )
-  {
-    endRemoveRows();
-    QgsDebugMsg( "end rm" );
-  }
 }
 
 void QgsAttributeTableModel::swapRows( int a, int b )
@@ -442,17 +434,7 @@ bool QgsAttributeTableModel::setData( const QModelIndex &index, const QVariant &
   int rowId = rowToId( index.row() );
   if ( mFeat.id() == rowId || featureAtId( rowId ) )
   {
-    int fieldId = mAttributes[ index.column()];
-
-    disconnect( mLayer, SIGNAL( layerModified( bool ) ), this, SLOT( layerModified( bool ) ) );
-
-    mLayer->beginEditCommand( tr( "Attribute changed" ) );
-    mLayer->changeAttributeValue( rowId, fieldId, value, true );
-    mLayer->endEditCommand();
-
-    mFeat.changeAttribute( fieldId, value );
-
-    connect( mLayer, SIGNAL( layerModified( bool ) ), this, SLOT( layerModified( bool ) ) );
+    mFeat.changeAttribute( mAttributes[ index.column()], value );
   }
 
   if ( !mLayer->isModified() )
@@ -508,4 +490,21 @@ void QgsAttributeTableModel::executeAction( int action, const QModelIndex &idx )
   }
 
   mLayer->actions()->doAction( action, attributes, fieldIdx( idx.column() ) );
+}
+
+void QgsAttributeTableModel::featureForm( QModelIndex &idx )
+{
+  QgsFeature f;
+  QgsAttributeMap attributes;
+
+  for ( int i = 0; i < mAttributes.size(); i++ )
+  {
+    f.changeAttribute( i, data( index( idx.row(), i ), Qt::EditRole ) );
+  }
+
+  QgsFeatureAction action( tr( "Attributes changed" ), f, mLayer, -1, this );
+  if ( mLayer->isEditable() )
+    action.editFeature();
+  else
+    action.viewFeatureForm();
 }

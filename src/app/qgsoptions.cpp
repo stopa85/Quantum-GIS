@@ -249,6 +249,7 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   cbxHideSplash->setChecked( settings.value( "/qgis/hideSplash", false ).toBool() );
   cbxAttributeTableDocked->setChecked( settings.value( "/qgis/dockAttributeTable", false ).toBool() );
   cbxIdentifyResultsDocked->setChecked( settings.value( "/qgis/dockIdentifyResults", false ).toBool() );
+  cbxSnappingOptionsDocked->setChecked( settings.value( "/qgis/dockSnapping", false ).toBool() );
   cbxAddPostgisDC->setChecked( settings.value( "/qgis/addPostgisDC", false ).toBool() );
   cbxAddNewLayersToCurrentGroup->setChecked( settings.value( "/qgis/addNewLayersToCurrentGroup", false ).toBool() );
   cbxCreateRasterLegendIcons->setChecked( settings.value( "/qgis/createRasterLegendIcons", true ).toBool() );
@@ -257,7 +258,8 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   int myRed = settings.value( "/qgis/default_selection_color_red", 255 ).toInt();
   int myGreen = settings.value( "/qgis/default_selection_color_green", 255 ).toInt();
   int myBlue = settings.value( "/qgis/default_selection_color_blue", 0 ).toInt();
-  pbnSelectionColor->setColor( QColor( myRed, myGreen, myBlue ) );
+  int myAlpha = settings.value( "/qgis/default_selection_color_alpha", 255 ).toInt();
+  pbnSelectionColor->setColor( QColor( myRed, myGreen, myBlue, myAlpha ) );
 
   //set the default color for canvas background
   myRed = settings.value( "/qgis/default_canvas_color_red", 255 ).toInt();
@@ -352,6 +354,7 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   }
   mMarkerSizeSpinBox->setValue( settings.value( "/qgis/digitizing/marker_size", 3 ).toInt() );
 
+  chkReuseLastValues->setChecked( settings.value( "/qgis/digitizing/reuseLastValues", false ).toBool() );
   chkDisableAttributeValuesDlg->setChecked( settings.value( "/qgis/digitizing/disable_enter_attribute_values_dialog", false ).toBool() );
 
 #ifdef Q_WS_MAC //MH: disable incremental update on Mac for now to avoid problems with resizing 
@@ -388,7 +391,7 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   } //default is central point
 
   restoreGeometry( settings.value( "/Windows/Options/geometry" ).toByteArray() );
-  listWidget->setCurrentRow( settings.value( "/Windows/Options/row" ).toInt() );
+  tabWidget->setCurrentIndex( settings.value( "/Windows/Options/row" ).toInt() );
 }
 
 //! Destructor
@@ -396,12 +399,17 @@ QgsOptions::~QgsOptions()
 {
   QSettings settings;
   settings.setValue( "/Windows/Options/geometry", saveGeometry() );
-  settings.setValue( "/Windows/Options/row", listWidget->currentRow() );
+  settings.setValue( "/Windows/Options/row", tabWidget->currentIndex() );
 }
 
 void QgsOptions::on_pbnSelectionColor_clicked()
 {
-  QColor color = QColorDialog::getColor( pbnSelectionColor->color(), this );
+#if QT_VERSION >= 0x040500
+  QColor color = QColorDialog::getColor( pbnSelectionColor->color(), 0, tr( "Selection color" ), QColorDialog::ShowAlphaChannel );
+#else
+  QColor color = QColorDialog::getColor( pbnSelectionColor->color() );
+#endif
+
   if ( color.isValid() )
   {
     pbnSelectionColor->setColor( color );
@@ -504,6 +512,7 @@ void QgsOptions::saveOptions()
   settings.setValue( "/qgis/dockAttributeTable", cbxAttributeTableDocked->isChecked() );
   settings.setValue( "/qgis/attributeTableBehaviour", cmbAttrTableBehaviour->currentIndex() );
   settings.setValue( "/qgis/dockIdentifyResults", cbxIdentifyResultsDocked->isChecked() );
+  settings.setValue( "/qgis/dockSnapping", cbxSnappingOptionsDocked->isChecked() );
   settings.setValue( "/qgis/addPostgisDC", cbxAddPostgisDC->isChecked() );
   settings.setValue( "/qgis/addNewLayersToCurrentGroup", cbxAddNewLayersToCurrentGroup->isChecked() );
   settings.setValue( "/qgis/createRasterLegendIcons", cbxCreateRasterLegendIcons->isChecked() );
@@ -609,6 +618,7 @@ void QgsOptions::saveOptions()
   settings.setValue( "/qgis/default_selection_color_red", myColor.red() );
   settings.setValue( "/qgis/default_selection_color_green", myColor.green() );
   settings.setValue( "/qgis/default_selection_color_blue", myColor.blue() );
+  settings.setValue( "/qgis/default_selection_color_alpha", myColor.alpha() );
 
   //set the default color for canvas background
   myColor = pbnCanvasColor->color();
@@ -659,6 +669,7 @@ void QgsOptions::saveOptions()
   }
   settings.setValue( "/qgis/digitizing/marker_size", ( mMarkerSizeSpinBox->value() ) );
 
+  settings.setValue( "/qgis/digitizing/reuseLastValues", chkReuseLastValues->isChecked() );
   settings.setValue( "/qgis/digitizing/disable_enter_attribute_values_dialog", chkDisableAttributeValuesDlg->isChecked() );
 
   //
