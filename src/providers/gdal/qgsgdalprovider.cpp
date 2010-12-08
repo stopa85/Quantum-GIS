@@ -1410,6 +1410,8 @@ QGISEXTERN bool isValidRasterFileName( QString const & theFileNameQString, QStri
 {
   GDALDatasetH myDataset;
 
+  GDALAllRegister();
+
   CPLErrorReset();
 
   //open the file using gdal making sure we have handled locale properly
