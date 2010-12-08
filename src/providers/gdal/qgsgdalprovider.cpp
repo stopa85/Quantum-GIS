@@ -862,9 +862,8 @@ QString  QgsGdalProvider::description() const
   return PROVIDER_DESCRIPTION;
 }
 
-//QStringList QgsGdalProvider::subLayers( GDALDatasetH dataset )
 // This is used also by global isValidRasterFileName
-QStringList subLayers( GDALDatasetH dataset )
+QStringList subLayers_( GDALDatasetH dataset )
 {
   QStringList subLayers;
 
@@ -1192,7 +1191,7 @@ QList<QgsRasterPyramid> QgsGdalProvider::buildPyramidList()
 
 QStringList QgsGdalProvider::subLayers() const
 {
-  return subLayers( mGdalDataset );
+  return subLayers_( mGdalDataset );
 }
 
 
@@ -1424,7 +1423,7 @@ QGISEXTERN bool isValidRasterFileName( QString const & theFileNameQString, QStri
   }
   else if ( GDALGetRasterCount( myDataset ) == 0 )
   {
-    QStringList layers = subLayers( myDataset );
+    QStringList layers = subLayers_( myDataset );
     if ( layers.size() == 0 )
     {
       GDALClose( myDataset );

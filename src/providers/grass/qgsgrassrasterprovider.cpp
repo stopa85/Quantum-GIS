@@ -29,6 +29,7 @@
 #include "qgscoordinatetransform.h"
 #include "qgsrectangle.h"
 #include "qgscoordinatereferencesystem.h"
+#include "qgsrasterbandstats.h"
 
 #include <QImage>
 #include <QSettings>
@@ -386,13 +387,29 @@ QString QgsGrassRasterProvider::metadata()
   return myMetadata;
 }
 
-void populateHistogram( int theBandNoInt,
+void QgsGrassRasterProvider::populateHistogram( int theBandNoInt,
                     QgsRasterBandStats & theBandStats,
-                    int theBinCountInt = 256,
-                    bool theIgnoreOutOfRangeFlag = true,
-                    bool theThoroughBandScanFlag = false)
+                    int theBinCount,
+                    bool theIgnoreOutOfRangeFlag,
+                    bool theHistogramEstimatedFlag)
 {
-  // TODO
+  // TODO: we could either implement it in QgsRasterDataProvider::populateHistogram
+  // or use r.stats (see d.histogram)
+  if ( theBandStats.histogramVector->size() != theBinCount ||
+       theIgnoreOutOfRangeFlag != theBandStats.isHistogramOutOfRange ||
+       theHistogramEstimatedFlag != theBandStats.isHistogramEstimated )
+  {
+    theBandStats.histogramVector->clear();
+    theBandStats.isHistogramEstimated = theHistogramEstimatedFlag;
+    theBandStats.isHistogramOutOfRange = theIgnoreOutOfRangeFlag;
+    for ( int myBin = 0; myBin < theBinCount; myBin++ )
+    {
+      theBandStats.histogramVector->push_back( 0 );
+    }
+  }
+  QgsDebugMsg( ">>>>> Histogram vector now contains " + 
+    QString::number( theBandStats.histogramVector->size() ) + " elements" );
+
 }
 
 

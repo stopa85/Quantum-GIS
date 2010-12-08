@@ -232,7 +232,7 @@ class QgsGdalProvider : public QgsRasterDataProvider
 
     //bool isValidRasterFileName( const QString & theFileNameQString );
 
-    static QStringList subLayers( GDALDatasetH dataset );
+    //static QStringList subLayers( GDALDatasetH dataset );
 
     /** \brief Returns the sublayers of this layer - Useful for providers that manage their own layers, such as WMS */
     QStringList subLayers() const;

@@ -214,6 +214,14 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
     void setImageEncoding( QString const & mimeType ) {}
     void setImageCrs( QString const & crs ) {}
 
+    void populateHistogram( int theBandNoInt,
+                    QgsRasterBandStats & theBandStats,
+                    int theBinCountInt = 256,
+                    bool theIgnoreOutOfRangeFlag = true,
+                    bool theThoroughBandScanFlag = false
+                     );
+
+
   private:
 
     /**

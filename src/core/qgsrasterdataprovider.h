@@ -309,7 +309,9 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
 
     // Defined in parent
     /** \brief Returns the sublayers of this layer - Useful for providers that manage their own layers, such as WMS */
-    //virtual QStringList subLayers() const ;
+    virtual QStringList subLayers() const {
+      return QStringList();
+    }
 
     /** \brief Populate the histogram vector for a given band */
 
