@@ -44,6 +44,8 @@
 #include "gdalwarper.h"
 #include "ogr_spatialref.h"
 #include "cpl_conv.h"
+#include "cpl_string.h"
+
 
 static QString PROVIDER_KEY = "gdal";
 static QString PROVIDER_DESCRIPTION = "GDAL provider";
@@ -203,7 +205,35 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
   double myNoDataValue = GDALGetRasterNoDataValue( GDALGetRasterBand( mGdalDataset, 1 ), &isValid );
   if ( isValid )
   {
+    QgsDebugMsg( QString("GDALGetRasterNoDataValue = %1").arg( myNoDataValue ) ) ;
     mNoDataValue = myNoDataValue;
+    mValidNoDataValue = true;
+  } 
+  else 
+  {
+    // But we need a null value in case of reprojection and BTW also for 
+    // aligned margines
+
+    switch ( dataType( 0 ) ) {
+      case QgsRasterDataProvider::Byte:
+        mNoDataValue = 255.0;
+        break;
+      case QgsRasterDataProvider::Int16:
+        mNoDataValue = -32768.0;
+        break;
+      case QgsRasterDataProvider::UInt16:
+        mNoDataValue = 65535.0;
+        break;
+      case QgsRasterDataProvider::Int32:
+        mNoDataValue = -2147483648.0;
+        break;
+      case QgsRasterDataProvider::UInt32:
+        mNoDataValue = 4294967295.0;
+        break;
+      default:
+        mNoDataValue = std::numeric_limits<int>::max();
+    }
+    QgsDebugMsg( QString("GDALGetRasterNoDataValue not set, using = %1").arg( mNoDataValue ) );
     mValidNoDataValue = true;
   }
   QgsDebugMsg( QString("mNoDataValue = %1").arg ( mNoDataValue ) ); 
@@ -434,11 +464,12 @@ void QgsGdalProvider::readBlock( int theBandNo, int xBlock, int yBlock, void *bl
   GDALReadBlock( myGdalBand, xBlock, yBlock, block );
 }
 
-void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, void *theBlock )
+void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, QgsCoordinateReferenceSystem theDestCRS, void *theBlock )
 {
   QgsDebugMsg( "thePixelWidth = "  + QString::number( thePixelWidth ) );
   QgsDebugMsg( "thePixelHeight = "  + QString::number( thePixelHeight ) );
   QgsDebugMsg( "theExtent: " + theExtent.toString() );
+  QgsDebugMsg( "theDestCRS: " + theDestCRS.toWkt() );
 
 
   GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, theBandNo );
@@ -453,7 +484,9 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
   QString myMemDsn;
   myMemDsn.sprintf ( "DATAPOINTER = %p", theBlock ); 
   QgsDebugMsg(  myMemDsn );
+
  
+  // TODO: more bands support
   myMemDsn.sprintf ( "MEM:::DATAPOINTER=%u,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (int)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( myGdalDataType ) );
 
   QgsDebugMsg( "Open GDAL MEM : " + myMemDsn );
@@ -469,9 +502,11 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
       + QString::fromUtf8( CPLGetLastErrorMsg()  ) );
      return;
   }
+  
   // TODO add CRS to method params
   //GDALSetProjection( myGdalMemDataset, crs().toWkt().toAscii().constData() );
   GDALSetProjection( myGdalMemDataset, GDALGetProjectionRef( mGdalDataset ) ); 
+  //GDALSetProjection( myGdalMemDataset, theDestCRS.toWkt().toAscii().constData() );
 
   double myMemGeoTransform[6];
   myMemGeoTransform[0] = theExtent.xMinimum(); /* top left x */
@@ -518,6 +553,30 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
       );
   CPLAssert( myWarpOptions->pTransformerArg  != NULL); 
   myWarpOptions->pfnTransformer = GDALGenImgProjTransform;
+
+  //double myNoDataRow = (double *) CPLMalloc( sizeof(double) * thePixelWidth );
+
+  
+  
+  myWarpOptions->padfDstNoDataReal = (double *) CPLMalloc( myWarpOptions->nBandCount * sizeof(double));
+  myWarpOptions->padfDstNoDataImag = (double *) CPLMalloc( myWarpOptions->nBandCount * sizeof(double));
+
+  for  ( int i = 0; i < myWarpOptions->nBandCount; i++ )
+  {
+    
+    myWarpOptions->padfDstNoDataReal[i] = mNoDataValue;
+    myWarpOptions->padfDstNoDataImag[i] = 0.0;
+
+    GDALSetRasterNoDataValue( GDALGetRasterBand( myGdalMemDataset, 
+                        myWarpOptions->panDstBands[i] ),
+                        myWarpOptions->padfDstNoDataReal[i] );
+
+  }
+
+  // TODO optimize somehow to avoid no data init if not necessary 
+  // i.e. no projection, but there is also the problem with margine
+  myWarpOptions->papszWarpOptions = 
+    CSLSetNameValue(myWarpOptions->papszWarpOptions,"INIT_DEST", "NO_DATA" );
 
 
   GDALWarpOperation myOperation;

@@ -191,7 +191,7 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
 
 
     void readBlock( int bandNo, int xBlock, int yBlock, void *data );
-    void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height,  void *data );
+    void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, QgsCoordinateReferenceSystem theDestCRS, void *data );
 
     double noDataValue() const;
     double minimumValue(int bandNo)const;

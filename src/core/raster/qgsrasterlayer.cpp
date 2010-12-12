@@ -27,6 +27,7 @@ email                : tim at linfiniti.com
 #include "qgsrectangle.h"
 #include "qgsrendercontext.h"
 #include "qgscoordinatereferencesystem.h"
+#include "qgscoordinatetransform.h"
 
 #include "gdalwarper.h"
 #include "cpl_conv.h"
@@ -852,10 +853,16 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   QgsRasterViewPort *myRasterViewPort = new QgsRasterViewPort();
 
   myRasterViewPort->mDrawnExtent = myRasterExtent;
+  if ( rendererContext.coordinateTransform() ) {
+    myRasterViewPort->mDestCRS = rendererContext.coordinateTransform()->destCRS();
+  } else {
+    myRasterViewPort->mDestCRS = QgsCoordinateReferenceSystem(); // will be invalid
+  }
 
   // calculate raster pixel offsets from origin to clipped rect
   // we're only interested in positive offsets where the origin of the raster
   // is northwest of the origin of the view
+  /*
   myRasterViewPort->rectXOffsetFloat = ( theViewExtent.xMinimum() - mLayerExtent.xMinimum() ) / qAbs( mGeoTransform[1] );
   myRasterViewPort->rectYOffsetFloat = ( mLayerExtent.yMaximum() - theViewExtent.yMaximum() ) / qAbs( mGeoTransform[5] );
 
@@ -879,11 +886,13 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
                     .arg( mGeoTransform[3] )
                     .arg( mGeoTransform[4] )
                     .arg( mGeoTransform[5] ), 3 );
+  */
 
   // get dimensions of clipped raster image in raster pixel space/ RasterIO will do the scaling for us.
   // So for example, if the user is zoomed in a long way, there may only be e.g. 5x5 pixels retrieved from
   // the raw raster data, but rasterio will seamlessly scale the up to whatever the screen coordinats are
   // e.g. a 600x800 display window (see next section below)
+  /*
   myRasterViewPort->clippedXMin = ( myRasterExtent.xMinimum() - mGeoTransform[0] ) / mGeoTransform[1];
   myRasterViewPort->clippedXMax = ( myRasterExtent.xMaximum() - mGeoTransform[0] ) / mGeoTransform[1];
   myRasterViewPort->clippedYMin = ( myRasterExtent.yMinimum() - mGeoTransform[3] ) / mGeoTransform[5];
@@ -904,10 +913,13 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
 
   myRasterViewPort->clippedHeight =
     static_cast<int>( ceil( myRasterViewPort->clippedYMax ) - floor( myRasterViewPort->clippedYMin ) );
-
+  */
   // but make sure the intended SE corner extent doesn't exceed the SE corner
   // of the source raster, otherwise GDAL's RasterIO gives an error and returns nothing.
   // The SE corner = NW origin + dimensions of the image itself.
+
+  // This is no more necessary I believe, we read the block of data defined by extent, no need to think about raster size
+  /*
   if (( myRasterViewPort->rectXOffset + myRasterViewPort->clippedWidth )
       > mWidth )
   {
@@ -920,31 +932,59 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
     myRasterViewPort->clippedHeight =
       mHeight - myRasterViewPort->rectYOffset;
   }
+  */
 
   // get dimensions of clipped raster image in device coordinate space (this is the size of the viewport)
   myRasterViewPort->topLeftPoint = theQgsMapToPixel.transform( myRasterExtent.xMinimum(), myRasterExtent.yMaximum() );
   myRasterViewPort->bottomRightPoint = theQgsMapToPixel.transform( myRasterExtent.xMaximum(), myRasterExtent.yMinimum() );
 
-  myRasterViewPort->drawableAreaXDim = static_cast<int>( qAbs(( myRasterViewPort->clippedWidth / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[1] ) ) + 0.5 );
-  myRasterViewPort->drawableAreaYDim = static_cast<int>( qAbs(( myRasterViewPort->clippedHeight / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[5] ) ) + 0.5 );
+  // align to output device grid, i.e. floor/ceil to integers
+  // TODO: this should only be done if paint device is raster - screen, image
+  // for other devices (pdf) it can have floating point origin
+  // we could use floating point for raster devices as well, but respecting the 
+  // output device grid should make it more effective as the resampling is done in 
+  // the provider anyway      
+  if ( true ) 
+  {
+    myRasterViewPort->topLeftPoint.setX( floor( myRasterViewPort->topLeftPoint.x() ) );
+    myRasterViewPort->topLeftPoint.setY( floor( myRasterViewPort->topLeftPoint.y() ) );
+    myRasterViewPort->bottomRightPoint.setX( ceil( myRasterViewPort->bottomRightPoint.x() ) );
+    myRasterViewPort->bottomRightPoint.setY( ceil( myRasterViewPort->bottomRightPoint.y() + 10 ) );
+    // recalc myRasterExtent to aligned values
+    myRasterExtent.set ( 
+      theQgsMapToPixel.toMapCoordinatesF ( myRasterViewPort->topLeftPoint.x(), 
+                                           myRasterViewPort->bottomRightPoint.y() ),
+      theQgsMapToPixel.toMapCoordinatesF ( myRasterViewPort->bottomRightPoint.x(), 
+                                           myRasterViewPort->topLeftPoint.y() )
+    );
+
+  }
+
+  //myRasterViewPort->drawableAreaXDim = static_cast<int>( qAbs(( myRasterViewPort->clippedWidth / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[1] ) ) + 0.5 );
+  //myRasterViewPort->drawableAreaYDim = static_cast<int>( qAbs(( myRasterViewPort->clippedHeight / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[5] ) ) + 0.5 );
+
+  myRasterViewPort->drawableAreaXDim = static_cast<int>( qAbs(( myRasterExtent.width() / theQgsMapToPixel.mapUnitsPerPixel() ) ));
+  myRasterViewPort->drawableAreaYDim = static_cast<int>( qAbs(( myRasterExtent.height() / theQgsMapToPixel.mapUnitsPerPixel() ) ));
 
   //the drawable area can start to get very very large when you get down displaying 2x2 or smaller, this is becasue
   //theQgsMapToPixel.mapUnitsPerPixel() is less then 1,
   //so we will just get the pixel data and then render these special cases differently in paintImageToCanvas()
+  /*
   if ( 2 >= myRasterViewPort->clippedWidth && 2 >= myRasterViewPort->clippedHeight )
   {
     myRasterViewPort->drawableAreaXDim = myRasterViewPort->clippedWidth;
     myRasterViewPort->drawableAreaYDim = myRasterViewPort->clippedHeight;
   }
-
+  */
   QgsDebugMsgLevel( QString( "mapUnitsPerPixel = %1" ).arg( theQgsMapToPixel.mapUnitsPerPixel() ), 3 );
   QgsDebugMsgLevel( QString( "mWidth = %1" ).arg( mWidth ), 3 );
   QgsDebugMsgLevel( QString( "mHeight = %1" ).arg( mHeight ), 3 );
+  /*
   QgsDebugMsgLevel( QString( "rectXOffset = %1" ).arg( myRasterViewPort->rectXOffset ), 3 );
   QgsDebugMsgLevel( QString( "rectXOffsetFloat = %1" ).arg( myRasterViewPort->rectXOffsetFloat ), 3 );
   QgsDebugMsgLevel( QString( "rectYOffset = %1" ).arg( myRasterViewPort->rectYOffset ), 3 );
   QgsDebugMsgLevel( QString( "rectYOffsetFloat = %1" ).arg( myRasterViewPort->rectYOffsetFloat ), 3 );
-
+  */
   QgsDebugMsgLevel( QString( "myRasterExtent.xMinimum() = %1" ).arg( myRasterExtent.xMinimum() ), 3 );
   QgsDebugMsgLevel( QString( "myRasterExtent.xMaximum() = %1" ).arg( myRasterExtent.xMaximum() ), 3 );
   QgsDebugMsgLevel( QString( "myRasterExtent.yMinimum() = %1" ).arg( myRasterExtent.yMinimum() ), 3 );
@@ -955,6 +995,7 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   QgsDebugMsgLevel( QString( "topLeftPoint.y() = %1" ).arg( myRasterViewPort->topLeftPoint.y() ), 3 );
   QgsDebugMsgLevel( QString( "bottomRightPoint.y() = %1" ).arg( myRasterViewPort->bottomRightPoint.y() ), 3 );
 
+  /*
   QgsDebugMsgLevel( QString( "clippedXMin = %1" ).arg( myRasterViewPort->clippedXMin ), 3 );
   QgsDebugMsgLevel( QString( "clippedXMax = %1" ).arg( myRasterViewPort->clippedXMax ), 3 );
   QgsDebugMsgLevel( QString( "clippedYMin = %1" ).arg( myRasterViewPort->clippedYMin ), 3 );
@@ -962,9 +1003,10 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
 
   QgsDebugMsgLevel( QString( "clippedWidth = %1" ).arg( myRasterViewPort->clippedWidth ), 3 );
   QgsDebugMsgLevel( QString( "clippedHeight = %1" ).arg( myRasterViewPort->clippedHeight ), 3 );
+  */
   QgsDebugMsgLevel( QString( "drawableAreaXDim = %1" ).arg( myRasterViewPort->drawableAreaXDim ), 3 );
   QgsDebugMsgLevel( QString( "drawableAreaYDim = %1" ).arg( myRasterViewPort->drawableAreaYDim ), 3 );
-
+  
   QgsDebugMsgLevel( "ReadXml: gray band name : " + mGrayBandName, 3 );
   QgsDebugMsgLevel( "ReadXml: red band name : " + mRedBandName, 3 );
   QgsDebugMsgLevel( "ReadXml: green band name : " + mGreenBandName, 3 );
@@ -981,6 +1023,8 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   // Some providers were returning QImage directly, not they are passing ARGB data - ARGBDataType
   if ( mDataProvider->capabilities() & QgsRasterDataProvider::Draw )
   {
+  // Currently not used
+  /*
     QgsDebugMsg( "Wanting a '" + mProviderKey + "' provider to draw this." );
 
     // TODO this should be probably moved to WMS?
@@ -1008,13 +1052,12 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
 
       int pixelHeight = rasterPartRect.height() / theQgsMapToPixel.mapUnitsPerPixel() + 0.5;
 
-      /*
-      QgsDebugMsg( "**********WMS tile parameter***************" );
-      QgsDebugMsg( "pixelWidth: " + QString::number( pixelWidth ) );
-      QgsDebugMsg( "pixelHeight: " + QString::number( pixelHeight ) );
-      QgsDebugMsg( "mapWidth: " + QString::number( rasterPartRect.width() ) );
-      QgsDebugMsg( "mapHeight: " + QString::number( rasterPartRect.height(), 'f', 8 ) );
-      QgsDebugMsg( "mapUnitsPerPixel: " + QString::number( theQgsMapToPixel.mapUnitsPerPixel() ) );*/
+      //QgsDebugMsg( "**********WMS tile parameter***************" );
+      //QgsDebugMsg( "pixelWidth: " + QString::number( pixelWidth ) );
+      //QgsDebugMsg( "pixelHeight: " + QString::number( pixelHeight ) );
+      //QgsDebugMsg( "mapWidth: " + QString::number( rasterPartRect.width() ) );
+      //QgsDebugMsg( "mapHeight: " + QString::number( rasterPartRect.height(), 'f', 8 ) );
+      //QgsDebugMsg( "mapUnitsPerPixel: " + QString::number( theQgsMapToPixel.mapUnitsPerPixel() ) );
 
       QImage* image = mDataProvider->draw( rasterPartRect, pixelWidth, pixelHeight );
 
@@ -1075,6 +1118,7 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
         delete image;
       }
     }
+    */
   }
   else if  ( mDataProvider->capabilities() & QgsRasterDataProvider::Data )
   {
@@ -2022,6 +2066,13 @@ QString QgsRasterLayer::metadata()
   myMetadata += mCRS->toProj4();
   myMetadata += "</p>\n";
 
+  myMetadata += "<p class=\"glossy\">";
+  myMetadata += tr( "Layer Extent (layer original source projection): " );
+  myMetadata += "</p>\n";
+  myMetadata += "<p>";
+  myMetadata += mDataProvider->extent().toString();
+  myMetadata += "</p>\n";
+
   // output coordinate system
   // TODO: this is not related to layer, to be removed? [MD]
 #if 0
@@ -2275,6 +2326,7 @@ void QgsRasterLayer::resetNoDataValue()
     int myRequestValid;
 
     // TODO: add 'has null value' to capabilities
+    /*
     myRequestValid = 1;
     double myValue = mDataProvider->noDataValue();
 
@@ -2286,7 +2338,11 @@ void QgsRasterLayer::resetNoDataValue()
     {
       setNoDataValue( -9999.0 );
       mValidNoDataValue = false;
+      
     }
+    */
+    setNoDataValue ( mDataProvider->noDataValue() );
+    mValidNoDataValue = mDataProvider->isNoDataValueValid(); 
   }
 }
 
@@ -2332,6 +2388,7 @@ void QgsRasterLayer::init()
   mValidNoDataValue = false;
 
   //Initialize the last view port structure, should really be a class
+  /*
   mLastViewPort.rectXOffset = 0;
   mLastViewPort.rectXOffsetFloat = 0.0;
   mLastViewPort.rectYOffset = 0;
@@ -2342,6 +2399,7 @@ void QgsRasterLayer::init()
   mLastViewPort.clippedYMax = 0.0;
   mLastViewPort.clippedWidth = 0;
   mLastViewPort.clippedHeight = 0;
+  */
   mLastViewPort.drawableAreaXDim = 0;
   mLastViewPort.drawableAreaYDim = 0;
 }
@@ -2491,6 +2549,10 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
   mLayerExtent.setXMinimum( mbr.xMinimum() );
   mLayerExtent.setYMaximum( mbr.yMaximum() );
   mLayerExtent.setYMinimum( mbr.yMinimum() );
+
+  mWidth = mDataProvider->xSize();
+  mHeight = mDataProvider->ySize();
+ 
 
   // upper case the first letter of the layer name
   QgsDebugMsg( "mLayerName: " + name() );
@@ -3009,6 +3071,7 @@ void QgsRasterLayer::thumbnailAsPixmap( QPixmap * theQPixmap )
   if ( mProviderKey.isEmpty() )
   {
     QgsRasterViewPort *myRasterViewPort = new QgsRasterViewPort();
+    /*
     myRasterViewPort->rectXOffset = 0;
     myRasterViewPort->rectYOffset = 0;
     myRasterViewPort->clippedXMin = 0;
@@ -3017,6 +3080,7 @@ void QgsRasterLayer::thumbnailAsPixmap( QPixmap * theQPixmap )
     myRasterViewPort->clippedYMax = 0;
     myRasterViewPort->clippedWidth   = mWidth;
     myRasterViewPort->clippedHeight  = mHeight;
+    */
     myRasterViewPort->topLeftPoint = QgsPoint( 0, 0 );
     myRasterViewPort->bottomRightPoint = QgsPoint( theQPixmap->width(), theQPixmap->height() );
     myRasterViewPort->drawableAreaXDim = theQPixmap->width();
@@ -3042,6 +3106,7 @@ void QgsRasterLayer::thumbnailAsImage( QImage * thepImage )
   if ( mProviderKey.isEmpty() )
   {
     QgsRasterViewPort *myRasterViewPort = new QgsRasterViewPort();
+    /*
     myRasterViewPort->rectXOffset = 0;
     myRasterViewPort->rectYOffset = 0;
     myRasterViewPort->clippedXMin = 0;
@@ -3050,6 +3115,7 @@ void QgsRasterLayer::thumbnailAsImage( QImage * thepImage )
     myRasterViewPort->clippedYMax = 0;
     myRasterViewPort->clippedWidth   = mWidth;
     myRasterViewPort->clippedHeight  = mHeight;
+    */
     myRasterViewPort->topLeftPoint = QgsPoint( 0, 0 );
     myRasterViewPort->bottomRightPoint = QgsPoint( thepImage->width(), thepImage->height() );
     myRasterViewPort->drawableAreaXDim = thepImage->width();
@@ -4421,8 +4487,10 @@ bool QgsRasterLayer::hasBand( QString const & theBandName )
   return false;
 }
 
+// Not used 
 void QgsRasterLayer::paintImageToCanvas( QPainter* theQPainter, QgsRasterViewPort * theRasterViewPort, const QgsMapToPixel* theQgsMapToPixel, QImage* theImage )
 {
+/*
   // Set up the initial offset into the myQImage we want to copy to the map canvas
   // This is useful when the source image pixels are larger than the screen image.
   int paintXoffset = 0;
@@ -4560,6 +4628,7 @@ void QgsRasterLayer::paintImageToCanvas( QPainter* theQPainter, QgsRasterViewPor
                             paintXoffset,
                             paintYoffset );
   }
+*/
 }
 
 QString QgsRasterLayer::projectionWkt()
@@ -4576,6 +4645,7 @@ void *QgsRasterLayer::readData( int bandNo, QgsRasterViewPort *viewPort )
 {
   int size = mDataProvider->dataTypeSize(bandNo)/8;
 
+/*
   QgsDebugMsg( "calling RasterIO with " +
                QString( ", source NW corner: " ) + QString::number( viewPort->rectXOffset ) +
                ", " + QString::number( viewPort->rectYOffset ) +
@@ -4583,7 +4653,7 @@ void *QgsRasterLayer::readData( int bandNo, QgsRasterViewPort *viewPort )
                ", " + QString::number( viewPort->clippedHeight ) +
                ", dest size: " + QString::number( viewPort->drawableAreaXDim ) +
                ", " + QString::number( viewPort->drawableAreaYDim ) );
-
+*/
   void *data = VSIMalloc( size * viewPort->drawableAreaXDim * viewPort->drawableAreaYDim );
 
   /* Abort if out of memory */
@@ -4614,7 +4684,7 @@ void *QgsRasterLayer::readData( int bandNo, QgsRasterViewPort *viewPort )
       viewPort->mDrawnExtent.xMaximum(), 
       viewPort->mDrawnExtent.yMaximum() 
     );
-    mDataProvider->readBlock ( bandNo, partExtent, viewPort->drawableAreaXDim, viewPort->drawableAreaYDim, data );
+    mDataProvider->readBlock ( bandNo, partExtent, viewPort->drawableAreaXDim, viewPort->drawableAreaYDim, QgsCoordinateReferenceSystem(), data );
   }
   return data;
 }
@@ -4789,7 +4859,8 @@ void QgsRasterImageBuffer::reset( int maxPixelsInVirtualMemory )
   int pixels = mViewPort->drawableAreaXDim * mViewPort->drawableAreaYDim;
   //maxPixelsInVirtualMemory = 1000;
   int mNumPartImages = pixels / maxPixelsInVirtualMemory + 1.0;
-  mNumRasterRowsPerPart = ( double )mViewPort->clippedHeight / ( double )mNumPartImages + 0.5;
+  //mNumRasterRowsPerPart = ( double )mViewPort->clippedHeight / ( double )mNumPartImages + 0.5;
+  mNumRasterRowsPerPart = ( double )mViewPort->drawableAreaYDim / ( double )mNumPartImages + 0.5;
 
   mCurrentPartRasterMin = -1;
   mCurrentPartRasterMax = -1;
@@ -4800,7 +4871,9 @@ void QgsRasterImageBuffer::reset( int maxPixelsInVirtualMemory )
 
   createNextPartImage();
 
-  if ( 2 >= mViewPort->clippedWidth && 2 >= mViewPort->clippedHeight )
+  // TODO
+  //if ( 2 >= mViewPort->clippedWidth && 2 >= mViewPort->clippedHeight )
+  if ( false )
   {
     //use Peter's fix for zoomed in rasters
     mDrawPixelRect = true;
@@ -4850,19 +4923,24 @@ bool QgsRasterImageBuffer::createNextPartImage()
   {
     if ( mWritingEnabled )
     {
-      if ( 2 >= mViewPort->clippedWidth && 2 >= mViewPort->clippedHeight )
+      // TODO: consider similar system with raster providers, see the comment 
+      // in QgsRasterImageBuffer::drawPixelRectangle()
+      // e.g request the block with raster resolution and draw pixels as rectangles
+      //if ( 2 >= mViewPort->clippedWidth && 2 >= mViewPort->clippedHeight )
+      if ( false )
       {
         drawPixelRectangle();
       }
       else
       {
-        int paintXoffset = 0;
-        int paintYoffset = 0;
-        int imageX = 0;
-        int imageY = 0;
+        //int paintXoffset = 0;
+        //int paintYoffset = 0;
+        double imageX = 0;
+        double imageY = 0;
 
         if ( mMapToPixel )
         {
+          /*
           paintXoffset = static_cast<int>(
                            ( mViewPort->rectXOffsetFloat -
                              mViewPort->rectXOffset )
@@ -4876,16 +4954,24 @@ bool QgsRasterImageBuffer::createNextPartImage()
                            / mMapToPixel->mapUnitsPerPixel()
                            * qAbs( mGeoTransform[5] )
                          );
-
-          imageX = static_cast<int>( mViewPort->topLeftPoint.x() + 0.5 );
-          imageY = static_cast<int>( mViewPort->topLeftPoint.y() + 0.5 +  qAbs( mGeoTransform[5] ) * mCurrentPartRasterMin / mMapToPixel->mapUnitsPerPixel() );
+          */
+          //imageX = static_cast<int>( mViewPort->topLeftPoint.x() + 0.5 );
+          //imageY = static_cast<int>( mViewPort->topLeftPoint.y() + 0.5 +  qAbs( mGeoTransform[5] ) * mCurrentPartRasterMin / mMapToPixel->mapUnitsPerPixel() );
+          imageX = mViewPort->topLeftPoint.x();
+          imageY = mViewPort->topLeftPoint.y() + mCurrentPartRasterMin / mMapToPixel->mapUnitsPerPixel();
         }
 
+        /*
         mPainter->drawImage( imageX, //the top-left point in the paint device
                              imageY,
                              *mCurrentImage,
                              paintXoffset, //specifies the top-left point in image
                              paintYoffset );
+        */
+        QgsDebugMsg( QString("mCurrentPartRasterMin = %1").arg( mCurrentPartRasterMin) );
+        QgsDebugMsg( QString("imageX = %1 imageY = %2").arg(imageX).arg(imageY) );
+        mPainter->drawImage( QPointF ( imageX, imageY ), //the top-left point in the paint device
+                             *mCurrentImage );
       }
     }
   }
@@ -4894,8 +4980,10 @@ bool QgsRasterImageBuffer::createNextPartImage()
   CPLFree( mCurrentGDALData ); mCurrentGDALData = 0;
 
   mCurrentPart++; // NEW
-  QgsDebugMsg( QString("mCurrentPartRasterMax = %1 mViewPort->clippedHeight = %2").arg(mCurrentPartRasterMax).arg(mViewPort->clippedHeight) );
-  if ( mCurrentPartRasterMax >= mViewPort->clippedHeight )
+  //QgsDebugMsg( QString("mCurrentPartRasterMax = %1 mViewPort->clippedHeight = %2").arg(mCurrentPartRasterMax).arg(mViewPort->clippedHeight) );
+  QgsDebugMsg( QString("mCurrentPartRasterMax = %1 mViewPort->drawableAreaYDim = %2").arg(mCurrentPartRasterMax).arg(mViewPort->drawableAreaYDim) );
+  //if ( mCurrentPartRasterMax >= mViewPort->clippedHeight )
+  if ( mCurrentPartRasterMax >= mViewPort->drawableAreaYDim )
   {
     return false; //already at the end...
   }
@@ -4903,9 +4991,11 @@ bool QgsRasterImageBuffer::createNextPartImage()
 
   mCurrentPartRasterMin = mCurrentPartRasterMax + 1;
   mCurrentPartRasterMax = mCurrentPartRasterMin + mNumRasterRowsPerPart;
-  if ( mCurrentPartRasterMax > mViewPort->clippedHeight )
+  //if ( mCurrentPartRasterMax > mViewPort->clippedHeight )
+  if ( mCurrentPartRasterMax > mViewPort->drawableAreaYDim )
   {
-    mCurrentPartRasterMax = mViewPort->clippedHeight;
+    //mCurrentPartRasterMax = mViewPort->clippedHeight;
+    mCurrentPartRasterMax = mViewPort->drawableAreaYDim;
   }
   mCurrentRow = mCurrentPartRasterMin;
   mCurrentPartImageRow = 0;
@@ -4923,24 +5013,30 @@ bool QgsRasterImageBuffer::createNextPartImage()
   int overlapRows = 0;
   if ( mMapToPixel )
   {
+    // TODO: do we still need overlaps?
     overlapRows = mMapToPixel->mapUnitsPerPixel() / qAbs( mGeoTransform[5] ) + 2;
   }
-  if ( mCurrentPartRasterMax + overlapRows >= mViewPort->clippedHeight )
+  //if ( mCurrentPartRasterMax + overlapRows >= mViewPort->clippedHeight )
+  if ( mCurrentPartRasterMax + overlapRows >= mViewPort->drawableAreaYDim )
   {
     overlapRows = 0;
   }
   int rasterYSize = mCurrentPartRasterMax - mCurrentPartRasterMin + overlapRows;
+  QgsDebugMsg( "rasterYSize = " + QString::number( rasterYSize ));
 
-  if ( 2 >= mViewPort->clippedWidth && 2 >= mViewPort->clippedHeight ) //for zoomed in rasters
+  // TODO: consider something like this
+  //if ( 2 >= mViewPort->clippedWidth && 2 >= mViewPort->clippedHeight ) //for zoomed in rasters
+  if ( false )
   {
-    rasterYSize = mViewPort->clippedHeight;
-    ySize = mViewPort->drawableAreaYDim;
+    //rasterYSize = mViewPort->clippedHeight;
+    //ySize = mViewPort->drawableAreaYDim;
   }
   else //normal mode
   {
     if ( mMapToPixel )
     {
-      ySize = qAbs((( rasterYSize ) / mMapToPixel->mapUnitsPerPixel() * mGeoTransform[5] ) ) + 0.5;
+      // makes no more sense
+      //ySize = qAbs((( rasterYSize ) / mMapToPixel->mapUnitsPerPixel() * mGeoTransform[5] ) ) + 0.5;
     }
   }
   QgsDebugMsg( QString("xSize = %1 ySize = %2").arg(xSize).arg(ySize) );
@@ -4968,7 +5064,7 @@ bool QgsRasterImageBuffer::createNextPartImage()
   QgsDebugMsg( QString("mCurrentRow = %1 yMaximum = %2 ySize = %3 mapUnitsPerPixel = %4").arg(mCurrentRow).arg(mViewPort->mDrawnExtent.yMaximum()).arg(ySize).arg(mMapToPixel->mapUnitsPerPixel()) );
   QgsRectangle partExtent ( mViewPort->mDrawnExtent.xMinimum(), yMin,
                             mViewPort->mDrawnExtent.xMaximum(), yMax );
-  mDataProvider->readBlock ( mBandNo, partExtent, xSize, ySize, mCurrentGDALData );
+  mDataProvider->readBlock ( mBandNo, partExtent, xSize, ySize, mViewPort->mDestCRS, mCurrentGDALData );
 
   
   // TODO - error check - throw exception
@@ -4994,6 +5090,11 @@ bool QgsRasterImageBuffer::createNextPartImage()
 
 void QgsRasterImageBuffer::drawPixelRectangle()
 {
+// TODO: consider using similar with raster providers, originaly it was used only with
+//    2 >= mViewPort->clippedWidth && 2 >= mViewPort->clippedHeight
+// but why? but I believe that it should be used always if the ration of original 
+// raster resolution and device resolution is under certain limit
+/*
   // Set up the initial offset into the myQImage we want to copy to the map canvas
   // This is useful when the source image pixels are larger than the screen image.
   int paintXoffset = 0;
@@ -5014,6 +5115,8 @@ void QgsRasterImageBuffer::drawPixelRectangle()
                      / mMapToPixel->mapUnitsPerPixel()
                      * qAbs( mGeoTransform[5] )
                    );
+
+    
   }
 
   //fix for zoomed in rasters
@@ -5112,6 +5215,7 @@ void QgsRasterImageBuffer::drawPixelRectangle()
       }
     }
   }
+*/
 }
 
 // Keep this for now, it is used by Python interface!!!
