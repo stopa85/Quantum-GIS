@@ -469,6 +469,7 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
   QgsDebugMsg( "thePixelWidth = "  + QString::number( thePixelWidth ) );
   QgsDebugMsg( "thePixelHeight = "  + QString::number( thePixelHeight ) );
   QgsDebugMsg( "theExtent: " + theExtent.toString() );
+  QgsDebugMsg( "crs(): " + crs().toWkt() );
   QgsDebugMsg( "theDestCRS: " + theDestCRS.toWkt() );
 
 
@@ -504,9 +505,13 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
   }
   
   // TODO add CRS to method params
+  // TODO: SRC CRS can be forced from GUI - check? Also default project sould be 
+  // probably used if the source has no CRS
   //GDALSetProjection( myGdalMemDataset, crs().toWkt().toAscii().constData() );
-  GDALSetProjection( myGdalMemDataset, GDALGetProjectionRef( mGdalDataset ) ); 
-  //GDALSetProjection( myGdalMemDataset, theDestCRS.toWkt().toAscii().constData() );
+  //const char *mySrcCRSChar = crs().toWkt().toAscii().constData();
+
+  //GDALSetProjection( myGdalMemDataset, GDALGetProjectionRef( mGdalDataset ) ); 
+  GDALSetProjection( myGdalMemDataset, theDestCRS.toWkt().toAscii().constData() );
 
   double myMemGeoTransform[6];
   myMemGeoTransform[0] = theExtent.xMinimum(); /* top left x */
@@ -547,6 +552,7 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
       GDALCreateGenImgProjTransformer( 
         mGdalDataset, 
         GDALGetProjectionRef(mGdalDataset), 
+        //mySrcCRSChar, 
         myGdalMemDataset,
         GDALGetProjectionRef(myGdalMemDataset), 
         FALSE, 0.0, 1 
@@ -575,8 +581,8 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
 
   // TODO optimize somehow to avoid no data init if not necessary 
   // i.e. no projection, but there is also the problem with margine
-  myWarpOptions->papszWarpOptions = 
-    CSLSetNameValue(myWarpOptions->papszWarpOptions,"INIT_DEST", "NO_DATA" );
+  //myWarpOptions->papszWarpOptions = 
+  //  CSLSetNameValue(myWarpOptions->papszWarpOptions,"INIT_DEST", "NO_DATA" );
 
 
   GDALWarpOperation myOperation;

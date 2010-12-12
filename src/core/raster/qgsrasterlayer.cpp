@@ -824,6 +824,25 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
 
   const QgsMapToPixel& theQgsMapToPixel = rendererContext.mapToPixel();
   const QgsRectangle& theViewExtent = rendererContext.extent();
+  
+  QgsRectangle myProjectedViewExtent;
+  QgsRectangle myProjectedLayerExtent;
+  
+  if ( rendererContext.coordinateTransform() ) 
+  {
+    QgsDebugMsg( "coordinateTransform set -> project extents." );
+    myProjectedViewExtent = rendererContext.coordinateTransform()->transformBoundingBox (
+      rendererContext.extent() );
+    myProjectedLayerExtent = rendererContext.coordinateTransform()->transformBoundingBox (
+      mLayerExtent );
+  }
+  else
+  {
+    QgsDebugMsg( "coordinateTransform not set" );
+    myProjectedViewExtent = rendererContext.extent();
+    myProjectedLayerExtent = mLayerExtent;
+  }
+
   QPainter* theQPainter = rendererContext.painter();
 
   if ( !theQPainter )
@@ -832,7 +851,8 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   }
 
   // clip raster extent to view extent
-  QgsRectangle myRasterExtent = theViewExtent.intersect( &mLayerExtent );
+  //QgsRectangle myRasterExtent = theViewExtent.intersect( &mLayerExtent );
+  QgsRectangle myRasterExtent = myProjectedViewExtent.intersect( &myProjectedLayerExtent );
   if ( myRasterExtent.isEmpty() )
   {
     QgsDebugMsg( "draw request outside view extent." );
@@ -841,6 +861,8 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   }
 
   QgsDebugMsg( "theViewExtent is " + theViewExtent.toString() );
+  QgsDebugMsg( "myProjectedViewExtent is " + myProjectedViewExtent.toString() );
+  QgsDebugMsg( "myProjectedLayerExtent is " + myProjectedLayerExtent.toString() );
   QgsDebugMsg( "myRasterExtent is " + myRasterExtent.toString() );
 
   //
@@ -853,7 +875,8 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   QgsRasterViewPort *myRasterViewPort = new QgsRasterViewPort();
 
   myRasterViewPort->mDrawnExtent = myRasterExtent;
-  if ( rendererContext.coordinateTransform() ) {
+  if ( rendererContext.coordinateTransform() ) 
+  {
     myRasterViewPort->mDestCRS = rendererContext.coordinateTransform()->destCRS();
   } else {
     myRasterViewPort->mDestCRS = QgsCoordinateReferenceSystem(); // will be invalid
@@ -949,7 +972,7 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
     myRasterViewPort->topLeftPoint.setX( floor( myRasterViewPort->topLeftPoint.x() ) );
     myRasterViewPort->topLeftPoint.setY( floor( myRasterViewPort->topLeftPoint.y() ) );
     myRasterViewPort->bottomRightPoint.setX( ceil( myRasterViewPort->bottomRightPoint.x() ) );
-    myRasterViewPort->bottomRightPoint.setY( ceil( myRasterViewPort->bottomRightPoint.y() + 10 ) );
+    myRasterViewPort->bottomRightPoint.setY( ceil( myRasterViewPort->bottomRightPoint.y() ) );
     // recalc myRasterExtent to aligned values
     myRasterExtent.set ( 
       theQgsMapToPixel.toMapCoordinatesF ( myRasterViewPort->topLeftPoint.x(), 
@@ -5062,9 +5085,10 @@ bool QgsRasterImageBuffer::createNextPartImage()
   double yMin = yMax - ySize * mMapToPixel->mapUnitsPerPixel();
 
   QgsDebugMsg( QString("mCurrentRow = %1 yMaximum = %2 ySize = %3 mapUnitsPerPixel = %4").arg(mCurrentRow).arg(mViewPort->mDrawnExtent.yMaximum()).arg(ySize).arg(mMapToPixel->mapUnitsPerPixel()) );
-  QgsRectangle partExtent ( mViewPort->mDrawnExtent.xMinimum(), yMin,
+  QgsRectangle myPartExtent ( mViewPort->mDrawnExtent.xMinimum(), yMin,
                             mViewPort->mDrawnExtent.xMaximum(), yMax );
-  mDataProvider->readBlock ( mBandNo, partExtent, xSize, ySize, mViewPort->mDestCRS, mCurrentGDALData );
+  QgsDebugMsg( "myPartExtent is " + myPartExtent.toString() );
+  mDataProvider->readBlock ( mBandNo, myPartExtent, xSize, ySize, mViewPort->mDestCRS, mCurrentGDALData );
 
   
   // TODO - error check - throw exception
