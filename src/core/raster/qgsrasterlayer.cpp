@@ -877,8 +877,10 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   myRasterViewPort->mDrawnExtent = myRasterExtent;
   if ( rendererContext.coordinateTransform() ) 
   {
+    myRasterViewPort->mSrcCRS = crs();
     myRasterViewPort->mDestCRS = rendererContext.coordinateTransform()->destCRS();
   } else {
+    myRasterViewPort->mSrcCRS = QgsCoordinateReferenceSystem(); // will be invalid
     myRasterViewPort->mDestCRS = QgsCoordinateReferenceSystem(); // will be invalid
   }
 
@@ -4707,7 +4709,7 @@ void *QgsRasterLayer::readData( int bandNo, QgsRasterViewPort *viewPort )
       viewPort->mDrawnExtent.xMaximum(), 
       viewPort->mDrawnExtent.yMaximum() 
     );
-    mDataProvider->readBlock ( bandNo, partExtent, viewPort->drawableAreaXDim, viewPort->drawableAreaYDim, QgsCoordinateReferenceSystem(), data );
+    mDataProvider->readBlock ( bandNo, partExtent, viewPort->drawableAreaXDim, viewPort->drawableAreaYDim, QgsCoordinateReferenceSystem(), QgsCoordinateReferenceSystem(), data );
   }
   return data;
 }
@@ -5088,7 +5090,7 @@ bool QgsRasterImageBuffer::createNextPartImage()
   QgsRectangle myPartExtent ( mViewPort->mDrawnExtent.xMinimum(), yMin,
                             mViewPort->mDrawnExtent.xMaximum(), yMax );
   QgsDebugMsg( "myPartExtent is " + myPartExtent.toString() );
-  mDataProvider->readBlock ( mBandNo, myPartExtent, xSize, ySize, mViewPort->mDestCRS, mCurrentGDALData );
+  mDataProvider->readBlock ( mBandNo, myPartExtent, xSize, ySize, mViewPort->mSrcCRS, mViewPort->mDestCRS, mCurrentGDALData );
 
   
   // TODO - error check - throw exception

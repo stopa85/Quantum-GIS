@@ -678,7 +678,7 @@ QImage *QgsWmsProvider::draw( QgsRectangle  const &viewExtent, int pixelWidth, i
   return cachedImage;
 }
 
-void QgsWmsProvider::readBlock( int bandNo, QgsRectangle  const & viewExtent, int pixelWidth, int pixelHeight, QgsCoordinateReferenceSystem theDestCRS, void *block )
+void QgsWmsProvider::readBlock( int bandNo, QgsRectangle  const & viewExtent, int pixelWidth, int pixelHeight, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *block )
 {
   QgsDebugMsg( "Entered" );
   // TODO: optimize to avoid writing to QImage

@@ -459,7 +459,7 @@ class QgsWmsProvider : public QgsRasterDataProvider
      */
     QImage *draw( QgsRectangle const &  viewExtent, int pixelWidth, int pixelHeight );
 
-    void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height,  QgsCoordinateReferenceSystem theDestCRS, void *data );
+    void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *data );
 
 
     /** Return the extent for this data layer

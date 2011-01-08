@@ -86,6 +86,9 @@ struct QgsRasterViewPort
   // intersection of current map extent and layer extent
   QgsRectangle mDrawnExtent;
 
+  // Source coordinate system
+  QgsCoordinateReferenceSystem mSrcCRS;
+
   // Target coordinate system
   QgsCoordinateReferenceSystem mDestCRS;
 };
