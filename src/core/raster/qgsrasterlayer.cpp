@@ -60,6 +60,7 @@ email                : tim at linfiniti.com
 #include <QRegExp>
 #include <QSlider>
 #include <QSettings>
+#include <QTime>
 #include "qgslogger.h"
 
 // typedefs for provider plugin functions of interest
@@ -1171,6 +1172,8 @@ void QgsRasterLayer::draw( QPainter * theQPainter,
                            const QgsMapToPixel* theQgsMapToPixel )
 {
   QgsDebugMsg( " 3 arguments" );
+  QTime time;
+  time.start();
   //
   //
   // The goal here is to make as many decisions as possible early on (outside of the rendering loop)
@@ -1327,7 +1330,7 @@ void QgsRasterLayer::draw( QPainter * theQPainter,
       break;
 
   }
-
+  QgsDebugMsg( QString( "raster draw time (ms): %1" ).arg( time.elapsed() ) );
 } //end of draw method
 
 QString QgsRasterLayer::drawingStyleAsString() const
@@ -3090,11 +3093,11 @@ void QgsRasterLayer::thumbnailAsPixmap( QPixmap * theQPixmap )
   //TODO: This should be depreciated and a new function written that just returns a new QPixmap, it will be safer
   if ( 0 == theQPixmap ) { return; }
 
-  theQPixmap->fill(); //defaults to white
+  theQPixmap->fill ( ); //defaults to white
 
   // Raster providers are disabled (for the moment)
-  if ( mProviderKey.isEmpty() )
-  {
+  //if ( mProviderKey.isEmpty() )
+  //{
     QgsRasterViewPort *myRasterViewPort = new QgsRasterViewPort();
     /*
     myRasterViewPort->rectXOffset = 0;
@@ -3106,17 +3109,49 @@ void QgsRasterLayer::thumbnailAsPixmap( QPixmap * theQPixmap )
     myRasterViewPort->clippedWidth   = mWidth;
     myRasterViewPort->clippedHeight  = mHeight;
     */
-    myRasterViewPort->topLeftPoint = QgsPoint( 0, 0 );
-    myRasterViewPort->bottomRightPoint = QgsPoint( theQPixmap->width(), theQPixmap->height() );
+    
+    double myMapUnitsPerPixel;
+    double myX = 0.0;
+    double myY = 0.0;
+    QgsRectangle myExtent = mDataProvider->extent();
+    if ( myExtent.width()/myExtent.height() >=  theQPixmap->width() / theQPixmap->height() )
+    {
+      myMapUnitsPerPixel = myExtent.width() / theQPixmap->width();
+      myY = (theQPixmap->height() - myExtent.height() / myMapUnitsPerPixel ) / 2;
+    }
+    else
+    {
+      myMapUnitsPerPixel = myExtent.height() / theQPixmap->height();
+      myX = (theQPixmap->width() - myExtent.width() / myMapUnitsPerPixel ) / 2;
+    }
+
+    double myPixelWidth = myExtent.width() / myMapUnitsPerPixel;
+    double myPixelHeight = myExtent.height() / myMapUnitsPerPixel;
+
+    //myRasterViewPort->topLeftPoint = QgsPoint( 0, 0 );
+    myRasterViewPort->topLeftPoint = QgsPoint( myX, myY );
+  
+    //myRasterViewPort->bottomRightPoint = QgsPoint( theQPixmap->width(), theQPixmap->height() );
+    
+    myRasterViewPort->bottomRightPoint = QgsPoint( myPixelWidth, myPixelHeight );
     myRasterViewPort->drawableAreaXDim = theQPixmap->width();
     myRasterViewPort->drawableAreaYDim = theQPixmap->height();
+    //myRasterViewPort->drawableAreaXDim = myPixelWidth;
+    //myRasterViewPort->drawableAreaYDim = myPixelHeight;
+
+    myRasterViewPort->mDrawnExtent = myExtent;
+    myRasterViewPort->mSrcCRS = QgsCoordinateReferenceSystem(); // will be invalid
+    myRasterViewPort->mDestCRS = QgsCoordinateReferenceSystem(); // will be invalid
+
+    QgsMapToPixel *myMapToPixel = new QgsMapToPixel( myMapUnitsPerPixel); 
 
     QPainter * myQPainter = new QPainter( theQPixmap );
-    draw( myQPainter, myRasterViewPort );
+    draw( myQPainter, myRasterViewPort, myMapToPixel );
     delete myRasterViewPort;
+    delete myMapToPixel;
     myQPainter->end();
     delete myQPainter;
-  }
+  //}
 
 }
 
