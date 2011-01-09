@@ -88,7 +88,7 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
 
   QgsDebugMsg ("GdalDataset opened" );
 
-  for ( int i = 0; i < GDALGetRasterCount( mGdalDataset ); i++ )
+  for ( int i = 0; i < GDALGetRasterCount( mGdalBaseDataset ); i++ )
   {
     mMinMaxComputed.append(false);
     mMinimum.append(0);
@@ -214,7 +214,7 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
     // But we need a null value in case of reprojection and BTW also for 
     // aligned margines
 
-    switch ( dataType( 0 ) ) {
+    switch ( dataType( 1 ) ) {
       case QgsRasterDataProvider::Byte:
         mNoDataValue = 255.0;
         break;
