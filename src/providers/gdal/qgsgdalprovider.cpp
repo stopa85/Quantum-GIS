@@ -489,7 +489,7 @@ void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent,
 
  
   // TODO: more bands support
-  myMemDsn.sprintf ( "MEM:::DATAPOINTER=%u,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (int)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( myGdalDataType ) );
+  myMemDsn.sprintf ( "MEM:::DATAPOINTER=%lu,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (long)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( myGdalDataType ) );
 
   QgsDebugMsg( "Open GDAL MEM : " + myMemDsn );
 
@@ -884,6 +884,9 @@ int QgsGdalProvider::dataType( int bandNo ) const
     case GDT_CFloat64:
       return QgsRasterDataProvider::CFloat64;
       break;
+    case GDT_TypeCount:
+      // make gcc happy
+      break;
   }
   return QgsRasterDataProvider::UnknownDataType;
 }
@@ -1092,7 +1095,6 @@ QString QgsGdalProvider::buildPyramids(  QList<QgsRasterPyramid> const & theRast
   //
   CPLErr myError; //in case anything fails
   int myCount = 1;
-  int myTotal = theRasterPyramidList.count();
   QList<QgsRasterPyramid>::const_iterator myRasterPyramidIterator;
   for ( myRasterPyramidIterator = theRasterPyramidList.begin();
         myRasterPyramidIterator != theRasterPyramidList.end();
