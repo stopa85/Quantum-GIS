@@ -259,52 +259,6 @@ QDateTime QgsRasterLayer::lastModified( QString const & name )
 typedef QgsDataProvider * classFactoryFunction_t( const QString * );
 
 
-//
-// global callback function
-//
-int CPL_STDCALL progressCallback( double dfComplete,
-                                  const char * pszMessage,
-                                  void * pProgressArg )
-{
-  static double dfLastComplete = -1.0;
-
-  QgsRasterLayer * mypLayer = ( QgsRasterLayer * ) pProgressArg;
-
-  if ( dfLastComplete > dfComplete )
-  {
-    if ( dfLastComplete >= 1.0 )
-      dfLastComplete = -1.0;
-    else
-      dfLastComplete = dfComplete;
-  }
-
-  if ( floor( dfLastComplete*10 ) != floor( dfComplete*10 ) )
-  {
-    int    nPercent = ( int ) floor( dfComplete * 100 );
-
-    if ( nPercent == 0 && pszMessage != NULL )
-    {
-      //fprintf( stdout, "%s:", pszMessage );
-    }
-
-    if ( nPercent == 100 )
-    {
-      //fprintf( stdout, "%d - done.\n", (int) floor(dfComplete*100) );
-      mypLayer->showProgress( 100 );
-    }
-    else
-    {
-      int myProgress = ( int ) floor( dfComplete * 100 );
-      //fprintf( stdout, "%d.", myProgress);
-      mypLayer->showProgress( myProgress );
-      //fflush( stdout );
-    }
-  }
-  dfLastComplete = dfComplete;
-
-  return true;
-}
-
 
 
 
