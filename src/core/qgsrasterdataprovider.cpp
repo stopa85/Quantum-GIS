@@ -17,9 +17,48 @@
 /* $Id$ */
 
 #include "qgsrasterdataprovider.h"
+#include "qgsrasterprojector.h"
 #include "qgslogger.h"
 
 #include <QMap>
+
+void QgsRasterDataProvider::readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *data ) 
+{
+  QgsDebugMsg("Entered");
+  QgsDebugMsg( "viewExtent = " + viewExtent.toString() );
+
+  if ( ! theSrcCRS.isValid() || ! theDestCRS.isValid() ) {
+    readBlock( bandNo, viewExtent, width, height, data );
+    return;
+  }
+
+  QgsRasterProjector myProjector = QgsRasterProjector ( theSrcCRS, theDestCRS, viewExtent, height, width, extent().width()/xSize(),  extent().height()/ySize() );
+
+  // TODO: init data by nulls
+
+  // Allocate memory for not projected source data
+  int mySize = dataTypeSize(bandNo)/8;
+  void *mySrcData = malloc( mySize * myProjector.srcRows() * myProjector.srcCols() );
+
+  readBlock( bandNo, myProjector.srcExtent(), myProjector.srcCols(), myProjector.srcRows(), mySrcData );
+
+  // Project data from source
+  QVector<int> mySrcRowCol;
+  int mySrcOffset;
+  int myDestOffset;
+  for ( int r = 0; r < height; r++) {
+  //for ( int r = height-1; r < height; r++) {
+    for ( int c = 0; c < width; c++) {
+      mySrcRowCol = myProjector.srcRowCol ( r, c );
+      mySrcOffset = mySize * ( mySrcRowCol[0] * myProjector.srcCols() + mySrcRowCol[1] );
+      myDestOffset = mySize * ( r * width + c );
+      // retype to char is just to avoid g++ warning 
+      memcpy( (char*) data + myDestOffset, (char*)mySrcData + mySrcOffset, mySize );
+    }
+  }
+  free( mySrcData );
+};
+
 
 QgsRasterDataProvider::QgsRasterDataProvider(): mDpi( -1 )
 {

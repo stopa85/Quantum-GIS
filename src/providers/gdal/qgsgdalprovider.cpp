@@ -513,7 +513,12 @@ void QgsGdalProvider::readBlock( int theBandNo, int xBlock, int yBlock, void *bl
   GDALReadBlock( myGdalBand, xBlock, yBlock, block );
 }
 
-void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *theBlock )
+void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, void *theBlock )
+{
+  return readBlockOld( theBandNo, theExtent, thePixelWidth, thePixelHeight, QgsCoordinateReferenceSystem(), QgsCoordinateReferenceSystem(), theBlock );
+}
+
+void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *theBlock )
 {
   QgsDebugMsg( "thePixelWidth = "  + QString::number( thePixelWidth ) );
   QgsDebugMsg( "thePixelHeight = "  + QString::number( thePixelHeight ) );

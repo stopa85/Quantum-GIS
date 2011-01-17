@@ -298,7 +298,10 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     virtual void readBlock( int bandNo, int xBlock, int yBlock, void *data ){}
 
     /** read block of data using give extent and size */
-    virtual void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *data ) {};
+    virtual void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, void *data ) {};
+
+    /** read block of data using give extent and size */
+    virtual void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *data );
 
     /** value representing null data */
     virtual double noDataValue() const { return 0; }
