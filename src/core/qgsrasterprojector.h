@@ -59,7 +59,7 @@ class QgsRasterProjector
 
 
     /** \brief get destination point for _current_ destination position */
-    QgsPoint destPointOnCPMatrix ( int theRow, int theCol );
+    void destPointOnCPMatrix ( int theRow, int theCol, double *theX, double *theY );
 
     /** \brief Get matrix upper left row/col indexes for destination row/col */
     int matrixRow ( int theDestRow );
@@ -75,7 +75,7 @@ class QgsRasterProjector
     QgsPoint srcPoint ( int theRow, int theCol );
 
     /** \brief Get source row and column indexes for current source extent and resolution */
-    QVector<int> srcRowCol ( int theDestRow, int theDestCol );
+    void srcRowCol ( int theDestRow, int theDestCol, int *theSrcRow, int *theSrcCol );
 
     /** \brief insert rows to matrix */
     void insertRows();
@@ -92,14 +92,6 @@ class QgsRasterProjector
     /** \brief calculate matrix column */
     bool calcCol( int theCol );
 
-    /** \brief calculate odd (new) matrix rows 
-      * returns true if errors along those lines is within threshold  
-      */
-    bool calcRows();
-
-    /** \brief calculate odd (new) matrix columns */
-    bool calcCols();
-
     /** \brief calculate source extent */
     void calcSrcExtent();
 
@@ -110,6 +102,12 @@ class QgsRasterProjector
       * returns true if within threshold */
     bool checkCols ();
   
+    /** \brief check error along rows
+      * returns true if within threshold */
+    bool checkRows ();
+
+    /** \brief get point for matrix position */
+    //QgsPoint matrixPoint ( int theRow, int theCol ) { return QgsPoint ( mCPMatrix[theRow][theCol][0], mCPMatrix[theRow][theCol][1] ); }
 
     /** get source extent */
     QgsRectangle srcExtent() { return mSrcExtent; } 
@@ -117,8 +115,8 @@ class QgsRasterProjector
     /** get/set source width/height */
     int srcRows() { return mSrcRows; }
     int srcCols() { return mSrcCols; }
-    void setSrcRows( int theRows ) { mSrcRows = theRows; }
-    void setSrcCols( int theCols ) { mSrcCols = theCols; }
+    void setSrcRows( int theRows ) { mSrcRows = theRows; mSrcXRes = mSrcExtent.height() / mSrcRows; }
+    void setSrcCols( int theCols ) { mSrcCols = theCols; mSrcYRes = mSrcExtent.width() / mSrcCols; }
 
   private:
     /** Source CRS */
@@ -143,14 +141,35 @@ class QgsRasterProjector
     /** Number of destination columns */
     int mDestCols;
 
+    /** Destination x resolution */
+    double mDestXRes;
+
+    /** Destination y resolution */
+    double mDestYRes;
+
     /** Number of source rows */
     int mSrcRows;
 
     /** Number of source columns */
     int mSrcCols;
 
+    /** Source x resolution */
+    double mSrcXRes;
+
+    /** Source y resolution */
+    double mSrcYRes;
+
+    /** number of destination rows per matrix row */
+    double mDestRowsPerMatrixRow;
+
+    /** number of destination cols per matrix col */
+    double mDestColsPerMatrixCol;
+
     /** Grid of source control points */
+    // using QList< QList<double *> > mCPMatrix; takes however a more time (about 20%) than QList< QList<QgsPoint> > mCPMatrix; - why?
+
     QList< QList<QgsPoint> > mCPMatrix;
+    //QList< QList<double *> > mCPMatrix;
 
     /** Number of mCPMatrix columns */
     int mCPCols;
@@ -158,7 +177,7 @@ class QgsRasterProjector
     int mCPRows;
 
     /** Maximum tolerance in destination units */
-    double mTolerance;
+    double mSqrTolerance;
 
     /** Maximum source resolution */
     double mMaxSrcXRes;

@@ -20,6 +20,7 @@
 #include "qgsrasterprojector.h"
 #include "qgslogger.h"
 
+#include <QTime>
 #include <QMap>
 
 void QgsRasterDataProvider::readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *data ) 
@@ -32,7 +33,12 @@ void QgsRasterDataProvider::readBlock( int bandNo, QgsRectangle  const & viewExt
     return;
   }
 
+  QTime time;
+  time.start();
+
   QgsRasterProjector myProjector = QgsRasterProjector ( theSrcCRS, theDestCRS, viewExtent, height, width, extent().width()/xSize(),  extent().height()/ySize() );
+
+  QgsDebugMsg( QString( "create projector time  (ms): %1" ).arg( time.elapsed() ) );
 
   // TODO: init data by nulls
 
@@ -40,22 +46,30 @@ void QgsRasterDataProvider::readBlock( int bandNo, QgsRectangle  const & viewExt
   int mySize = dataTypeSize(bandNo)/8;
   void *mySrcData = malloc( mySize * myProjector.srcRows() * myProjector.srcCols() );
 
+  time.restart();
+
   readBlock( bandNo, myProjector.srcExtent(), myProjector.srcCols(), myProjector.srcRows(), mySrcData );
 
+  QgsDebugMsg( QString( "read not projected block time  (ms): %1" ).arg( time.elapsed() ) );
+  time.restart();
+
   // Project data from source
-  QVector<int> mySrcRowCol;
+  int mySrcRow;
+  int mySrcCol;
   int mySrcOffset;
   int myDestOffset;
   for ( int r = 0; r < height; r++) {
   //for ( int r = height-1; r < height; r++) {
     for ( int c = 0; c < width; c++) {
-      mySrcRowCol = myProjector.srcRowCol ( r, c );
-      mySrcOffset = mySize * ( mySrcRowCol[0] * myProjector.srcCols() + mySrcRowCol[1] );
+      myProjector.srcRowCol ( r, c, &mySrcRow, &mySrcCol );
+      mySrcOffset = mySize * ( mySrcRow * myProjector.srcCols() + mySrcCol );
       myDestOffset = mySize * ( r * width + c );
       // retype to char is just to avoid g++ warning 
       memcpy( (char*) data + myDestOffset, (char*)mySrcData + mySrcOffset, mySize );
     }
   }
+  QgsDebugMsg( QString( "reproject block time  (ms): %1" ).arg( time.elapsed() ) );
+
   free( mySrcData );
 };
 
