@@ -106,6 +106,12 @@ class QgsRasterProjector
       * returns true if within threshold */
     bool checkRows ();
 
+    /** Calculate array of src helper points */
+    void calcHelper ( int theMatrixRow, QList<QgsPoint> *thePoints );
+
+    /** Calc / switch helper */
+    void nextHelper();
+
     /** \brief get point for matrix position */
     //QgsPoint matrixPoint ( int theRow, int theCol ) { return QgsPoint ( mCPMatrix[theRow][theCol][0], mCPMatrix[theRow][theCol][1] ); }
 
@@ -170,6 +176,17 @@ class QgsRasterProjector
 
     QList< QList<QgsPoint> > mCPMatrix;
     //QList< QList<double *> > mCPMatrix;
+
+    /** Array of source points for each destination column on top of current CPMatrix grid row */
+    QList <QgsPoint> mHelperTop;
+    QList <QgsPoint> *pHelperTop;
+
+    /** Array of source points for each destination column on bottom of current CPMatrix grid row */
+    QList <QgsPoint> mHelperBottom;
+    QList <QgsPoint> *pHelperBottom;
+
+    /** Current mHelperTop matrix row */
+    int mHelperTopRow;
 
     /** Number of mCPMatrix columns */
     int mCPCols;
