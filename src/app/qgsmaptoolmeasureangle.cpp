@@ -45,37 +45,38 @@ void QgsMapToolMeasureAngle::canvasMoveEvent( QMouseEvent * e )
   mRubberBand->movePoint( point );
   if ( mAnglePoints.size() == 2 )
   {
-    //do angle calculation
-    QgsDistanceArea* distArea = mCanvas->mapRenderer()->distanceArea();
-    if ( distArea )
+    if ( !mResultDisplay )
     {
-      double azimutOne = distArea->bearing( mAnglePoints.at( 1 ), mAnglePoints.at( 0 ) );
-      double azimutTwo = distArea->bearing( mAnglePoints.at( 1 ), point );
-      double resultAngle = azimutTwo - azimutOne;
-      QgsDebugMsg( QString::number( qAbs( resultAngle ) ) );
-      QgsDebugMsg( QString::number( M_PI ) );
-      if ( qAbs( resultAngle ) > M_PI )
-      {
-        if ( resultAngle < 0 )
-        {
-          resultAngle = M_PI + ( resultAngle + M_PI );
-        }
-        else
-        {
-          resultAngle = -M_PI + ( resultAngle - M_PI );
-        }
-      }
-
-      //show angle in dialog
-      if ( !mResultDisplay )
-      {
-        mResultDisplay = new QgsDisplayAngle( mCanvas->topLevelWidget() );
-        QObject::connect( mResultDisplay, SIGNAL( rejected() ), this, SLOT( stopMeasuring() ) );
-        mResultDisplay->move( e->pos() - QPoint( 100, 100 ) );
-      }
-      mResultDisplay->show();
-      mResultDisplay->setValueInRadians( resultAngle );
+      mResultDisplay = new QgsDisplayAngle( mCanvas->topLevelWidget() );
+      QObject::connect( mResultDisplay, SIGNAL( rejected() ), this, SLOT( stopMeasuring() ) );
+      QObject::connect( mResultDisplay, SIGNAL( changeProjectionEnabledState() ),
+                        this, SLOT( changeProjectionEnabledState() ) );
+      mResultDisplay->move( e->pos() - QPoint( 100, 100 ) );
     }
+    mResultDisplay->show();
+
+    QgsDistanceArea myDa;
+    configureDistanceArea( myDa );
+
+    //angle calculation
+    double azimuthOne = myDa.bearing( mAnglePoints.at( 1 ), mAnglePoints.at( 0 ) );
+    double azimuthTwo = myDa.bearing( mAnglePoints.at( 1 ), point );
+    double resultAngle = azimuthTwo - azimuthOne;
+    QgsDebugMsg( QString::number( qAbs( resultAngle ) ) );
+    QgsDebugMsg( QString::number( M_PI ) );
+    if ( qAbs( resultAngle ) > M_PI )
+    {
+      if ( resultAngle < 0 )
+      {
+        resultAngle = M_PI + ( resultAngle + M_PI );
+      }
+      else
+      {
+        resultAngle = -M_PI + ( resultAngle - M_PI );
+      }
+    }
+
+    mResultDisplay->setValueInRadians( resultAngle );
   }
 }
 
@@ -143,6 +144,46 @@ QgsPoint QgsMapToolMeasureAngle::snapPoint( const QPoint& p )
   {
     return snappingResults.constBegin()->snappedVertex;
   }
+}
+
+void QgsMapToolMeasureAngle::changeProjectionEnabledState()
+{
+  if ( mAnglePoints.size() != 3 )
+    return;
+  if ( !mResultDisplay )
+    return;
+
+  QgsDistanceArea myDa;
+  configureDistanceArea( myDa );
+
+  //angle calculation
+  double azimuthOne = myDa.bearing( mAnglePoints.at( 1 ), mAnglePoints.at( 0 ) );
+  double azimuthTwo = myDa.bearing( mAnglePoints.at( 1 ), mAnglePoints.at( 2 ) );
+  double resultAngle = azimuthTwo - azimuthOne;
+  QgsDebugMsg( QString::number( fabs( resultAngle ) ) );
+  QgsDebugMsg( QString::number( M_PI ) );
+  if ( fabs( resultAngle ) > M_PI )
+  {
+    if ( resultAngle < 0 )
+    {
+      resultAngle = M_PI + ( resultAngle + M_PI );
+    }
+    else
+    {
+      resultAngle = -M_PI + ( resultAngle - M_PI );
+    }
+  }
+  mResultDisplay->setValueInRadians( resultAngle );
+
+}
+
+void QgsMapToolMeasureAngle::configureDistanceArea( QgsDistanceArea& da )
+{
+  QSettings settings;
+  QString ellipsoidId = settings.value( "/qgis/measure/ellipsoid", "WGS84" ).toString();
+  da.setSourceCrs( mCanvas->mapRenderer()->destinationSrs().srsid() );
+  da.setEllipsoid( ellipsoidId );
+  da.setProjectionsEnabled( mResultDisplay->projectionEnabled() );
 }
 
 

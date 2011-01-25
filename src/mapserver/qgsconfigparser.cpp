@@ -17,9 +17,13 @@
 
 #include "qgsconfigparser.h"
 #include "qgsapplication.h"
+#include "qgscomposerlabel.h"
+#include "qgscomposermap.h"
+#include "qgscomposition.h"
 #include "qgsrasterlayer.h"
 #include "qgsvectorlayer.h"
 #include <sqlite3.h>
+#include <QFile>
 
 
 QgsConfigParser::QgsConfigParser()
@@ -267,5 +271,151 @@ void QgsConfigParser::appendCRSElementsToLayer( QDomElement& layerElement, QDomD
     QDomText epsgText = doc.createTextNode( "EPSG:" + QString::number( *crsIt ) );
     crsElement.appendChild( epsgText );
     layerElement.appendChild( crsElement );
+  }
+}
+
+QgsComposition* QgsConfigParser::createPrintComposition( const QString& composerTemplate, QgsMapRenderer* mapRenderer, const QMap< QString, QString >& parameterMap ) const
+{
+  QList<QgsComposerMap*> composerMaps;
+  QList<QgsComposerLabel*> composerLabels;
+
+  QgsComposition* c = initComposition( composerTemplate, mapRenderer, composerMaps, composerLabels );
+  if ( !c )
+  {
+    return 0;
+  }
+
+  QMap< QString, QString >::const_iterator dpiIt = parameterMap.find( "DPI" );
+  if ( dpiIt != parameterMap.constEnd() )
+  {
+    c->setPrintResolution( dpiIt.value().toInt() );
+  }
+
+  //replace composer map parameters
+  QList<QgsComposerMap*>::iterator mapIt = composerMaps.begin();
+  QgsComposerMap* currentMap = 0;
+  for ( ; mapIt != composerMaps.end(); ++mapIt )
+  {
+    currentMap = *mapIt;
+    if ( !currentMap )
+    {
+      continue;
+    }
+
+    //search composer map title in parameter map-> string
+    QMap< QString, QString >::const_iterator titleIt = parameterMap.find( "MAP" + QString::number( currentMap->id() ) );
+    if ( titleIt == parameterMap.constEnd() )
+    {
+      //remove map from composition if not referenced by the request
+      c->removeItem( *mapIt );
+      delete( *mapIt );
+      continue;
+    }
+    QString replaceString = titleIt.value();
+    QStringList replacementList = replaceString.split( "/" );
+
+    //get map extent from string
+    if ( replacementList.size() > 0 )
+    {
+      QStringList coordList = replacementList.at( 0 ).split( "," );
+      if ( coordList.size() > 3 )
+      {
+        bool xMinOk, yMinOk, xMaxOk, yMaxOk;
+        double xmin = coordList.at( 0 ).toDouble( &xMinOk );
+        double ymin = coordList.at( 1 ).toDouble( &yMinOk );
+        double xmax = coordList.at( 2 ).toDouble( &xMaxOk );
+        double ymax = coordList.at( 3 ).toDouble( &yMaxOk );
+        if ( xMinOk && yMinOk && xMaxOk && yMaxOk )
+        {
+          currentMap->setNewExtent( QgsRectangle( xmin, ymin, xmax, ymax ) );
+        }
+      }
+    }
+
+    //get rotation from string
+    if ( replacementList.size() > 1 )
+    {
+      bool rotationOk;
+      double rotation = replacementList.at( 1 ).toDouble( &rotationOk );
+      if ( rotationOk )
+      {
+        currentMap->setMapRotation( rotation );
+      }
+    }
+
+    //get layer list from string
+    if ( replacementList.size() > 2 )
+    {
+      QStringList layerSet;
+      QStringList wmsLayerList = replacementList.at( 2 ).split( "," );
+      QStringList wmsStyleList;
+      if ( replacementList.size() > 3 )
+      {
+        wmsStyleList = replacementList.at( 3 ).split( "," );
+      }
+
+      for ( int i = 0; i < wmsLayerList.size(); ++i )
+      {
+        QString styleName;
+        if ( wmsStyleList.size() > i )
+        {
+          styleName = wmsStyleList.at( i );
+        }
+        QList<QgsMapLayer*> layerList = mapLayerFromStyle( wmsLayerList.at( i ), styleName );
+        QList<QgsMapLayer*>::const_iterator mapIdIt = layerList.constBegin();
+        for ( ; mapIdIt != layerList.constEnd(); ++mapIdIt )
+        {
+          if ( *mapIdIt )
+          {
+            layerSet.push_back(( *mapIdIt )->getLayerID() );
+          }
+        }
+      }
+
+      currentMap->setLayerSet( layerSet );
+      currentMap->setKeepLayerSet( true );
+    }
+  }
+
+  //replace label text
+  QList<QgsComposerLabel*>::const_iterator labelIt = composerLabels.constBegin();
+  QgsComposerLabel* currentLabel = 0;
+
+  for ( ; labelIt != composerLabels.constEnd(); ++labelIt )
+  {
+    currentLabel = *labelIt;
+    QMap< QString, QString >::const_iterator titleIt = parameterMap.find( currentLabel->id().toUpper() );
+    if ( titleIt == parameterMap.constEnd() )
+    {
+      //remove exported labels not referenced in the request
+      if ( !currentLabel->id().isEmpty() )
+      {
+        c->removeItem( currentLabel );
+        delete( currentLabel );
+      }
+      continue;
+    }
+
+    currentLabel->setText( titleIt.value() );
+    currentLabel->adjustSizeToText();
+  }
+
+  return c;
+}
+
+void QgsConfigParser::serviceCapabilities( QDomElement& parentElement, QDomDocument& doc ) const
+{
+  QFile wmsService( "wms_metadata.xml" );
+  if ( wmsService.open( QIODevice::ReadOnly ) )
+  {
+    QDomDocument externServiceDoc;
+    QString parseError;
+    int errorLineNo;
+    if ( externServiceDoc.setContent( &wmsService, false, &parseError, &errorLineNo ) )
+    {
+      wmsService.close();
+      QDomElement service = externServiceDoc.firstChildElement();
+      parentElement.appendChild( service );
+    }
   }
 }

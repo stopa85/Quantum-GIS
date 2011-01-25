@@ -54,6 +54,7 @@ static const QString name_ = QObject::tr( "GPS Tools" );
 static const QString description_ = QObject::tr( "Tools for loading and importing GPS data" );
 static const QString version_ = QObject::tr( "Version 0.1" );
 static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
+static const QString icon_ = ":/gps_importer.png";
 
 
 /**
@@ -172,7 +173,7 @@ void QgsGPSPlugin::createGPX()
     {
       QMessageBox::warning( NULL, tr( "Could not create file" ),
                             tr( "Unable to create a GPX file with the given name. "
-                                "Try again with an other name or in an other "
+                                "Try again with another name or in another "
                                 "directory." ) );
       return;
     }
@@ -731,6 +732,11 @@ QGISEXTERN int type()
 QGISEXTERN QString version()
 {
   return version_;
+}
+
+QGISEXTERN QString icon()
+{
+  return icon_;
 }
 
 // Delete ourself

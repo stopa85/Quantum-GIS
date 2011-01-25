@@ -212,11 +212,13 @@ void QgsRasterCalcDialog::on_mButtonBox_accepted()
   //save last output format
   QSettings s;
   s.setValue( "/RasterCalculator/lastOutputFormat", QVariant( mOutputFormatComboBox->currentText() ) );
+  s.setValue( "/RasterCalculator/lastOutputDir", QVariant( QFileInfo( mOutputLayerLineEdit->text() ).absolutePath() ) );
 }
 
 void QgsRasterCalcDialog::on_mOutputLayerPushButton_clicked()
 {
-  QString saveFileName = QFileDialog::getSaveFileName( 0, tr( "Enter result file" ) );
+  QSettings s;
+  QString saveFileName = QFileDialog::getSaveFileName( 0, tr( "Enter result file" ), s.value( "/RasterCalculator/lastOutputDir" ).toString() );
   if ( !saveFileName.isNull() )
   {
     mOutputLayerLineEdit->setText( saveFileName );
@@ -386,4 +388,39 @@ void QgsRasterCalcDialog::on_mOpenBracketPushButton_clicked()
 void QgsRasterCalcDialog::on_mCloseBracketPushButton_clicked()
 {
   mExpressionTextEdit->insertPlainText( " ) " );
+}
+
+void QgsRasterCalcDialog::on_mLessButton_clicked()
+{
+  mExpressionTextEdit->insertPlainText( " < " );
+}
+
+void QgsRasterCalcDialog::on_mGreaterButton_clicked()
+{
+  mExpressionTextEdit->insertPlainText( " > " );
+}
+
+void QgsRasterCalcDialog::on_mEqualButton_clicked()
+{
+  mExpressionTextEdit->insertPlainText( " = " );
+}
+
+void QgsRasterCalcDialog::on_mLesserEqualButton_clicked()
+{
+  mExpressionTextEdit->insertPlainText( " <= " );
+}
+
+void QgsRasterCalcDialog::on_mGreaterEqualButton_clicked()
+{
+  mExpressionTextEdit->insertPlainText( " >= " );
+}
+
+void QgsRasterCalcDialog::on_mAndButton_clicked()
+{
+  mExpressionTextEdit->insertPlainText( " AND " );
+}
+
+void QgsRasterCalcDialog::on_mOrButton_clicked()
+{
+  mExpressionTextEdit->insertPlainText( " OR " );
 }

@@ -33,6 +33,7 @@
 class QgsCoordinateTransform;
 class QNetworkAccessManager;
 class QNetworkReply;
+class QNetworkRequest;
 
 /*
  * The following structs reflect the WMS XML schema,
@@ -758,6 +759,9 @@ class QgsWmsProvider : public QgsRasterDataProvider
     QStringList identifyAs( const QgsPoint &point, QString format );
 
     QString layerMetadata( QgsWmsLayerProperty &layer );
+
+    //! set authorization header
+    void setAuthorization( QNetworkRequest &request ) const;
 
     //! Data source URI of the WMS for this layer
     QString httpuri;

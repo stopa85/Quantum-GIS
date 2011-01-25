@@ -222,6 +222,7 @@ class QgsDelimitedTextProvider : public QgsVectorDataProvider
 
     long mNumberFeatures;
     int mSkipLines;
+    int mFirstDataLine; // Actual first line of data (accounting for blank lines)
 
     //! Storage for any lines in the file that couldn't be loaded
     QStringList mInvalidLines;
@@ -239,6 +240,9 @@ class QgsDelimitedTextProvider : public QgsVectorDataProvider
       double y;
     };
     wkbPoint mWKBpt;
+
+    // Coordinate reference sytem
+    QgsCoordinateReferenceSystem mCrs;
 
     QGis::WkbType mWkbType;
 

@@ -62,6 +62,9 @@ class QgsMeasureDialog : public QDialog, private Ui::QgsMeasureBase
 
     //! Show the help for the dialog
     void on_buttonBox_helpRequested() { QgsContextHelp::run( metaObject()->className() ); }
+  private slots:
+    //! on change state projection enable
+    void changeProjectionEnabledState();
 
   private:
 
@@ -76,6 +79,9 @@ class QgsMeasureDialog : public QDialog, private Ui::QgsMeasureBase
 
     //! Converts the measurement, depending on settings in options and current transformation
     void convertMeasurement( double &measure, QGis::UnitType &u, bool isArea );
+
+    //! Configures distance area objects with ellipsoid / output crs
+    void configureDistanceArea( QgsDistanceArea& da );
 
     double mTotal;
 

@@ -18,7 +18,6 @@
 
 #include "qgsdelimitedtextprovider.h"
 
-
 #include <QtGlobal>
 #include <QFile>
 #include <QDataStream>
@@ -135,47 +134,41 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
     : QgsVectorDataProvider( uri )
     , mHasWktField( false )
     , mFieldCount( 0 )
-    , mXFieldIndex( -1 ), mYFieldIndex( -1 )
+    , mXFieldIndex( -1 ) 
+    , mYFieldIndex( -1 )
     , mWktFieldIndex( -1 )
+    , mDelimiterType( "plain" )
+    , mDelimiter( "," )
+    , mDelimiterRegexp()
     , mWktHasZM( false )
     , mWktZMRegexp( "\\s+(?:z|m|zm)(?=\\s*\\()", Qt::CaseInsensitive )
     , mWktCrdRegexp( "(\\-?\\d+(?:\\.\\d*)?\\s+\\-?\\d+(?:\\.\\d*)?)\\s[\\s\\d\\.\\-]+" )
+    , mSkipLines(0)
+    , mFirstDataLine( 0 )
     , mShowInvalidLines( true )
     , mWkbType( QGis::WKBNoGeometry )
+    , mCrs()
 {
-  // Get the file name and mDelimiter out of the uri
-  mFileName = uri.left( uri.indexOf( "?" ) );
-  // split the string up on & to get the individual parameters
-  QStringList parameters = uri.mid( uri.indexOf( "?" ) ).split( "&", QString::SkipEmptyParts );
 
-  QgsDebugMsg( "Parameter count after split on &" + QString::number( parameters.size() ) );
+  QUrl url = QUrl::fromEncoded(uri.toUtf8());
 
-  // get the individual parameters and assign values
-  QStringList temp = parameters.filter( "delimiter=" );
-  mDelimiter = temp.size() ? temp[0].mid( temp[0].indexOf( "=" ) + 1 ) : "";
-  temp = parameters.filter( "delimiterType=" );
-  mDelimiterType = temp.size() ? temp[0].mid( temp[0].indexOf( "=" ) + 1 ) : "";
-  temp = parameters.filter( "wktField=" );
-  QString wktField = temp.size() ? temp[0].mid( temp[0].indexOf( "=" ) + 1 ) : "";
-  temp = parameters.filter( "xField=" );
-  QString xField = temp.size() ? temp[0].mid( temp[0].indexOf( "=" ) + 1 ) : "";
-  temp = parameters.filter( "yField=" );
-  QString yField = temp.size() ? temp[0].mid( temp[0].indexOf( "=" ) + 1 ) : "";
-  temp = parameters.filter( "skipLines=" );
-  QString skipLines = temp.size() ? temp[0].mid( temp[0].indexOf( "=" ) + 1 ) : "0";
-  // Decode the parts of the uri. Good if someone entered '=' as a delimiter, for instance.
-  mFileName  = QUrl::fromPercentEncoding( mFileName.toUtf8() );
-  mDelimiter = QUrl::fromPercentEncoding( mDelimiter.toUtf8() );
-  mDelimiterType = QUrl::fromPercentEncoding( mDelimiterType.toUtf8() );
-  wktField    = QUrl::fromPercentEncoding( wktField.toUtf8() );
-  xField    = QUrl::fromPercentEncoding( xField.toUtf8() );
-  yField    = QUrl::fromPercentEncoding( yField.toUtf8() );
+  // Extract the provider definition from the url
+
+  mFileName = url.path();
+
+  QString wktField("");
+  QString xField("");
+  QString yField("");
+
+  if( url.hasQueryItem("delimiter")) mDelimiter = url.queryItemValue("delimiter");
+  if( url.hasQueryItem("delimiterType")) mDelimiterType = url.queryItemValue("delimiterType");
+  if( url.hasQueryItem("wktField")) wktField = url.queryItemValue("wktField");
+  if( url.hasQueryItem("xField")) xField = url.queryItemValue("xField");
+  if( url.hasQueryItem("yField")) yField = url.queryItemValue("yField");
+  if( url.hasQueryItem("skipLines")) mSkipLines = url.queryItemValue("skipLines").toInt();
+  if( url.hasQueryItem("crs")) mCrs.createFromString( url.queryItemValue("crs"));
 
   mHasWktField = wktField != "";
-
-  skipLines = QUrl::fromPercentEncoding( skipLines.toUtf8() );
-
-  mSkipLines = skipLines.toInt();
 
   QgsDebugMsg( "Data source uri is " + uri );
   QgsDebugMsg( "Delimited text file is: " + mFileName );
@@ -199,7 +192,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
   if ( mFileName.isEmpty() || mDelimiter.isEmpty() )
   {
     // uri is invalid so the layer must be too...
-    QString( "Data source is invalid" );
+    QgsDebugMsg( "Data source is invalid" );
     return;
   }
 
@@ -238,10 +231,11 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
   {
     lineNumber++;
     line = readLine( mStream ); // line of text excluding '\n', default local 8 bit encoding.
-    if ( line.isEmpty() )
-      continue;
 
     if ( lineNumber < mSkipLines + 1 )
+      continue;
+
+    if ( line.isEmpty() )
       continue;
 
     if ( !hasFields )
@@ -279,7 +273,8 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
           }
 
           // WKT geometry field won't be displayed in attribute tables
-          if ( column == mWktFieldIndex ) continue;
+          if ( column == mWktFieldIndex )
+            continue;
 
           QgsDebugMsg( "Adding field: " + ( field ) );
           // assume that the field could be integer or double
@@ -291,21 +286,26 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
           fieldPos++;
         }
       }
-      if ( mWktFieldIndex >= 0 ) { mXFieldIndex = -1; mYFieldIndex = -1; }
+      if ( mWktFieldIndex >= 0 )
+      {
+        mXFieldIndex = -1;
+        mYFieldIndex = -1;
+      }
       QgsDebugMsg( "Field count for the delimited text file is " + QString::number( attributeFields.size() ) );
       hasFields = true;
     }
     else // hasFields == true - field names already read
     {
+      if ( mFirstDataLine == 0 )
+        mFirstDataLine = lineNumber;
 
       // split the line on the delimiter
       QStringList parts = splitLine( line );
 
-      // Skip malformed lines silently. Report line number with nextFeature()
-      if ( parts.size() != mFieldCount )
-      {
-        continue;
-      }
+      // Ensure that the input has at least the required number of fields (mainly to tolerate
+      // missed blank strings at end of row)
+      while ( parts.size() < mFieldCount )
+        parts.append( "" );
 
       if ( mHasWktField && mWktFieldIndex >= 0 )
       {
@@ -316,7 +316,8 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
         QgsGeometry *geom = 0;
         try
         {
-          if ( ! mWktHasZM && sWkt.indexOf( mWktZMRegexp ) >= 0 ) mWktHasZM = true;
+          if ( !mWktHasZM && sWkt.indexOf( mWktZMRegexp ) >= 0 )
+            mWktHasZM = true;
           if ( mWktHasZM )
           {
             sWkt.remove( mWktZMRegexp ).replace( mWktCrdRegexp, "\\1" );
@@ -349,10 +350,8 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
           delete geom;
         }
       }
-
-      else if ( ! mHasWktField && mXFieldIndex >= 0 && mYFieldIndex >= 0 )
+      else if ( !mHasWktField && mXFieldIndex >= 0 && mYFieldIndex >= 0 )
       {
-
         // Get the x and y values, first checking to make sure they
         // aren't null.
 
@@ -383,7 +382,8 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
       for ( int i = 0; i < attributeFields.size(); i++ )
       {
         QString &value = parts[attributeColumns[i]];
-        if ( value.isEmpty() ) continue;
+        if ( value.isEmpty() )
+          continue;
         // try to convert attribute values to integer and double
         if ( couldBeInt[i] )
         {
@@ -434,7 +434,7 @@ bool QgsDelimitedTextProvider::nextFeature( QgsFeature& feature )
   // before we do anything else, assume that there's something wrong with
   // the feature
   feature.setValid( false );
-  while ( ! mStream->atEnd() )
+  while ( !mStream->atEnd() )
   {
     QString line = readLine( mStream ); // Default local 8 bit encoding
     if ( line.isEmpty() )
@@ -443,6 +443,9 @@ bool QgsDelimitedTextProvider::nextFeature( QgsFeature& feature )
     // lex the tokens from the current data line
     QStringList tokens = splitLine( line );
 
+    while ( tokens.size() < mFieldCount )
+      tokens.append( "" );
+
     QgsGeometry *geom = 0;
 
     if ( mHasWktField && mWktFieldIndex >= 0 )
@@ -450,6 +453,8 @@ bool QgsDelimitedTextProvider::nextFeature( QgsFeature& feature )
       try
       {
         QString &sWkt = tokens[mWktFieldIndex];
+        // Remove Z and M coordinates if present, as currently fromWkt doesn't
+        // support these.
         if ( mWktHasZM )
         {
           sWkt.remove( mWktZMRegexp ).replace( mWktCrdRegexp, "\\1" );
@@ -468,13 +473,13 @@ bool QgsDelimitedTextProvider::nextFeature( QgsFeature& feature )
         geom = 0;
       }
       mFid++;
-      if ( ! boundsCheck( geom ) )
+      if ( geom && !boundsCheck( geom ) )
       {
         delete geom;
         geom = 0;
       }
     }
-    else if ( ! mHasWktField && mXFieldIndex >= 0 && mYFieldIndex >= 0 )
+    else if ( !mHasWktField && mXFieldIndex >= 0 && mYFieldIndex >= 0 )
     {
       bool xOk, yOk;
       double x = tokens[mXFieldIndex].toDouble( &xOk );
@@ -491,7 +496,8 @@ bool QgsDelimitedTextProvider::nextFeature( QgsFeature& feature )
 
     // If no valid geometry skip to the next line
 
-    if ( ! geom ) continue;
+    if ( !geom )
+      continue;
 
     // At this point the current feature values are valid
 
@@ -531,7 +537,7 @@ bool QgsDelimitedTextProvider::nextFeature( QgsFeature& feature )
     // We have a good line, so return
     return true;
 
-  } // ! textStream EOF
+  } // !mStream->atEnd()
 
   // End of the file. If there are any lines that couldn't be
   // loaded, display them now.
@@ -624,11 +630,10 @@ void QgsDelimitedTextProvider::rewind()
 {
   // Reset feature id to 0
   mFid = 0;
-  // Skip ahead one line since first record is always assumed to be
-  // the header record
+  // Skip to first data record
   mStream->seek( 0 );
-  int n = mSkipLines + 1;
-  while ( n-- )
+  int n = mFirstDataLine - 1;
+  while ( n-- > 0 )
     readLine( mStream );
 }
 
@@ -669,8 +674,7 @@ int QgsDelimitedTextProvider::capabilities() const
 
 QgsCoordinateReferenceSystem QgsDelimitedTextProvider::crs()
 {
-  // TODO: make provider projection-aware
-  return QgsCoordinateReferenceSystem(); // return default CRS
+  return mCrs;
 }
 
 

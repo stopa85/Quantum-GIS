@@ -18,6 +18,7 @@
 #include "qgscomposerlegendwidget.h"
 #include "qgscomposerlegend.h"
 #include "qgscomposerlegenditemdialog.h"
+#include "qgscomposerlegendlayersdialog.h"
 #include "qgscomposeritemwidget.h"
 #include <QFontDialog>
 
@@ -25,10 +26,20 @@
 #include "qgisapp.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaprenderer.h"
+#include "qgsapplication.h"
+
+#include <QMessageBox>
 
 QgsComposerLegendWidget::QgsComposerLegendWidget( QgsComposerLegend* legend ): mLegend( legend )
 {
   setupUi( this );
+
+  // setup icons
+  mAddToolButton->setIcon( QIcon( QgsApplication::iconPath( "symbologyAdd.png" ) ) );
+  mEditPushButton->setIcon( QIcon( QgsApplication::iconPath( "symbologyEdit.png" ) ) );
+  mRemoveToolButton->setIcon( QIcon( QgsApplication::iconPath( "symbologyRemove.png" ) ) );
+  mMoveUpToolButton->setIcon( QIcon( QgsApplication::iconPath( "symbologyUp.png" ) ) );
+  mMoveDownToolButton->setIcon( QIcon( QgsApplication::iconPath( "symbologyDown.png" ) ) );
 
   //add widget for item properties
   QgsComposerItemWidget* itemPropertiesWidget = new QgsComposerItemWidget( this, legend );
@@ -65,7 +76,7 @@ void QgsComposerLegendWidget::setGuiElements()
     return;
   }
 
-  blockSignals( true );
+  blockAllSignals( true );
   mTitleLineEdit->setText( mLegend->title() );
   mSymbolWidthSpinBox->setValue( mLegend->symbolWidth() );
   mSymbolHeightSpinBox->setValue( mLegend->symbolHeight() );
@@ -73,10 +84,13 @@ void QgsComposerLegendWidget::setGuiElements()
   mSymbolSpaceSpinBox->setValue( mLegend->symbolSpace() );
   mIconLabelSpaceSpinBox->setValue( mLegend->iconLabelSpace() );
   mBoxSpaceSpinBox->setValue( mLegend->boxSpace() );
+  if ( mLegend->model() )
+  {
+    mCheckBoxAutoUpdate->setChecked( mLegend->model()->autoUpdate() );
+  }
 
-  blockSignals( false );
+  blockAllSignals( false );
 }
-
 
 void QgsComposerLegendWidget::on_mTitleLineEdit_textChanged( const QString& text )
 {
@@ -360,6 +374,61 @@ void QgsComposerLegendWidget::on_mMoveUpToolButton_clicked()
   mLegend->endCommand();
 }
 
+void QgsComposerLegendWidget::on_mCheckBoxAutoUpdate_stateChanged( int state )
+{
+  if ( !mLegend->model() )
+  {
+    return;
+  }
+
+  if ( state == Qt::Checked )
+  {
+    mLegend->model()->setAutoUpdate( true );
+  }
+  else
+  {
+    mLegend->model()->setAutoUpdate( false );
+  }
+}
+
+void QgsComposerLegendWidget::on_mAddToolButton_clicked()
+{
+  if ( !mLegend )
+  {
+    return;
+  }
+
+  QStandardItemModel* itemModel = qobject_cast<QStandardItemModel *>( mItemTreeView->model() );
+  if ( !itemModel )
+  {
+    return;
+  }
+
+  QgisApp* app = QgisApp::instance();
+  if ( !app )
+  {
+    return;
+  }
+
+  QgsMapCanvas* canvas = app->mapCanvas();
+  if ( canvas )
+  {
+    QList<QgsMapLayer*> layers = canvas->layers();
+
+    QgsComposerLegendLayersDialog addDialog( layers );
+    if ( addDialog.exec() == QDialog::Accepted )
+    {
+      QgsMapLayer* layer = addDialog.selectedLayer();
+      if ( layer )
+      {
+        mLegend->beginCommand( "Legend item added" );
+        mLegend->model()->addLayer( layer );
+        mLegend->endCommand();
+      }
+    }
+  }
+}
+
 void QgsComposerLegendWidget::on_mRemoveToolButton_clicked()
 {
   if ( !mLegend )
@@ -508,4 +577,10 @@ void QgsComposerLegendWidget::updateLegend()
     mLegend->model()->setLayerSetAndGroups( layerIdList, groupInfo );
     mLegend->endCommand();
   }
+}
+
+void QgsComposerLegendWidget::blockAllSignals( bool b )
+{
+  mItemTreeView->blockSignals( b );
+  mCheckBoxAutoUpdate->blockSignals( b );
 }

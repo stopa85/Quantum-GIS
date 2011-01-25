@@ -792,7 +792,7 @@ QList<QgsColorRampShader::ColorRampItem> QgsGdalProvider::colorTable(int theBand
     return ct;
   }
 
-  QgsDebugMsg( "Color table loaded sucessfully" );
+  QgsDebugMsg( "Color table loaded successfully" );
   return ct;
 }
 

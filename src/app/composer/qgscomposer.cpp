@@ -818,6 +818,9 @@ void QgsComposer::on_mActionExportAsSVG_triggered()
   //height in pixel
   int height = ( int )( mComposition->paperHeight() * mComposition->printResolution() / 25.4 );
   generator.setSize( QSize( width, height ) );
+#if QT_VERSION >= 0x040500
+  generator.setViewBox( QRect( 0, 0, width, height ) );
+#endif
   generator.setResolution( mComposition->printResolution() ); //because the rendering is done in mm, convert the dpi
 
   QPainter p( &generator );
@@ -959,6 +962,8 @@ void QgsComposer::on_mActionLoadFromTemplate_triggered()
     return;
   }
 
+  emit composerWillBeRemoved( mView );
+
   QDomDocument templateDocument;
   if ( !templateDocument.setContent( &templateFile, false ) )
   {
@@ -968,6 +973,7 @@ void QgsComposer::on_mActionLoadFromTemplate_triggered()
 
   deleteItems();
   readXML( templateDocument );
+  emit composerAdded( mView );
 }
 
 void QgsComposer::on_mActionMoveItemContent_triggered()

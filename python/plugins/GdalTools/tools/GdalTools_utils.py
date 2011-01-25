@@ -117,6 +117,32 @@ def getVectorLayers():
       count = count +1
   return (layers, names)
 
+def getRasterFiles(path, recursive=False):
+  rasters = QStringList()
+  if not QFileInfo(path).exists():
+    return rasters
+
+  filter = getRasterExtensions()
+  workDir = QDir( path )
+  workDir.setFilter( QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot )
+  workDir.setNameFilters( filter )
+  files = workDir.entryList()
+  for f in files:
+    rasters << path + "/" + f
+
+  if recursive:
+    import os
+    for myRoot, myDirs, myFiles in os.walk( unicode(path) ):
+      for dir in myDirs:
+        workDir = QDir( myRoot + "/" + dir )
+        workDir.setFilter( QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot )
+        workDir.setNameFilters( filter )
+        workFiles = workDir.entryList()
+        for f in workFiles:
+          rasters << myRoot + "/" + dir + "/" + f
+
+  return rasters
+
 def fillRasterOutputFormat(aFilter = None, filename = None):
   shortName = QString()
 
@@ -155,10 +181,15 @@ def fillVectorOutputFormat(aFilter = None, filename = None):
 
   return shortName
 
+class UnsupportedOGRFormat(Exception):
+    def __init__(self): 
+      msg = QCoreApplication.translate( "GdalTools", "The selected file is not a supported OGR format" )
+      Exception.__init__(self, msg) 
+
 def getVectorFields(vectorFile):
     hds = ogr.Open( unicode(vectorFile).encode('utf8') )
     if hds == None:
-      raise Exception( QCoreApplication.translate( "GdalTools", "The selected file is not a supported OGR format" ) )
+      raise UnsupportedOGRFormat()
 
     fields = []
     names = []
@@ -184,10 +215,12 @@ def getRasterSRS( parent, fileName ):
       arr = processSRS.readAllStandardOutput()
       processSRS.close()
 
-    if not arr.isEmpty():
-      info = QString( arr ).split( "\n" ).filter( "AUTHORITY" )
-      if info.count() == 0:
-        return QString()
+    if arr.isEmpty():
+      return QString()
+
+    info = QString( arr ).split( "\n" ).filter( "AUTHORITY" )
+    if info.count() == 0:
+      return QString()
 
     srs = info[ info.count() - 1 ]
     srs = srs.simplified().remove( "AUTHORITY[" )
@@ -294,7 +327,7 @@ class FileFilter:
 
       # workaround for QGis < 1.5 (see #2376)
       # separates multiple extensions that joined by a slash 
-      if QGis.QGIS_VERSION[0:3] < "1.8":
+      if QGis.QGIS_VERSION[0:3] < "1.5":
           formats = self.rastersFilter.split( ";;" )
           self.rastersFilter = QString()
           for f in formats:

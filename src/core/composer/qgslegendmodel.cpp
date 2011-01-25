@@ -32,8 +32,9 @@
 #include <QDomElement>
 #include <QMimeData>
 #include <QSettings>
+#include <QMessageBox>
 
-QgsLegendModel::QgsLegendModel(): QStandardItemModel()
+QgsLegendModel::QgsLegendModel(): QStandardItemModel(), mAutoUpdate( true )
 {
   if ( QgsMapLayerRegistry::instance() )
   {
@@ -311,19 +312,16 @@ void QgsLegendModel::updateLayer( QStandardItem* layerItem )
 
 void QgsLegendModel::removeLayer( const QString& layerId )
 {
-  QStandardItem* currentLayerItem = 0;
-
   int numRootItems = rowCount();
   for ( int i = 0; i < numRootItems ; ++i )
   {
-    currentLayerItem = item( i );
-    if ( !currentLayerItem )
+    QgsComposerLayerItem* lItem = dynamic_cast<QgsComposerLayerItem*>( item( i ) );
+    if ( !lItem )
     {
       continue;
     }
 
-    QString currentId = currentLayerItem->data( Qt::UserRole + 2 ).toString();
-    if ( currentId == layerId )
+    if ( layerId == lItem->layerID() )
     {
       removeRow( i ); //todo: also remove the subitems and their symbols...
       emit layersChanged();
@@ -459,6 +457,7 @@ bool QgsLegendModel::writeXML( QDomElement& composerLegendElem, QDomDocument& do
   }
 
   QDomElement legendModelElem = doc.createElement( "Model" );
+  legendModelElem.setAttribute( "autoUpdate", mAutoUpdate );
   int nTopLevelItems = invisibleRootItem()->rowCount();
   QStandardItem* currentItem = 0;
   QgsComposerLegendItem* currentLegendItem = 0;
@@ -511,6 +510,8 @@ bool QgsLegendModel::readXML( const QDomElement& legendModelElem, const QDomDocu
     currentItem->readXML( currentElem );
     appendRow( currentItem );
   }
+
+  setAutoUpdate( legendModelElem.attribute( "autoUpdate", "1" ).toInt() );
   return true;
 }
 
@@ -673,4 +674,30 @@ bool QgsLegendModel::dropMimeData( const QMimeData *data, Qt::DropAction action,
   }
   emit layersChanged();
   return true;
+}
+
+void QgsLegendModel::setAutoUpdate( bool autoUpdate )
+{
+  if ( mAutoUpdate == autoUpdate ) //prevent multiple signal/slot connections
+  {
+    return;
+  }
+
+  mAutoUpdate = autoUpdate;
+  if ( autoUpdate )
+  {
+    if ( QgsMapLayerRegistry::instance() )
+    {
+      connect( QgsMapLayerRegistry::instance(), SIGNAL( layerWillBeRemoved( QString ) ), this, SLOT( removeLayer( const QString& ) ) );
+      connect( QgsMapLayerRegistry::instance(), SIGNAL( layerWasAdded( QgsMapLayer* ) ), this, SLOT( addLayer( QgsMapLayer* ) ) );
+    }
+  }
+  else
+  {
+    if ( QgsMapLayerRegistry::instance() )
+    {
+      disconnect( QgsMapLayerRegistry::instance(), SIGNAL( layerWillBeRemoved( QString ) ), this, SLOT( removeLayer( const QString& ) ) );
+      disconnect( QgsMapLayerRegistry::instance(), SIGNAL( layerWasAdded( QgsMapLayer* ) ), this, SLOT( addLayer( QgsMapLayer* ) ) );
+    }
+  }
 }

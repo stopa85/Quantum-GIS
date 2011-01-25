@@ -45,6 +45,12 @@
 #include <QTextStream>
 #include <QDir>
 
+//for printing
+#include "qgscomposition.h"
+#include <QBuffer>
+#include <QPrinter>
+#include <QSvgGenerator>
+
 QgsWMSServer::QgsWMSServer( std::map<QString, QString> parameters, QgsMapRenderer* renderer )
     : mParameterMap( parameters )
     , mConfigParser( 0 )
@@ -72,27 +78,9 @@ QDomDocument QgsWMSServer::getCapabilities()
   wmsCapabilitiesElement.setAttribute( "version", "1.3.0" );
   doc.appendChild( wmsCapabilitiesElement );
 
-  QFile wmsService( "wms_metadata.xml" );
-  if ( !wmsService.open( QIODevice::ReadOnly ) )
+  if ( mConfigParser )
   {
-    //throw an exception...
-    QgsMSDebugMsg( "external wms service capabilities not found" )
-  }
-  else
-  {
-    QDomDocument externServiceDoc;
-    QString parseError;
-    int errorLineNo;
-    if ( !externServiceDoc.setContent( &wmsService, false, &parseError, &errorLineNo ) )
-    {
-      QgsMSDebugMsg( "parse error at setting content of external wms service capabilities: "
-                     + parseError + " at line " + QString::number( errorLineNo ) )
-      wmsService.close();
-    }
-    wmsService.close();
-
-    QDomElement service = externServiceDoc.firstChildElement();
-    wmsCapabilitiesElement.appendChild( service );
+    mConfigParser->serviceCapabilities( wmsCapabilitiesElement, doc );
   }
 
   //wms:Capability element
@@ -208,18 +196,27 @@ QDomDocument QgsWMSServer::getCapabilities()
   exceptionElement.appendChild( exFormatElement );
   capabilityElement.appendChild( exceptionElement );
 
+  //Insert <ComposerTemplate> elements derived from wms:_ExtendedCapabilities
+  if ( mConfigParser )
+  {
+    mConfigParser->printCapabilities( capabilityElement, doc );
+  }
+
   //add the xml content for the individual layers/styles
   QgsMSDebugMsg( "calling layersAndStylesCapabilities" )
-  mConfigParser->layersAndStylesCapabilities( capabilityElement, doc );
+  if ( mConfigParser )
+  {
+    mConfigParser->layersAndStylesCapabilities( capabilityElement, doc );
+  }
   QgsMSDebugMsg( "layersAndStylesCapabilities returned" )
 
   //for debugging: save the document to disk
-  QFile capabilitiesFile( QDir::tempPath() + "/capabilities.txt" );
+  /*QFile capabilitiesFile( QDir::tempPath() + "/capabilities.txt" );
   if ( capabilitiesFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
   {
     QTextStream capabilitiesStream( &capabilitiesFile );
     doc.save( capabilitiesStream, 4 );
-  }
+  }*/
   return doc;
 }
 
@@ -264,7 +261,8 @@ QImage* QgsWMSServer::getLegendGraphics()
   iconLabelSpace = mConfigParser->legendIconLabelSpace() * mmToPixelFactor;
   symbolWidth = mConfigParser->legendSymbolWidth() * mmToPixelFactor;
   symbolHeight = mConfigParser->legendSymbolHeight() * mmToPixelFactor;
-  double maxX = 0;
+  double maxTextWidth = 0;
+  double maxSymbolWidth = 0;
   double currentY = 0;
   double fontOversamplingFactor = 10.0;
   QFont layerFont = mConfigParser->legendLayerFont();
@@ -291,14 +289,15 @@ QImage* QgsWMSServer::getLegendGraphics()
     QgsComposerLayerItem* layerItem = dynamic_cast<QgsComposerLayerItem*>( rootItem->child( i ) );
     if ( layerItem )
     {
-      drawLegendLayerItem( layerItem, 0, maxX, currentY, layerFont, itemFont, boxSpace, layerSpace, symbolSpace,
+
+      drawLegendLayerItem( layerItem, 0, maxTextWidth, maxSymbolWidth, currentY, layerFont, itemFont, boxSpace, layerSpace, symbolSpace,
                            iconLabelSpace, symbolWidth, symbolHeight, fontOversamplingFactor, theImage->dotsPerMeterX() * 0.0254 );
     }
   }
   currentY += boxSpace;
 
   //create second image with the right dimensions
-  QImage* paintImage = createImage( maxX, currentY );
+  QImage* paintImage = createImage( maxTextWidth + maxSymbolWidth, currentY );
 
   //go through the items a second time for painting
   QPainter p( paintImage );
@@ -310,7 +309,7 @@ QImage* QgsWMSServer::getLegendGraphics()
     QgsComposerLayerItem* layerItem = dynamic_cast<QgsComposerLayerItem*>( rootItem->child( i ) );
     if ( layerItem )
     {
-      drawLegendLayerItem( layerItem, &p, maxX, currentY, layerFont, itemFont, boxSpace, layerSpace, symbolSpace,
+      drawLegendLayerItem( layerItem, &p, maxTextWidth, maxSymbolWidth, currentY, layerFont, itemFont, boxSpace, layerSpace, symbolSpace,
                            iconLabelSpace, symbolWidth, symbolHeight, fontOversamplingFactor, theImage->dotsPerMeterX() * 0.0254 );
     }
   }
@@ -340,81 +339,108 @@ QDomDocument QgsWMSServer::getStyle()
   return mConfigParser->getStyle( styleName, layerName );
 }
 
-QImage* QgsWMSServer::getMap()
+QByteArray* QgsWMSServer::getPrint( const QString& formatString )
 {
-  QgsMSDebugMsg( "Entering" )
-  if ( !mConfigParser )
-  {
-    QgsMSDebugMsg( "Error: mSLDParser is 0" )
-    return 0;
-  }
-
-  if ( !mMapRenderer )
-  {
-    QgsMSDebugMsg( "Error: mMapRenderer is 0" )
-    return 0;
-  }
-
-  QStringList layersList, stylesList;
-  QString formatString;
-
-  if ( readLayersAndStyles( layersList, stylesList ) != 0 )
-  {
-    QgsMSDebugMsg( "error reading layers and styles" )
-    return 0;
-  }
-
-  if ( initializeSLDParser( layersList, stylesList ) != 0 )
-  {
-    return 0;
-  }
-
-  //pass external GML to the SLD parser.
-  std::map<QString, QString>::const_iterator gmlIt = mParameterMap.find( "GML" );
-  if ( gmlIt != mParameterMap.end() )
-  {
-    QDomDocument* gmlDoc = new QDomDocument();
-    if ( gmlDoc->setContent( gmlIt->second, true ) )
-    {
-      QString layerName = gmlDoc->documentElement().attribute( "layerName" );
-      QgsMSDebugMsg( "Adding entry with key: " + layerName + " to external GML data" )
-      mConfigParser->addExternalGMLData( layerName, gmlDoc );
-    }
-    else
-    {
-      QgsMSDebugMsg( "Error, could not add external GML to QgsSLDParser" )
-      delete gmlDoc;
-    }
-  }
-
-  //get output format
-  std::map<QString, QString>::const_iterator outIt = mParameterMap.find( "FORMAT" );
-  if ( outIt == mParameterMap.end() )
-  {
-    QgsMSDebugMsg( "Error, no parameter FORMAT found" )
-    return 0; //output format parameter also mandatory
-  }
-
-  QImage* theImage = createImage();
+  QStringList layersList, stylesList, layerIdList;
+  QString dummyFormat;
+  QImage* theImage = initializeRendering( layersList, stylesList, layerIdList );
   if ( !theImage )
   {
     return 0;
   }
+  delete theImage;
 
-  if ( configureMapRender( theImage ) != 0 )
+  //GetPrint request needs a template parameter
+  std::map<QString, QString>::const_iterator templateIt = mParameterMap.find( "TEMPLATE" );
+  if ( templateIt == mParameterMap.end() )
+  {
+    throw QgsMapServiceException( "ParameterMissing", "The TEMPLATE parameter is required for the GetPrint request" );
+  }
+
+  QgsComposition* c = mConfigParser->createPrintComposition( templateIt->second, mMapRenderer, QMap<QString, QString>( mParameterMap ) );
+  if ( !c )
   {
     return 0;
   }
-  mMapRenderer->setLabelingEngine( new QgsPalLabeling() );
 
-  //find out the current scale denominater and set it to the SLD parser
-  QgsScaleCalculator scaleCalc(( theImage->logicalDpiX() + theImage->logicalDpiY() ) / 2 , mMapRenderer->destinationSrs().mapUnits() );
-  QgsRectangle mapExtent = mMapRenderer->extent();
-  mConfigParser->setScaleDenominator( scaleCalc.calculate( mapExtent, theImage->width() ) );
+  QByteArray* ba = 0;
+  c->setPlotStyle( QgsComposition::Print );
 
-  //create objects for qgis rendering
-  QStringList theLayers = layerSet( layersList, stylesList, mMapRenderer->destinationSrs() );
-  mMapRenderer->setLayerSet( theLayers );
+  //SVG export without a running X-Server is a problem. See e.g. http://developer.qt.nokia.com/forums/viewthread/2038
+  if ( formatString.compare( "svg", Qt::CaseInsensitive ) == 0 )
+  {
+    c->setPlotStyle( QgsComposition::Print );
+
+    QSvgGenerator generator;
+    ba = new QByteArray();
+    QBuffer svgBuffer( ba );
+    generator.setOutputDevice( &svgBuffer );
+    int width = ( int )( c->paperWidth() * c->printResolution() / 25.4 ); //width in pixel
+    int height = ( int )( c->paperHeight() * c->printResolution() / 25.4 ); //height in pixel
+    generator.setSize( QSize( width, height ) );
+    generator.setResolution( c->printResolution() ); //because the rendering is done in mm, convert the dpi
+
+    QPainter p( &generator );
+    QRectF sourceArea( 0, 0, c->paperWidth(), c->paperHeight() );
+    QRectF targetArea( 0, 0, width, height );
+    c->render( &p, targetArea, sourceArea );
+    p.end();
+  }
+  else if ( formatString.compare( "png", Qt::CaseInsensitive ) == 0 || formatString.compare( "jpg", Qt::CaseInsensitive ) == 0 )
+  {
+    int width = ( int )( c->paperWidth() * c->printResolution() / 25.4 ); //width in pixel
+    int height = ( int )( c->paperHeight() * c->printResolution() / 25.4 ); //height in pixel
+    QImage image( QSize( width, height ), QImage::Format_ARGB32 );
+    image.setDotsPerMeterX( c->printResolution() / 25.4 * 1000 );
+    image.setDotsPerMeterY( c->printResolution() / 25.4 * 1000 );
+    image.fill( 0 );
+    QPainter p( &image );
+    QRectF sourceArea( 0, 0, c->paperWidth(), c->paperHeight() );
+    QRectF targetArea( 0, 0, width, height );
+    c->render( &p, targetArea, sourceArea );
+    p.end();
+    ba = new QByteArray();
+    QBuffer buffer( ba );
+    buffer.open( QIODevice::WriteOnly );
+    image.save( &buffer, formatString.toLocal8Bit().data(), -1 );
+  }
+  else if ( formatString.compare( "pdf", Qt::CaseInsensitive ) == 0 )
+  {
+    QTemporaryFile tempFile;
+    if ( !tempFile.open() )
+    {
+      delete c;
+      return 0;
+    }
+
+    QPrinter printer;
+    printer.setOutputFormat( QPrinter::PdfFormat );
+    printer.setOutputFileName( tempFile.fileName() );
+    printer.setPaperSize( QSizeF( c->paperWidth(), c->paperHeight() ), QPrinter::Millimeter );
+    printer.setResolution( c->printResolution() );
+
+    QRectF paperRectMM = printer.pageRect( QPrinter::Millimeter );
+    QRectF paperRectPixel = printer.pageRect( QPrinter::DevicePixel );
+    QPainter p( &printer );
+    c->render( &p, paperRectPixel, paperRectMM );
+    p.end();
+
+    ba = new QByteArray();
+    *ba = tempFile.readAll();
+  }
+  else //unknown format
+  {
+    throw QgsMapServiceException( "InvalidFormat", "Output format '" + formatString + "' is not supported in the GetPrint request" );
+  }
+
+  delete c;
+  return ba;
+}
+
+QImage* QgsWMSServer::getMap()
+{
+  QStringList layersList, stylesList, layerIdList;
+  QImage* theImage = initializeRendering( layersList, stylesList, layerIdList );
 
   QPainter thePainter( theImage );
   thePainter.setRenderHint( QPainter::Antialiasing ); //make it look nicer
@@ -610,6 +636,73 @@ int QgsWMSServer::getFeatureInfo( QDomDocument& result )
   return 0;
 }
 
+QImage* QgsWMSServer::initializeRendering( QStringList& layersList, QStringList& stylesList, QStringList& layerIdList )
+{
+  if ( !mConfigParser )
+  {
+    QgsMSDebugMsg( "Error: mSLDParser is 0" )
+    return 0;
+  }
+
+  if ( !mMapRenderer )
+  {
+    QgsMSDebugMsg( "Error: mMapRenderer is 0" )
+    return 0;
+  }
+
+  if ( readLayersAndStyles( layersList, stylesList ) != 0 )
+  {
+    QgsMSDebugMsg( "error reading layers and styles" )
+    return 0;
+  }
+
+  if ( initializeSLDParser( layersList, stylesList ) != 0 )
+  {
+    return 0;
+  }
+
+  //pass external GML to the SLD parser.
+  std::map<QString, QString>::const_iterator gmlIt = mParameterMap.find( "GML" );
+  if ( gmlIt != mParameterMap.end() )
+  {
+    QDomDocument* gmlDoc = new QDomDocument();
+    if ( gmlDoc->setContent( gmlIt->second, true ) )
+    {
+      QString layerName = gmlDoc->documentElement().attribute( "layerName" );
+      QgsMSDebugMsg( "Adding entry with key: " + layerName + " to external GML data" )
+      mConfigParser->addExternalGMLData( layerName, gmlDoc );
+    }
+    else
+    {
+      QgsMSDebugMsg( "Error, could not add external GML to QgsSLDParser" )
+      delete gmlDoc;
+    }
+  }
+
+  QImage* theImage = createImage();
+  if ( !theImage )
+  {
+    return 0;
+  }
+
+  if ( configureMapRender( theImage ) != 0 )
+  {
+    delete theImage;
+    return 0;
+  }
+  mMapRenderer->setLabelingEngine( new QgsPalLabeling() );
+
+  //find out the current scale denominater and set it to the SLD parser
+  QgsScaleCalculator scaleCalc(( theImage->logicalDpiX() + theImage->logicalDpiY() ) / 2 , mMapRenderer->destinationSrs().mapUnits() );
+  QgsRectangle mapExtent = mMapRenderer->extent();
+  mConfigParser->setScaleDenominator( scaleCalc.calculate( mapExtent, theImage->width() ) );
+
+  //create objects for qgis rendering
+  QStringList theLayers = layerSet( layersList, stylesList, mMapRenderer->destinationSrs() );
+  mMapRenderer->setLayerSet( theLayers );
+  return theImage;
+}
+
 QImage* QgsWMSServer::createImage( int width, int height ) const
 {
   bool conversionSuccess;
@@ -619,12 +712,12 @@ QImage* QgsWMSServer::createImage( int width, int height ) const
     std::map<QString, QString>::const_iterator wit = mParameterMap.find( "WIDTH" );
     if ( wit == mParameterMap.end() )
     {
-      return 0; //width parameter is mandatory
+      width = 0; //width parameter is mandatory
     }
     width = wit->second.toInt( &conversionSuccess );
     if ( !conversionSuccess )
     {
-      return 0;
+      width = 0;
     }
   }
 
@@ -633,12 +726,12 @@ QImage* QgsWMSServer::createImage( int width, int height ) const
     std::map<QString, QString>::const_iterator hit = mParameterMap.find( "HEIGHT" );
     if ( hit == mParameterMap.end() )
     {
-      return 0; //height parameter is mandatory
+      height = 0; //height parameter is mandatory
     }
     height = hit->second.toInt( &conversionSuccess );
     if ( !conversionSuccess )
     {
-      return 0;
+      height = 0;
     }
   }
 
@@ -718,23 +811,27 @@ int QgsWMSServer::configureMapRender( const QPaintDevice* paintDevice ) const
   std::map<QString, QString>::const_iterator bbIt = mParameterMap.find( "BBOX" );
   if ( bbIt == mParameterMap.end() )
   {
-    return 2;
+    //GetPrint request is allowed to have missing BBOX parameter
+    minx = 0; miny = 0; maxx = 0; maxy = 0;
   }
-  bool bboxOk = true;
-  QString bbString = bbIt->second;
-  minx = bbString.section( ",", 0, 0 ).toDouble( &conversionSuccess );
-  if ( !conversionSuccess ) {bboxOk = false;}
-  miny = bbString.section( ",", 1, 1 ).toDouble( &conversionSuccess );
-  if ( !conversionSuccess ) {bboxOk = false;}
-  maxx = bbString.section( ",", 2, 2 ).toDouble( &conversionSuccess );
-  if ( !conversionSuccess ) {bboxOk = false;}
-  maxy = bbString.section( ",", 3, 3 ).toDouble( &conversionSuccess );
-  if ( !conversionSuccess ) {bboxOk = false;}
-
-  if ( !bboxOk )
+  else
   {
-    //throw a service exception
-    throw QgsMapServiceException( "InvalidParameterValue", "Invalid BBOX parameter" );
+    bool bboxOk = true;
+    QString bbString = bbIt->second;
+    minx = bbString.section( ",", 0, 0 ).toDouble( &conversionSuccess );
+    if ( !conversionSuccess ) {bboxOk = false;}
+    miny = bbString.section( ",", 1, 1 ).toDouble( &conversionSuccess );
+    if ( !conversionSuccess ) {bboxOk = false;}
+    maxx = bbString.section( ",", 2, 2 ).toDouble( &conversionSuccess );
+    if ( !conversionSuccess ) {bboxOk = false;}
+    maxy = bbString.section( ",", 3, 3 ).toDouble( &conversionSuccess );
+    if ( !conversionSuccess ) {bboxOk = false;}
+
+    if ( !bboxOk )
+    {
+      //throw a service exception
+      throw QgsMapServiceException( "InvalidParameterValue", "Invalid BBOX parameter" );
+    }
   }
 
   QGis::UnitType mapUnits = QGis::Degrees;
@@ -1060,7 +1157,7 @@ QStringList QgsWMSServer::layerSet( const QStringList& layersList,
   return layerKeys;
 }
 
-void QgsWMSServer::drawLegendLayerItem( QgsComposerLayerItem* item, QPainter* p, double& maxX, double& currentY, const QFont& layerFont,
+void QgsWMSServer::drawLegendLayerItem( QgsComposerLayerItem* item, QPainter* p, double& maxTextWidth, double& maxSymbolWidth, double& currentY, const QFont& layerFont,
                                         const QFont& itemFont, double boxSpace, double layerSpace, double symbolSpace,
                                         double iconLabelSpace, double symbolWidth, double symbolHeight, double fontOversamplingFactor,
                                         double dpi ) const
@@ -1082,13 +1179,16 @@ void QgsWMSServer::drawLegendLayerItem( QgsComposerLayerItem* item, QPainter* p,
     p->drawText( boxSpace * fontOversamplingFactor, currentY * fontOversamplingFactor, item->text() );
     p->restore();
   }
+  else
+  {
+    double layerItemWidth = layerFontMetrics.width( item->text() ) / fontOversamplingFactor + boxSpace;
+    if ( layerItemWidth > maxTextWidth )
+    {
+      maxTextWidth = layerItemWidth;
+    }
+  }
 
   currentY += layerSpace;
-  double layerItemWidth = layerFontMetrics.width( item->text() ) / fontOversamplingFactor + 2 * boxSpace;
-  if ( layerItemWidth > maxX )
-  {
-    maxX = layerItemWidth;
-  }
 
   int opacity = 0;
   QgsMapLayer* layerInstance = QgsMapLayerRegistry::instance()->mapLayer( item->layerID() );
@@ -1097,7 +1197,7 @@ void QgsWMSServer::drawLegendLayerItem( QgsComposerLayerItem* item, QPainter* p,
     opacity = layerInstance->getTransparency(); //maplayer says transparency but means opacity
   }
 
-  //then draw all the childs
+  //then draw all the children
   if ( p )
   {
     p->setFont( itemFont );
@@ -1116,7 +1216,8 @@ void QgsWMSServer::drawLegendLayerItem( QgsComposerLayerItem* item, QPainter* p,
     }
 
     double currentSymbolHeight = symbolHeight;
-    double currentSymbolWidth = symbolWidth;
+    double currentSymbolWidth = symbolWidth; //symbol width (without box space and icon/label space
+    double currentTextWidth = 0;
 
     //if the font is larger than the standard symbol size, try to draw the symbol centered (shifting towards the bottom)
     double symbolDownShift = ( itemFontMetrics.ascent() / fontOversamplingFactor - symbolHeight ) / 2.0;
@@ -1138,44 +1239,46 @@ void QgsWMSServer::drawLegendLayerItem( QgsComposerLayerItem* item, QPainter* p,
         drawRasterSymbol( currentComposerItem, p, boxSpace, currentY, currentSymbolWidth, currentSymbolHeight, symbolDownShift );
         break;
       case QgsComposerLegendItem::GroupItem:
-        QgsDebugMsg( "GroupItem not handled" );
+        //QgsDebugMsg( "GroupItem not handled" );
         break;
       case QgsComposerLegendItem::LayerItem:
-        QgsDebugMsg( "GroupItem not handled" );
+        //QgsDebugMsg( "GroupItem not handled" );
         break;
     }
 
     //finally draw text
+    currentTextWidth = itemFontMetrics.width( currentComposerItem->text() ) / fontOversamplingFactor;
     double symbolItemHeight = qMax( itemFontMetrics.ascent() / fontOversamplingFactor, currentSymbolHeight );
 
     if ( p )
     {
       p->save();
       p->scale( 1.0 / fontOversamplingFactor, 1.0 / fontOversamplingFactor );
-      p->drawText(( boxSpace + currentSymbolWidth + iconLabelSpace ) * fontOversamplingFactor,
-                  ( currentY + symbolItemHeight / 2.0 ) * fontOversamplingFactor + itemFontMetrics.ascent() / 2.0, currentComposerItem->text() );
+      p->drawText( maxSymbolWidth * fontOversamplingFactor,
+                   ( currentY + symbolItemHeight / 2.0 ) * fontOversamplingFactor + itemFontMetrics.ascent() / 2.0, currentComposerItem->text() );
       p->restore();
+    }
+    else
+    {
+      if ( currentTextWidth > maxTextWidth )
+      {
+        maxTextWidth = currentTextWidth;
+      }
+      double symbolWidth = boxSpace + currentSymbolWidth + iconLabelSpace;
+      if ( symbolWidth > maxSymbolWidth )
+      {
+        maxSymbolWidth = symbolWidth;
+      }
     }
 
     currentY += symbolItemHeight;
-    double symbolItemWidth = 2 * boxSpace + currentSymbolWidth + iconLabelSpace + itemFontMetrics.width( currentComposerItem->text() ) / fontOversamplingFactor;
-
     currentY += symbolSpace;
-    if ( symbolItemWidth > maxX )
-    {
-      maxX = symbolItemWidth;
-    }
   }
 }
 
 void QgsWMSServer::drawLegendSymbol( QgsComposerLegendItem* item, QPainter* p, double boxSpace, double currentY, double& symbolWidth, double& symbolHeight, double layerOpacity,
                                      double dpi, double yDownShift ) const
 {
-  if ( !p )
-  {
-    return;
-  }
-
   QgsComposerSymbolItem* symbolItem = dynamic_cast< QgsComposerSymbolItem* >( item );
   if ( !symbolItem )
   {
@@ -1209,7 +1312,7 @@ void QgsWMSServer::drawLegendSymbol( QgsComposerLegendItem* item, QPainter* p, d
 
 void QgsWMSServer::drawPointSymbol( QPainter* p, QgsSymbol* s, double boxSpace, double currentY, double& symbolWidth, double& symbolHeight, double layerOpacity, double dpi ) const
 {
-  if ( !s || !p )
+  if ( !s )
   {
     return;
   }
@@ -1276,14 +1379,9 @@ void QgsWMSServer::drawLineSymbol( QPainter* p, QgsSymbol* s, double boxSpace, d
   p->restore();
 }
 
-void QgsWMSServer::drawLegendSymbolV2( QgsComposerLegendItem* item, QPainter* p, double boxSpace, double currentY, double symbolWidth,
-                                       double symbolHeight, double dpi, double yDownShift ) const
+void QgsWMSServer::drawLegendSymbolV2( QgsComposerLegendItem* item, QPainter* p, double boxSpace, double currentY, double& symbolWidth,
+                                       double& symbolHeight, double dpi, double yDownShift ) const
 {
-  if ( !p )
-  {
-    return;
-  }
-
   QgsComposerSymbolV2Item* symbolItem = dynamic_cast< QgsComposerSymbolV2Item* >( item );
   if ( !symbolItem )
   {
@@ -1295,13 +1393,24 @@ void QgsWMSServer::drawLegendSymbolV2( QgsComposerLegendItem* item, QPainter* p,
     return;
   }
 
+  //markers might have a different size
+  QgsMarkerSymbolV2* markerSymbol = dynamic_cast< QgsMarkerSymbolV2* >( symbol );
+  if ( markerSymbol )
+  {
+    symbolWidth = markerSymbol->size() * dpi / 25.4;
+    symbolHeight = markerSymbol->size() * dpi / 25.4;
+  }
+
   double rasterScaleFactor = dpi / 2.0 / 25.4;
 
-  p->save();
-  p->translate( boxSpace, currentY + yDownShift );
-  p->scale( 1.0 / rasterScaleFactor, 1.0 / rasterScaleFactor );
-  symbol->drawPreviewIcon( p, QSize( symbolWidth * rasterScaleFactor, symbolHeight * rasterScaleFactor ) );
-  p->restore();
+  if ( p )
+  {
+    p->save();
+    p->translate( boxSpace, currentY + yDownShift );
+    p->scale( 1.0 / rasterScaleFactor, 1.0 / rasterScaleFactor );
+    symbol->drawPreviewIcon( p, QSize( symbolWidth * rasterScaleFactor, symbolHeight * rasterScaleFactor ) );
+    p->restore();
+  }
 }
 
 void QgsWMSServer::drawRasterSymbol( QgsComposerLegendItem* item, QPainter* p, double boxSpace, double currentY, double symbolWidth, double symbolHeight, double yDownShift ) const

@@ -26,6 +26,10 @@ QgsStyleV2ManagerDialog::QgsStyleV2ManagerDialog( QgsStyleV2* style, QWidget* pa
 
   setupUi( this );
 
+#if QT_VERSION >= 0x40500
+  tabItemType->setDocumentMode( true );
+#endif
+
   // setup icons
   btnAddItem->setIcon( QIcon( QgsApplication::iconPath( "symbologyAdd.png" ) ) );
   btnEditItem->setIcon( QIcon( QgsApplication::iconPath( "symbologyEdit.png" ) ) );
@@ -44,7 +48,7 @@ QgsStyleV2ManagerDialog::QgsStyleV2ManagerDialog( QgsStyleV2* style, QWidget* pa
 
   populateTypes();
 
-  connect( cboItemType, SIGNAL( currentIndexChanged( int ) ), this, SLOT( populateList() ) );
+  connect( tabItemType, SIGNAL( currentChanged( int ) ), this, SLOT( populateList() ) );
 
   populateList();
 
@@ -60,9 +64,11 @@ void QgsStyleV2ManagerDialog::onFinished()
 
 void QgsStyleV2ManagerDialog::populateTypes()
 {
+#if 0
   // save current selection index in types combo
-  int current = ( cboItemType->count() > 0 ? cboItemType->currentIndex() : 0 );
+  int current = ( tabItemType->count() > 0 ? tabItemType->currentIndex() : 0 );
 
+ // no counting of style items
   int markerCount = 0, lineCount = 0, fillCount = 0;
 
   QStringList symbolNames = mStyle->symbolNames();
@@ -86,7 +92,7 @@ void QgsStyleV2ManagerDialog::populateTypes()
 
   // update current index to previous selection
   cboItemType->setCurrentIndex( current );
-
+#endif
 }
 
 void QgsStyleV2ManagerDialog::populateList()
@@ -154,8 +160,14 @@ void QgsStyleV2ManagerDialog::populateColorRamps()
 
 int QgsStyleV2ManagerDialog::currentItemType()
 {
-  int idx = cboItemType->currentIndex();
-  return cboItemType->itemData( idx ).toInt();
+  switch ( tabItemType->currentIndex() )
+  {
+    case 0: return QgsSymbolV2::Marker;
+    case 1: return QgsSymbolV2::Line;
+    case 2: return QgsSymbolV2::Fill;
+    case 3: return 3;
+    default: return 0;
+  }
 }
 
 QString QgsStyleV2ManagerDialog::currentItemName()

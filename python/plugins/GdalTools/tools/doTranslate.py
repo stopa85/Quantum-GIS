@@ -15,6 +15,7 @@ class GdalToolsDialog(QWidget, Ui_Widget, BaseBatchWidget):
       QWidget.__init__(self)
       self.iface = iface
       self.canvas = self.iface.mapCanvas()
+      self.expand_method = ( 'gray', 'rgb', 'rgba' )
 
       self.setupUi(self)
       BaseBatchWidget.__init__(self, self.iface, "gdal_translate")
@@ -74,8 +75,8 @@ class GdalToolsDialog(QWidget, Ui_Widget, BaseBatchWidget):
       if self.batchCheck.isChecked():
         self.inFileLabel = self.label_3.text()
         self.outFileLabel = self.label_2.text()
-        self.label_3.setText( QCoreApplication.translate( "GdalTools", "&Input directory:" ) )
-        self.label_2.setText( QCoreApplication.translate( "GdalTools", "&Output directory:" ) )
+        self.label_3.setText( QCoreApplication.translate( "GdalTools", "&Input directory" ) )
+        self.label_2.setText( QCoreApplication.translate( "GdalTools", "&Output directory" ) )
 
         self.progressBar.show()
         self.formatLabel.show()
@@ -132,9 +133,16 @@ class GdalToolsDialog(QWidget, Ui_Widget, BaseBatchWidget):
       workDir = QDir( inputDir )
       workDir.setFilter( QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot )
       workDir.setNameFilters( filter )
-      if workDir.entryList().count() > 0:
-        fl = inputDir + "/" + workDir.entryList()[ 0 ]
-        self.targetSRSEdit.setText( Utils.getRasterSRS( self, fl ) )
+
+      # search for a valid SRS, then use it as default target SRS
+      srs = QString()
+      for fname in workDir.entryList():
+        fl = inputDir + "/" + fname
+        srs = Utils.getRasterSRS( self, fl )
+        if not srs.isEmpty():
+          break
+      self.targetSRSEdit.setText( srs )
+
 
   def fillOutputFileEdit(self):
       lastUsedFilter = Utils.FileFilter.lastUsedRasterFilter()
@@ -181,7 +189,7 @@ class GdalToolsDialog(QWidget, Ui_Widget, BaseBatchWidget):
               arguments << self.outsizeSpin.text()
       if self.expandCheck.isChecked():
           arguments << "-expand"
-          arguments << self.expandCombo.currentText().toLower()
+          arguments << self.expand_method[self.expandCombo.currentIndex()]
       if self.nodataCheck.isChecked():
           arguments << "-a_nodata"
           arguments << str(self.nodataSpin.value())

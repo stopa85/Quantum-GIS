@@ -1,6 +1,6 @@
 """
 /***************************************************************************
-Name			 	 : GdalTools
+Name                 : GdalTools
 Description          : Integrate gdal tools into qgis
 Date                 : 17/Sep/09 
 copyright            : (C) 2009 by Lorenzo Masini and Giuseppe Sucameli (Faunalia)
@@ -22,9 +22,11 @@ def name():
 def description():
   return "Integrate gdal tools into qgis"
 def version(): 
-  return "Version 1.2.17" 
+  return "Version 1.2.20" 
 def qgisMinimumVersion():
   return "1.0"
+def icon():
+  return "icons/raster-info.png"
 def classFactory(iface): 
   # load GdalTools class from file GdalTools
   from GdalTools import GdalTools 

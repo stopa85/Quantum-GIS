@@ -65,8 +65,8 @@ class GdalToolsDialog(QWidget, Ui_Widget, BaseBatchWidget):
       if self.batchCheck.isChecked():
         self.inFileLabel = self.label.text()
         self.outFileLabel = self.label_2.text()
-        self.label.setText( QCoreApplication.translate( "GdalTools", "&Input directory:" ) )
-        self.label_2.setText( QCoreApplication.translate( "GdalTools", "&Output directory:" ) )
+        self.label.setText( QCoreApplication.translate( "GdalTools", "&Input directory" ) )
+        self.label_2.setText( QCoreApplication.translate( "GdalTools", "&Output directory" ) )
 
         self.progressBar.show()
 
@@ -180,13 +180,11 @@ class GdalToolsDialog(QWidget, Ui_Widget, BaseBatchWidget):
         arguments << str( self.heightSpin.value() )
       if self.multithreadCheck.isChecked():
         arguments << "-multi"
-      if self.noDataCheck.isChecked() and not self.noDataEdit.text().isEmpty():
-        arguments << "-dstnodata"
-        nd = self.noDataEdit.text().simplified()
-        if nd.contains( " " ):
-          arguments << '"' + nd + '"'
-        else:
-          arguments << nd
+      if self.noDataCheck.isChecked():
+        nodata = self.noDataEdit.text().trimmed()
+        if not nodata.isEmpty():
+          arguments << "-dstnodata"
+          arguments << nodata
       if self.isBatchEnabled():
         return arguments
 

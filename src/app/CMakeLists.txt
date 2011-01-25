@@ -78,7 +78,6 @@ SET(QGIS_APP_SRCS
   qgsprojectproperties.cpp
   qgsrastercalcdialog.cpp
   qgsrasterlayerproperties.cpp
-  qgssearchquerybuilder.cpp
   qgstextannotationdialog.cpp
   qgswmssourceselect.cpp
   qgsshortcutsmanager.cpp
@@ -104,6 +103,7 @@ SET(QGIS_APP_SRCS
   composer/qgscomposershapewidget.cpp
   composer/qgscomposertablewidget.cpp
   composer/qgscomposerlegenditemdialog.cpp
+  composer/qgscomposerlegendlayersdialog.cpp
   composer/qgscomposerlegendwidget.cpp
   composer/qgscompositionwidget.cpp
   composer/qgsitempositiondialog.cpp
@@ -214,7 +214,6 @@ SET (QGIS_APP_MOC_HDRS
   qgsprojectproperties.h
   qgsrastercalcdialog.h
   qgsrasterlayerproperties.h
-  qgssearchquerybuilder.h
   qgstextannotationdialog.h
   qgswmssourceselect.h
   qgssinglesymboldialog.h

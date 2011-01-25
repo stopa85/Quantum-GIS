@@ -1,8 +1,9 @@
 qgis (1.7.0) UNRELEASED; urgency=low
 
   * new development version after 1.7 branch
+  * add qgis-sqlanywhere1.7.0 package
 
- -- Jürgen E. Fischer <jef@norbit.de>  Mon, 08 Nov 2010 12:55:04 +0100
+ -- Jürgen E. Fischer <jef@norbit.de>  Thu, 16 Dec 2010 02:08:04 +0100
 
 qgis (1.6.0) UNRELEASED; urgency=low
 

@@ -520,7 +520,7 @@ bool QgsSLDParser::rasterSymbologyFromUserStyle( const QDomElement& userStyleEle
   r->setDrawingStyle( QgsRasterLayer::SingleBandPseudoColor );
 
   //set pseudo color mode
-  return true; //soon
+  return true;
 }
 
 // ---------------labelSettingsFromUserStyle-----------------------
@@ -1536,6 +1536,23 @@ void QgsSLDParser::setCrsForLayer( const QDomElement& layerElem, QgsMapLayer* ml
       srs.createFromProj4( projString );
       ml->setCrs( srs );
     }
+  }
+}
+
+QgsComposition* QgsSLDParser::initComposition( const QString& composerTemplate, QgsMapRenderer* mapRenderer, QList< QgsComposerMap*>& mapList, QList< QgsComposerLabel* >& labelList ) const
+{
+  if ( mFallbackParser )
+  {
+    return mFallbackParser->initComposition( composerTemplate, mapRenderer, mapList, labelList );
+  }
+  return 0;
+}
+
+void QgsSLDParser::printCapabilities( QDomElement& parentElement, QDomDocument& doc ) const
+{
+  if ( mFallbackParser )
+  {
+    mFallbackParser->printCapabilities( parentElement, doc );
   }
 }
 

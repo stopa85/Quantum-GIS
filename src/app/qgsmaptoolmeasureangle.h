@@ -59,6 +59,12 @@ class QgsMapToolMeasureAngle: public QgsMapTool
     /**Deletes the rubber band and the dialog*/
     void stopMeasuring();
 
+    /** recalculate angle if projection state changed*/
+    void changeProjectionEnabledState();
+
+    //! Configures distance area objects with ellipsoid / output crs
+    void configureDistanceArea( QgsDistanceArea& da );
+
 };
 
 #endif // QGSMAPTOOLMEASUREANGLE_H
