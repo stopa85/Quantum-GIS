@@ -171,6 +171,14 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
       return QgsRasterDataProvider::UnknownDataType;
     }
 
+    /** Returns source data type for the band specified by number,
+     *  source data type may be shorter than dataType  
+     */
+    virtual int srcDataType ( int bandNo ) const
+    {
+      return QgsRasterDataProvider::UnknownDataType;
+    }
+
     int typeSize ( int dataType ) const
     {
       // modified copy from GDAL
@@ -455,7 +463,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     int mDpi;
 
     /** \brief Cell value representing no data. e.g. -9999  */
-    double mNoDataValue;
+    QList<double> mNoDataValue;
 
     /** \brief Flag indicating if the nodatavalue is valid*/
     bool mValidNoDataValue;

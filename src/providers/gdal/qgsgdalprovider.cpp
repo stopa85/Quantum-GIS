@@ -253,46 +253,61 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
 
   GDALGetBlockSize( GDALGetRasterBand( mGdalDataset, 1 ), &mXBlockSize, &mYBlockSize );
   //
-  // Determine the nodata value
+  // Determine the nodata value and data type
   //
-  mNoDataValue = -9999.0; //Standard default?
-  mValidNoDataValue = false;
-  int isValid = false;
-  double myNoDataValue = GDALGetRasterNoDataValue( GDALGetRasterBand( mGdalDataset, 1 ), &isValid );
-  if ( isValid )
+  mValidNoDataValue = true;
+  for ( int i = 0; i < GDALGetRasterCount( mGdalBaseDataset ); i++ )
   {
-    QgsDebugMsg( QString("GDALGetRasterNoDataValue = %1").arg( myNoDataValue ) ) ;
-    mNoDataValue = myNoDataValue;
-    mValidNoDataValue = true;
-  } 
-  else 
-  {
-    // But we need a null value in case of reprojection and BTW also for 
-    // aligned margines
+    GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, i );
+    GDALDataType myGdalDataType = GDALGetRasterDataType( myGdalBand );
+    int isValid = false;
+    double myNoDataValue = GDALGetRasterNoDataValue( GDALGetRasterBand( mGdalDataset, i ), &isValid );
+    if ( isValid )
+    {
+      QgsDebugMsg( QString("GDALGetRasterNoDataValue = %1").arg( myNoDataValue ) ) ;
+      mGdalDataType.append( myGdalDataType );
+       
+    } 
+    else 
+    {
+      // But we need a null value in case of reprojection and BTW also for 
+      // aligned margines
 
-    switch ( dataType( 1 ) ) {
-      case QgsRasterDataProvider::Byte:
-        mNoDataValue = 255.0;
-        break;
-      case QgsRasterDataProvider::Int16:
-        mNoDataValue = -32768.0;
-        break;
-      case QgsRasterDataProvider::UInt16:
-        mNoDataValue = 65535.0;
-        break;
-      case QgsRasterDataProvider::Int32:
-        mNoDataValue = -2147483648.0;
-        break;
-      case QgsRasterDataProvider::UInt32:
-        mNoDataValue = 4294967295.0;
-        break;
-      default:
-        mNoDataValue = std::numeric_limits<int>::max();
+      switch ( srcDataType( i ) ) {
+        case QgsRasterDataProvider::Byte:
+          // Use longer data type to avoid conflict with real data
+          //myNoDataValue = 255.0;
+          myNoDataValue = -32768.0;
+          mGdalDataType.append( GDT_UInt16 );
+          break;
+        case QgsRasterDataProvider::Int16:
+          //myNoDataValue = -32768.0;
+          myNoDataValue = -2147483648.0;
+          mGdalDataType.append( GDT_UInt32 );
+          break;
+        case QgsRasterDataProvider::UInt16:
+          //myNoDataValue = 65535.0;
+          myNoDataValue = -2147483648.0;
+          mGdalDataType.append( GDT_UInt32 );
+          break;
+        case QgsRasterDataProvider::Int32:
+          myNoDataValue = -2147483648.0;
+          mGdalDataType.append( myGdalDataType );
+          break;
+        case QgsRasterDataProvider::UInt32:
+          myNoDataValue = 4294967295.0;
+          mGdalDataType.append( myGdalDataType );
+          break;
+        default:
+          myNoDataValue = std::numeric_limits<int>::max();
+          // Would NaN work well? 
+          //myNoDataValue = std::numeric_limits<double>::quiet_NaN(); 
+          mGdalDataType.append( myGdalDataType );
+      }
     }
-    QgsDebugMsg( QString("GDALGetRasterNoDataValue not set, using = %1").arg( mNoDataValue ) );
-    mValidNoDataValue = true;
+    mNoDataValue.append( myNoDataValue );
+    QgsDebugMsg( QString("mNoDataValue[%1] = %1").arg(i).arg ( mNoDataValue[i] ) ); 
   }
-  QgsDebugMsg( QString("mNoDataValue = %1").arg ( mNoDataValue ) ); 
 
   // This block of code was in old version in QgsRasterLayer::bandStatistics 
   //ifdefs below to remove compiler warning about unused vars
@@ -550,7 +565,8 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
 
  
   // TODO: more bands support
-  myMemDsn.sprintf ( "MEM:::DATAPOINTER=%lu,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (long)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( myGdalDataType ) );
+  //myMemDsn.sprintf ( "MEM:::DATAPOINTER=%lu,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (long)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( myGdalDataType ) );
+  myMemDsn.sprintf ( "MEM:::DATAPOINTER=%lu,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (long)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( (GDALDataType)mGdalDataType[theBandNo] ) );
 
   QgsDebugMsg( "Open GDAL MEM : " + myMemDsn );
 
@@ -646,7 +662,7 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
 
   }
   */
-  myWarpOptions->padfDstNoDataReal[0] = mNoDataValue;
+  myWarpOptions->padfDstNoDataReal[0] = mNoDataValue[theBandNo];
   myWarpOptions->padfDstNoDataImag[0] = 0.0;
 
   GDALSetRasterNoDataValue( GDALGetRasterBand( myGdalMemDataset, 
@@ -687,7 +703,10 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
 }
 
 double  QgsGdalProvider::noDataValue() const {
-  return mNoDataValue;
+  if ( mNoDataValue.size () > 0 ) {
+    return mNoDataValue[0];
+  }
+  return std::numeric_limits<int>::max(); // should not happen or be used
 }
 
 void QgsGdalProvider::computeMinMax ( int theBandNo ) 
@@ -878,7 +897,7 @@ bool QgsGdalProvider::identify( const QgsPoint& thePoint, QMap<QString, QString>
 #endif
       QString v;
 
-      if ( mValidNoDataValue && ( fabs( value - mNoDataValue ) <= TINY_VALUE || value != value ) )
+      if ( mValidNoDataValue && ( fabs( value - mNoDataValue[i] ) <= TINY_VALUE || value != value ) )
       {
         v = tr( "null (no data)" );
       }
@@ -904,12 +923,9 @@ int QgsGdalProvider::capabilities() const
   return capability;
 }
 
-int QgsGdalProvider::dataType( int bandNo ) const
+int QgsGdalProvider::dataTypeFormGdal( int theGdalDataType ) const
 {
-  GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, bandNo ); 
-  GDALDataType myGdalDataType = GDALGetRasterDataType( myGdalBand );
-
-  switch ( myGdalDataType ) {
+  switch ( theGdalDataType ) {
     case GDT_Unknown:
       return QgsRasterDataProvider::UnknownDataType;
       break;
@@ -951,6 +967,18 @@ int QgsGdalProvider::dataType( int bandNo ) const
       break;
   }
   return QgsRasterDataProvider::UnknownDataType;
+}
+
+int QgsGdalProvider::srcDataType( int bandNo ) const
+{
+  GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, bandNo ); 
+  GDALDataType myGdalDataType = GDALGetRasterDataType( myGdalBand );
+  return dataTypeFormGdal ( myGdalDataType );
+}
+
+int QgsGdalProvider::dataType( int bandNo ) const
+{
+  return dataTypeFormGdal ( mGdalDataType[bandNo] );
 }
 
 int QgsGdalProvider::bandCount() const

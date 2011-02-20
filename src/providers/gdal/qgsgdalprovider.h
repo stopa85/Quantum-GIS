@@ -187,6 +187,9 @@ class QgsGdalProvider : public QgsRasterDataProvider
     int capabilities() const;
 
     int dataType ( int bandNo ) const;
+    int srcDataType ( int bandNo ) const;
+
+    int dataTypeFormGdal ( int theGdalDataType ) const;
 
     int bandCount() const;
 
@@ -264,10 +267,9 @@ class QgsGdalProvider : public QgsRasterDataProvider
     /** \brief Whether this raster has overviews / pyramids or not */
     bool mHasPyramids;
 
-    QString mGisdbase;      // map gisdabase
-    QString mLocation;      // map location name (not path!)
-    QString mMapset;        // map mapset
-    QString mMapName;       // map name
+    /** \brief Gdal data types used to represent data in in QGIS, 
+               may be longer than source data type to keep nulls */
+    QList<int>mGdalDataType;
 
     QgsRectangle mExtent;
     int mWidth;
