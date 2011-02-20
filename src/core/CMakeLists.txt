@@ -90,6 +90,7 @@ SET(QGIS_CORE_SRCS
   qgsvectordataprovider.cpp
   qgsvectorfilewriter.cpp
   qgsvectorlayer.cpp
+  qgsvectorlayerjoinbuffer.cpp
   qgsvectorlayerundocommand.cpp
   qgsvectoroverlay.cpp
 
@@ -211,20 +212,6 @@ ENDIF (WITH_INTERNAL_SPATIALITE)
 ADD_FLEX_FILES(QGIS_CORE_SRCS qgssearchstringlexer.ll)
 
 ADD_BISON_FILES(QGIS_CORE_SRCS qgssearchstringparser.yy)
-
-# Disable compiler warnings for lex generated sources
-SET_SOURCE_FILES_PROPERTIES(
-                ${CMAKE_BINARY_DIR}/src/core/flex_qgssearchstringlexer.cpp 
-                PROPERTIES COMPILE_FLAGS -w)
-
-IF (MSVC AND PEDANTIC)
-# disable warnings
-# 4065 switch with default and no case
-# 4702 unreachable code
-SET_SOURCE_FILES_PROPERTIES(
-                ${CMAKE_BINARY_DIR}/src/core/qgssearchstringparser.cpp 
-                PROPERTIES COMPILE_FLAGS "-wd4065 -wd4702")
-ENDIF (MSVC AND PEDANTIC)
 
 SET(QGIS_CORE_MOC_HDRS
   qgsapplication.h

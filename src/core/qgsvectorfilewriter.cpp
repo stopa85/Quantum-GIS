@@ -42,6 +42,14 @@
 #include <cpl_error.h>
 #include <cpl_conv.h>
 
+#if defined(GDAL_VERSION_NUM) && GDAL_VERSION_NUM >= 1800
+#define TO8(x)   (x).toUtf8().constData()
+#define TO8F(x)  (x).toUtf8().constData()
+#else
+#define TO8(x)   (x).toLocal8Bit().constData()
+#define TO8F(x)  QFile::encodeName( x ).constData()
+#endif
+
 
 QgsVectorFileWriter::QgsVectorFileWriter(
   const QString &theVectorFileName,
@@ -117,6 +125,18 @@ QgsVectorFileWriter::QgsVectorFileWriter(
   }
   else
   {
+    QString longName;
+    QString trLongName;
+    QString glob;
+    QString ext;
+    if ( QgsVectorFileWriter::driverMetadata( driverName, longName, trLongName, glob, ext ) )
+    {
+      if ( !vectorFileName.endsWith( "." + ext, Qt::CaseInsensitive ) )
+      {
+        vectorFileName += "." + ext;
+      }
+    }
+
     QFile::remove( vectorFileName );
   }
 
@@ -132,7 +152,7 @@ QgsVectorFileWriter::QgsVectorFileWriter(
   }
 
   // create the data source
-  mDS = OGR_Dr_CreateDataSource( poDriver, vectorFileName.toLocal8Bit().data(), options );
+  mDS = OGR_Dr_CreateDataSource( poDriver, TO8( vectorFileName ), options );
 
   if ( options )
   {
@@ -190,7 +210,7 @@ QgsVectorFileWriter::QgsVectorFileWriter(
     options[ layerOptions.size()] = NULL;
   }
 
-  mLayer = OGR_DS_CreateLayer( mDS, QFile::encodeName( layerName ).data(), ogrRef, wkbType, options );
+  mLayer = OGR_DS_CreateLayer( mDS, TO8F( layerName ), ogrRef, wkbType, options );
 
   if ( options )
   {
@@ -367,6 +387,15 @@ bool QgsVectorFileWriter::addFeature( QgsFeature& feature )
 
   // create the feature
   OGRFeatureH poFeature = OGR_F_Create( OGR_L_GetLayerDefn( mLayer ) );
+
+  OGRErr err = OGR_F_SetFID( poFeature, feature.id() );
+  if ( err != OGRERR_NONE )
+  {
+    QgsDebugMsg( QString( "Failed to set feature id to %1: %2 (OGR error: %3)" )
+                 .arg( feature.id() )
+                 .arg( err ).arg( CPLGetLastErrorMsg() )
+               );
+  }
 
   // attribute handling
   QgsFieldMap::const_iterator fldIt;
@@ -721,11 +750,14 @@ QMap<QString, QString> QgsVectorFileWriter::ogrDriverList()
       QString drvName = OGR_Dr_GetName( drv );
       if ( OGR_Dr_TestCapability( drv, "CreateDataSource" ) != 0 )
       {
-        QPair<QString, QString> p = nameAndGlob( drvName );
-        if ( p.first.isEmpty() )
-          continue;
-
-        resultMap.insert( p.first, drvName );
+        QString longName;
+        QString trLongName;
+        QString glob;
+        QString ext;
+        if ( QgsVectorFileWriter::driverMetadata( drvName, longName, trLongName, glob, ext ) && !trLongName.isEmpty() )
+        {
+          resultMap.insert( trLongName, drvName );
+        }
       }
     }
   }
@@ -750,119 +782,165 @@ QString QgsVectorFileWriter::fileFilterString()
 
 QString QgsVectorFileWriter::filterForDriver( const QString& driverName )
 {
-  QPair<QString, QString> p = nameAndGlob( driverName );
-
-  if ( p.first.isEmpty() || p.second.isEmpty() )
+  QString longName;
+  QString trLongName;
+  QString glob;
+  QString ext;
+  if ( !QgsVectorFileWriter::driverMetadata( driverName, longName, trLongName, glob, ext )
+       || trLongName.isEmpty()
+       || glob.isEmpty()
+     )
     return "";
 
-  return "[OGR] " + p.first + " (" + p.second.toLower() + " " + p.second.toUpper() + ")";
+  return trLongName + " [OGR] (" + glob.toLower() + " " + glob.toUpper() + ")";
 }
 
-QPair<QString, QString> QgsVectorFileWriter::nameAndGlob( QString driverName )
+bool QgsVectorFileWriter::driverMetadata( QString driverName, QString &longName, QString &trLongName, QString &glob, QString &ext )
 {
-  QString longName;
-  QString glob;
-
   if ( driverName.startsWith( "AVCE00" ) )
   {
     longName = "Arc/Info ASCII Coverage";
+    trLongName = QObject::tr( "Arc/Info ASCII Coverage" );
     glob = "*.e00";
+    ext = "e00";
   }
   else if ( driverName.startsWith( "BNA" ) )
   {
     longName = "Atlas BNA";
+    trLongName = QObject::tr( "Atlas BNA" );
     glob = "*.bna";
+    ext = "bna";
   }
   else if ( driverName.startsWith( "CSV" ) )
   {
     longName = "Comma Separated Value";
+    trLongName = QObject::tr( "Comma Separated Value" );
     glob = "*.csv";
+    ext = "*.bna";
   }
   else if ( driverName.startsWith( "ESRI" ) )
   {
     longName = "ESRI Shapefile";
+    trLongName = QObject::tr( "ESRI Shapefile" );
     glob = "*.shp";
+    ext = "shp";
   }
   else if ( driverName.startsWith( "FMEObjects Gateway" ) )
   {
     longName = "FMEObjects Gateway";
+    trLongName = QObject::tr( "FMEObjects Gateway" );
     glob = "*.fdd";
+    ext = "fdd";
   }
   else if ( driverName.startsWith( "GeoJSON" ) )
   {
     longName = "GeoJSON";
+    trLongName = QObject::tr( "GeoJSON" );
     glob = "*.geojson";
+    ext = "geojson";
   }
   else if ( driverName.startsWith( "GeoRSS" ) )
   {
     longName = "GeoRSS";
+    trLongName = QObject::tr( "GeoRSS" );
     glob = "*.xml";
+    ext = "xml";
   }
   else if ( driverName.startsWith( "GML" ) )
   {
     longName = "Geography Markup Language (GML)";
+    trLongName = QObject::tr( "Geography Markup Language (GML)" );
     glob = "*.gml";
+    ext = "gml";
   }
   else if ( driverName.startsWith( "GMT" ) )
   {
     longName = "Generic Mapping Tools (GMT)";
+    trLongName = QObject::tr( "Generic Mapping Tools (GMT)" );
     glob = "*.gmt";
+    ext = "gmt";
   }
   else if ( driverName.startsWith( "GPX" ) )
   {
     longName = "GPS eXchange Format";
+    trLongName = QObject::tr( "GPS eXchange Format" );
     glob = "*.gpx";
+    ext = "gpx";
   }
   else if ( driverName.startsWith( "Interlis 1" ) )
   {
     longName = "INTERLIS 1";
+    trLongName = QObject::tr( "INTERLIS 1" );
     glob = "*.itf *.xml *.ili";
+    ext = "ili";
   }
   else if ( driverName.startsWith( "Interlis 2" ) )
   {
     longName = "INTERLIS 2";
+    trLongName = QObject::tr( "INTERLIS 2" );
     glob = "*.itf *.xml *.ili";
+    ext = "ili";
   }
   else if ( driverName.startsWith( "KML" ) )
   {
     longName = "Keyhole Markup Language (KML)";
+    trLongName = QObject::tr( "Keyhole Markup Language (KML)" );
     glob = "*.kml" ;
+    ext = "kml" ;
   }
   else if ( driverName.startsWith( "MapInfo File" ) )
   {
     longName = "Mapinfo File";
+    trLongName = QObject::tr( "Mapinfo File" );
     glob = "*.mif *.tab";
+    ext = "mif" ;
   }
   else if ( driverName.startsWith( "DGN" ) )
   {
     longName = "Microstation DGN";
+    trLongName = QObject::tr( "Microstation DGN" );
     glob = "*.dgn";
+    ext = "dgn";
   }
   else if ( driverName.startsWith( "S57" ) )
   {
     longName = "S-57 Base file";
+    trLongName = QObject::tr( "S-57 Base file" );
     glob = "*.000";
+    ext = "000";
   }
   else if ( driverName.startsWith( "SDTS" ) )
   {
     longName = "Spatial Data Transfer Standard (SDTS)";
+    trLongName = QObject::tr( "Spatial Data Transfer Standard (SDTS)" );
     glob = "*catd.ddf";
+    ext = "ddf";
   }
   else if ( driverName.startsWith( "SQLite" ) )
   {
     longName = "SQLite";
+    trLongName = QObject::tr( "SQLite" );
     glob = "*.sqlite";
+    ext = "sqlite";
   }
   else if ( driverName.startsWith( "DXF" ) )
   {
     longName = "AutoCAD DXF";
+    trLongName = QObject::tr( "AutoCAD DXF" );
     glob = "*.dxf";
+    ext = "dxf";
   }
   else if ( driverName.startsWith( "Geoconcept" ) )
   {
     longName = "Geoconcept";
+    trLongName = QObject::tr( "Geoconcept" );
     glob = "*.gxt *.txt";
+    ext = "gxt";
+  }
+  else
+  {
+    return false;
   }
 
-  return QPair<QString, QString>( longName, glob );
+  return true;
 }

@@ -93,12 +93,15 @@
 //
 // QGIS Specific Includes
 //
+
 #include "qgisapp.h"
 #include "qgisappinterface.h"
 #include "qgis.h"
 #include "qgisplugin.h"
 #include "qgsabout.h"
 #include "qgsapplication.h"
+#include "qgsattributeaction.h"
+#include "qgsattributetabledialog.h"
 #include "qgsbookmarkitem.h"
 #include "qgsbookmarks.h"
 #include "qgsclipboard.h"
@@ -106,16 +109,18 @@
 #include "qgscomposermanager.h"
 #include "qgsconfigureshortcutsdialog.h"
 #include "qgscoordinatetransform.h"
+#include "qgscredentialdialog.h"
 #include "qgscursors.h"
 #include "qgscustomprojectiondialog.h"
+#include "qgsdatasourceuri.h"
 #include "qgsencodingfiledialog.h"
 #include "qgsexception.h"
 #include "qgsfeature.h"
 #include "qgsformannotationitem.h"
-#include "qgslabelinggui.h"
-#include "qgsnewvectorlayerdialog.h"
-#include "qgshelpviewer.h"
 #include "qgsgenericprojectionselector.h"
+#include "qgsgpsinformationwidget.h"
+#include "qgshelpviewer.h"
+#include "qgslabelinggui.h"
 #include "qgslegend.h"
 #include "qgslegendlayer.h"
 #include "qgslogger.h"
@@ -127,6 +132,7 @@
 #include "qgsmaptip.h"
 #include "qgsmergeattributesdialog.h"
 #include "qgsmessageviewer.h"
+#include "qgsnewvectorlayerdialog.h"
 #include "qgsoptions.h"
 #include "qgspastetransformations.h"
 #include "qgspluginitem.h"
@@ -136,34 +142,31 @@
 #include "qgspluginmetadata.h"
 #include "qgspluginregistry.h"
 #include "qgspoint.h"
-#include "qgsproject.h"
 #include "qgsprojectbadlayerguihandler.h"
+#include "qgsproject.h"
 #include "qgsprojectproperties.h"
 #include "qgsproviderregistry.h"
+#include "qgsquerybuilder.h"
 #include "qgsrastercalcdialog.h"
 #include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
-#include "qgsvectorlayerproperties.h"
 #include "qgsrectangle.h"
 #include "qgsrenderer.h"
-#include "qgstextannotationitem.h"
-#include "qgswmssourceselect.h"
 #include "qgsshortcutsmanager.h"
+#include "qgssnappingdialog.h"
+#include "qgssponsors.h"
+#include "qgstextannotationitem.h"
+#include "qgstilescalewidget.h"
+#include "qgstipgui.h"
 #include "qgsundowidget.h"
 #include "qgsvectordataprovider.h"
+#include "qgsvectorfilewriter.h"
 #include "qgsvectorlayer.h"
+#include "qgsvectorlayerproperties.h"
+#include "qgswmssourceselect.h"
 #include "ogr/qgsogrsublayersdialog.h"
 #include "ogr/qgsopenvectorlayerdialog.h"
 #include "ogr/qgsvectorlayersaveasdialog.h"
-#include "qgsattributetabledialog.h"
-#include "qgsvectorfilewriter.h"
-#include "qgscredentialdialog.h"
-#include "qgstilescalewidget.h"
-#include "qgsquerybuilder.h"
-#include "qgsattributeaction.h"
-#include "qgsgpsinformationwidget.h"
-#include "qgssnappingdialog.h"
-
 //
 // Gdal/Ogr includes
 //
@@ -233,8 +236,8 @@ extern "C"
 {
 #include <spatialite.h>
 }
-#include "qgsspatialitesourceselect.h"
-#include "qgsnewspatialitelayerdialog.h"
+#include "spatialite/qgsspatialitesourceselect.h"
+#include "spatialite/qgsnewspatialitelayerdialog.h"
 #endif
 
 #include "qgspythonutils.h"
@@ -530,16 +533,31 @@ QgisApp::QgisApp( QSplashScreen *splash, bool restorePlugins, QWidget * parent, 
   mPrevScreenModeMaximized = false;
   show();
   qApp->processEvents();
-  //finally show all the application settings as initialised above
 
-  QgsDebugMsg( "\n\n\nApplication Settings:\n--------------------------\n" );
-  QgsDebugMsg( QgsApplication::showSettings() );
-  QgsDebugMsg( "\n--------------------------\n\n\n" );
   mMapCanvas->freeze( false );
   mMapCanvas->clearExtentHistory(); // reset zoomnext/zoomlast
   mLastComposerId = 0;
   mLBL = new QgsPalLabeling();
   mMapCanvas->mapRenderer()->setLabelingEngine( mLBL );
+
+  // Show a nice tip of the day
+  QSettings settings;
+  if ( settings.value( "/qgis/showTips", 1 ).toBool() )
+  {
+    mSplash->hide();
+    QgsTipGui myTip;
+    myTip.exec();
+  }
+  else
+  {
+    QgsDebugMsg( "Tips are disabled");
+  }
+
+  //finally show all the application settings as initialised above
+  QgsDebugMsg( "\n\n\nApplication Settings:\n--------------------------\n" );
+  QgsDebugMsg( QgsApplication::showSettings() );
+  QgsDebugMsg( "\n--------------------------\n\n\n" );
+
 } // QgisApp ctor
 
 
@@ -1208,6 +1226,12 @@ void QgisApp::createActions()
   mWindowActions = new QActionGroup( this );
 #endif
 
+  // Raster toolbar items
+  mActionLocalHistogramStretch = new QAction( getThemeIcon( "mActionmRasterLocalHistogramStretch.png" ), tr( "Local Histogram Stretch" ), this );
+  mActionLocalHistogramStretch->setStatusTip( tr( "Stretch histogram of active raster to view extents" ) );
+  connect( mActionLocalHistogramStretch, SIGNAL( triggered() ), this, SLOT( localHistogramStretch() ) );
+
+
   // Help Menu Items
 
   mActionHelpContents = new QAction( getThemeIcon( "mActionHelpContents.png" ), tr( "Help Contents" ), this );
@@ -1238,6 +1262,11 @@ void QgisApp::createActions()
   mActionAbout->setStatusTip( tr( "About QGIS" ) );
   mActionAbout->setMenuRole( QAction::AboutRole ); // put in application menu on Mac OS X
   connect( mActionAbout, SIGNAL( triggered() ), this, SLOT( about() ) );
+
+  mActionSponsors = new QAction( getThemeIcon( "mActionHelpSponsors.png" ), tr( "QGIS Sponsors!" ), this );
+  shortcuts->registerAction( mActionSponsors );
+  mActionSponsors->setStatusTip( tr( "QGIS Sponsors" ) );
+  connect( mActionSponsors, SIGNAL( triggered() ), this, SLOT( sponsors() ) );
 
   mActionMoveLabel = new QAction( getThemeIcon( "mActionMoveLabel.png" ), tr( "Move Label" ), this );
   mActionMoveLabel->setStatusTip( tr( "Move labels interactively" ) );
@@ -1655,11 +1684,14 @@ void QgisApp::createMenus()
   mActionHelpSeparator2 = mHelpMenu->addSeparator();
 
   mHelpMenu->addAction( mActionAbout );
+  mHelpMenu->addAction( mActionSponsors );
 }
 
 void QgisApp::createToolBars()
 {
-  QSize myIconSize( 24, 24 );
+  QSettings settings;
+  int size = settings.value( "/IconSize", 24 ).toInt();
+  setIconSize( QSize( size, size ) );
   // QSize myIconSize ( 32,32 ); //large icons
   // Note: we need to set each object name to ensure that
   // qmainwindow::saveState and qmainwindow::restoreState
@@ -1668,7 +1700,6 @@ void QgisApp::createToolBars()
   //
   // File Toolbar
   mFileToolBar = addToolBar( tr( "File" ) );
-  mFileToolBar->setIconSize( myIconSize );
   mFileToolBar->setObjectName( "FileToolBar" );
   mFileToolBar->addAction( mActionNewProject );
   mFileToolBar->addAction( mActionOpenProject );
@@ -1680,7 +1711,6 @@ void QgisApp::createToolBars()
   //
   // Layer Toolbar
   mLayerToolBar = addToolBar( tr( "Manage Layers" ) );
-  mLayerToolBar->setIconSize( myIconSize );
   mLayerToolBar->setObjectName( "LayerToolBar" );
   mLayerToolBar->addAction( mActionAddOgrLayer );
   mLayerToolBar->addAction( mActionAddRasterLayer );
@@ -1701,7 +1731,6 @@ void QgisApp::createToolBars()
   //
   // Digitizing Toolbar
   mDigitizeToolBar = addToolBar( tr( "Digitizing" ) );
-  mDigitizeToolBar->setIconSize( myIconSize );
   mDigitizeToolBar->setObjectName( "Digitizing" );
   mDigitizeToolBar->addAction( mActionToggleEditing );
   mDigitizeToolBar->addAction( mActionSaveEdits );
@@ -1722,7 +1751,6 @@ void QgisApp::createToolBars()
   mToolbarMenu->addAction( mDigitizeToolBar->toggleViewAction() );
 
   mAdvancedDigitizeToolBar = addToolBar( tr( "Advanced Digitizing" ) );
-  mAdvancedDigitizeToolBar->setIconSize( myIconSize );
   mAdvancedDigitizeToolBar->setObjectName( "Advanced Digitizing" );
   mAdvancedDigitizeToolBar->addAction( mActionUndo );
   mAdvancedDigitizeToolBar->addAction( mActionRedo );
@@ -1742,7 +1770,6 @@ void QgisApp::createToolBars()
   //
   // Map Navigation Toolbar
   mMapNavToolBar = addToolBar( tr( "Map Navigation" ) );
-  mMapNavToolBar->setIconSize( myIconSize );
   mMapNavToolBar->setObjectName( "Map Navigation" );
   mMapNavToolBar->addAction( mActionPan );
   mMapNavToolBar->addAction( mActionZoomIn );
@@ -1758,7 +1785,6 @@ void QgisApp::createToolBars()
   //
   // Attributes Toolbar
   mAttributesToolBar = addToolBar( tr( "Attributes" ) );
-  mAttributesToolBar->setIconSize( myIconSize );
   mAttributesToolBar->setObjectName( "Attributes" );
   mAttributesToolBar->addAction( mActionIdentify );
 
@@ -1771,7 +1797,6 @@ void QgisApp::createToolBars()
   bt->addAction( mActionSelectFreehand );
   bt->addAction( mActionSelectRadius );
 
-  QSettings settings;
   switch ( settings.value( "/UI/selectTool", 0 ).toInt() )
   {
     default:
@@ -1859,21 +1884,26 @@ void QgisApp::createToolBars()
   //
   // Plugins Toolbar
   mPluginToolBar = addToolBar( tr( "Plugins" ) );
-  mPluginToolBar->setIconSize( myIconSize );
   mPluginToolBar->setObjectName( "Plugins" );
   mToolbarMenu->addAction( mPluginToolBar->toggleViewAction() );
   //
   // Help Toolbar
   mHelpToolBar = addToolBar( tr( "Help" ) );
-  mHelpToolBar->setIconSize( myIconSize );
   mHelpToolBar->setObjectName( "Help" );
   mHelpToolBar->addAction( mActionHelpContents );
   mHelpToolBar->addAction( QWhatsThis::createAction() );
   mToolbarMenu->addAction( mHelpToolBar->toggleViewAction() );
+  
+  //
+  // Raster Toolbar
+  mRasterToolBar = addToolBar( tr( "Raster" ) );
+  mRasterToolBar->setObjectName( "Raster" );
+  mRasterToolBar->addAction( mActionLocalHistogramStretch );
+  mToolbarMenu->addAction( mRasterToolBar->toggleViewAction() );
+
 
   //Label Toolbar
   mLabelToolBar = addToolBar( tr( "Label" ) );
-  mLabelToolBar->setIconSize( myIconSize );
   mLabelToolBar->setObjectName( "Label" );
   mLabelToolBar->addAction( mActionLabeling );
   mLabelToolBar->addAction( mActionMoveLabel );
@@ -2015,6 +2045,24 @@ void QgisApp::createStatusBar()
   statusBar()->showMessage( tr( "Ready" ) );
 }
 
+void QgisApp::setIconSizes( int size )
+{
+  //Set the icon size of for all the toolbars created in the future.
+  setIconSize( QSize( size, size ) );
+
+    //Change all current icon sizes.
+    QList<QToolBar *> toolbars = findChildren<QToolBar *>();
+    foreach( QToolBar * toolbar, toolbars )
+    {
+      toolbar->setIconSize( QSize( size, size ) );
+    }
+    
+    QSet<QgsComposer*>::iterator composerIt = mPrintComposers.begin();
+    for ( ; composerIt != mPrintComposers.end(); ++composerIt )
+    {
+      ( *composerIt )->setIconSizes(size);
+    }
+}
 
 void QgisApp::setTheme( QString theThemeName )
 {
@@ -2065,8 +2113,10 @@ void QgisApp::setTheme( QString theThemeName )
   mActionOptions->setIcon( getThemeIcon( "/mActionOptions.png" ) );
   mActionConfigureShortcuts->setIcon( getThemeIcon( "/mActionOptions.png" ) );
   mActionHelpContents->setIcon( getThemeIcon( "/mActionHelpContents.png" ) );
+  mActionLocalHistogramStretch->setIcon( getThemeIcon( "/mActionLocalHistogramStretch.png" ) );
   mActionQgisHomePage->setIcon( getThemeIcon( "/mActionQgisHomePage.png" ) );
   mActionAbout->setIcon( getThemeIcon( "/mActionHelpAbout.png" ) );
+  mActionSponsors->setIcon( getThemeIcon( "/mActionHelpSponsors.png" ) );
   mActionDraw->setIcon( getThemeIcon( "/mActionDraw.png" ) );
   mActionToggleEditing->setIcon( getThemeIcon( "/mActionToggleEditing.png" ) );
   mActionSaveEdits->setIcon( getThemeIcon( "/mActionSaveEdits.png" ) );
@@ -2591,6 +2641,13 @@ void QgisApp::restoreWindowState()
 
 }
 ///////////// END OF GUI SETUP ROUTINES ///////////////
+void QgisApp::sponsors()
+{
+  QgsSponsors * sponsors = new QgsSponsors();
+  sponsors->show();
+  sponsors->raise();
+  sponsors->activateWindow();
+}
 
 void QgisApp::about()
 {
@@ -2969,17 +3026,16 @@ void QgisApp::addDatabaseLayer()
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
 
-    QString connectionInfo = dbs->connectionInfo();
     // for each selected table, connect to the database, parse the Wkt geometry,
     // and build a canvasitem for it
     // readWKB(connectionInfo,tables);
     QStringList::Iterator it = tables.begin();
     while ( it != tables.end() )
     {
-
       // create the layer
       //qWarning("creating layer");
-      QgsVectorLayer *layer = new QgsVectorLayer( connectionInfo + " " + *it, *it, "postgres" );
+      QgsDataSourceURI uri( *it );
+      QgsVectorLayer *layer = new QgsVectorLayer( uri.uri(), uri.table(), "postgres" );
       if ( layer->isValid() )
       {
         // register this layer with the central layers registry
@@ -3045,20 +3101,13 @@ void QgisApp::addSpatiaLiteLayer()
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
 
-    QString connectionInfo = dbs->connectionInfo();
     // for each selected table, connect to the database and build a canvasitem for it
     QStringList::Iterator it = tables.begin();
     while ( it != tables.end() )
     {
-      // normalizing the layer name
-      QString layername = *it;
-      layername = layername.mid( 1 );
-      int idx = layername.indexOf( "\" (" );
-      if ( idx > 0 )
-        layername.truncate( idx );
-
       // create the layer
-      QgsVectorLayer *layer = new QgsVectorLayer( "dbname='" + connectionInfo + "' table=" + *it + ") sql=", layername, "spatialite" );
+      QgsDataSourceURI uri( *it );
+      QgsVectorLayer *layer = new QgsVectorLayer( uri.uri(), uri.table(), "spatialite" );
       if ( layer->isValid() )
       {
         // register this layer with the central layers registry
@@ -4902,6 +4951,7 @@ void QgisApp::layerSubsetString()
 
   // launch the query builder
   QgsQueryBuilder *qb = new QgsQueryBuilder( vlayer, this );
+  QString subsetBefore = vlayer->subsetString();
 
   // Set the sql in the query builder to the same in the prop dialog
   // (in case the user has already changed it)
@@ -4909,9 +4959,14 @@ void QgisApp::layerSubsetString()
   // Open the query builder
   if ( qb->exec() )
   {
-    // if the sql is changed, update it in the prop subset text box
-    vlayer->setSubsetString( qb->sql() );
-    mMapCanvas->refresh();
+    if ( subsetBefore != qb->sql() )
+    {
+      mMapCanvas->refresh();
+      if ( mMapLegend )
+      {
+        mMapLegend->refreshLayerSymbology( vlayer->id(), false );
+      }
+    }
   }
 
   // delete the query builder object
@@ -5446,6 +5501,48 @@ void QgisApp::options()
   }
 
   delete optionsDialog;
+}
+
+void QgisApp::localHistogramStretch()
+{
+  QgsMapLayer * layer = mMapLegend->currentLayer();
+
+  if ( !layer )
+  {
+    QMessageBox::information( this,
+                              tr( "No Layer Selected" ),
+                              tr( "To perform a local histogram stretch, you need to have a raster layer selected." ) );
+    return;
+  }
+
+  QgsRasterLayer* rlayer = qobject_cast<QgsRasterLayer *>( layer );
+  if ( !rlayer )
+  {
+    QMessageBox::information( this,
+                              tr( "No Raster Layer Selected" ),
+                              tr( "To perform a local histogram stretch, you need to have a raster layer selected." ) );
+    return;
+  }
+  if ( rlayer->drawingStyle() == QgsRasterLayer::SingleBandGray ||
+       rlayer->drawingStyle() == QgsRasterLayer::MultiBandSingleBandGray
+    )
+  {
+    rlayer->setContrastEnhancementAlgorithm( "StretchToMinimumMaximum" );
+    rlayer->setMinimumMaximumUsingLastExtent();
+    rlayer->setCacheImage(NULL);
+    //refreshLayerSymbology( rlayer->getLayerID() );
+    mMapCanvas->refresh();
+    return;
+  }
+  else
+  {
+    QMessageBox::information( this,
+      tr( "No Valid Raster Layer Selected" ),
+      tr( "To perform a local histogram stretch, you need to have a grayscale "
+        "(multiband single layer, or singleband grayscale) raster layer "
+        "selected." ) );
+    return;
+  }
 }
 
 void QgisApp::helpContents()
@@ -7207,23 +7304,29 @@ void QgisApp::namSslErrors( QNetworkReply *reply, const QList<QSslError> &errors
 {
   QString msg = tr( "SSL errors occured accessing URL %1:" ).arg( reply->request().url().toString() );
   bool otherError = false;
+  static QSet<QSslError::SslError> ignoreErrors;
 
   foreach( QSslError error, errors )
   {
-    if ( error.error() != QSslError::SelfSignedCertificate &&
-         error.error() != QSslError::HostNameMismatch )
-      otherError = true;
+    QgsDebugMsg( QString( "SSL error %1: %2" ).arg( error.error() ).arg( error.errorString() ) );
+
+    otherError = otherError || !ignoreErrors.contains( error.error() );
+
     msg += "\n" + error.errorString();
   }
 
-  msg += tr( "\n\nIgnore errors?" );
+  msg += tr( "\n\nAlways ignore these errors?" );
 
   if ( !otherError ||
        QMessageBox::warning( this,
-                             tr( "SSL errors occured" ),
+                             tr( "%n SSL errors occured", "number of errors", errors.size() ),
                              msg,
                              QMessageBox::Ok | QMessageBox::Cancel ) == QMessageBox::Ok )
   {
+    foreach( QSslError error, errors )
+    {
+      ignoreErrors << error.error();
+    }
     reply->ignoreSslErrors();
   }
 }

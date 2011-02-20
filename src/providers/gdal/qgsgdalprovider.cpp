@@ -46,6 +46,12 @@
 #include "cpl_conv.h"
 #include "cpl_string.h"
 
+#if defined(GDAL_VERSION_NUM) && GDAL_VERSION_NUM >= 1800
+#define TO8F(x) (x).toUtf8().constData()
+#else
+#define TO8F(x) QFile::encodeName( x ).constData()
+#endif
+
 
 static QString PROVIDER_KEY = "gdal";
 static QString PROVIDER_DESCRIPTION = "GDAL provider";
@@ -124,7 +130,8 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
 
   mGdalDataset = NULL;
 
-  mGdalBaseDataset = GDALOpen( QFile::encodeName( uri ).constData(), GA_ReadOnly );
+  //mGdalBaseDataset = GDALOpen( QFile::encodeName( uri ).constData(), GA_ReadOnly );
+  mGdalBaseDataset = GDALOpen( TO8F( uri ), GA_ReadOnly );
 
   CPLErrorReset();
   if ( mGdalBaseDataset == NULL )
@@ -549,7 +556,8 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
 
   
   CPLErrorReset();
-  GDALDatasetH myGdalMemDataset = GDALOpen( myMemDsn.toAscii().constData(),GA_Update);
+  //GDALDatasetH myGdalMemDataset = GDALOpen( myMemDsn.toAscii().constData(),GA_Update);
+  GDALDatasetH myGdalMemDataset = GDALOpen( TO8F( myMemDsn ), GA_Update );
 
   if ( !myGdalMemDataset )
   {
@@ -1130,13 +1138,15 @@ QString QgsGdalProvider::buildPyramids(  QList<QgsRasterPyramid> const & theRast
 
     //close the gdal dataset and reopen it in read / write mode
     GDALClose( mGdalDataset );
-    mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri() ).constData(), GA_Update );
+    //mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri() ).constData(), GA_Update );
+    mGdalBaseDataset = GDALOpen( TO8F( dataSourceUri() ), GA_Update );
 
     // if the dataset couldn't be opened in read / write mode, tell the user
     if ( !mGdalBaseDataset )
     {
       //mGdalBaseDataset = GDALOpen( QFile::encodeName( mDataSource ).constData(), GA_ReadOnly );
-      mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri()).constData(), GA_ReadOnly );
+      //mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri()).constData(), GA_ReadOnly );
+      mGdalBaseDataset = GDALOpen( TO8F( dataSourceUri() ), GA_ReadOnly );
       //Since we are not a virtual warped dataset, mGdalDataSet and mGdalBaseDataset are supposed to be the same
       mGdalDataset = mGdalBaseDataset;
       return "ERROR_WRITE_FORMAT";
@@ -1206,7 +1216,8 @@ QString QgsGdalProvider::buildPyramids(  QList<QgsRasterPyramid> const & theRast
           //QString myString = QString (CPLGetLastError());
           GDALClose( mGdalBaseDataset );
           //mGdalBaseDataset = GDALOpen( QFile::encodeName( mDataSource ).constData(), GA_ReadOnly );
-          mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri() ).constData(), GA_ReadOnly );
+          //mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri() ).constData(), GA_ReadOnly );
+          mGdalBaseDataset = GDALOpen( TO8F( dataSourceUri() ), GA_ReadOnly );
           //Since we are not a virtual warped dataset, mGdalDataSet and mGdalBaseDataset are supposed to be the same
           mGdalDataset = mGdalBaseDataset;
 
@@ -1234,7 +1245,8 @@ QString QgsGdalProvider::buildPyramids(  QList<QgsRasterPyramid> const & theRast
     //close the gdal dataset and reopen it in read only mode
     GDALClose( mGdalBaseDataset );
     //mGdalBaseDataset = GDALOpen( QFile::encodeName( mDataSource ).constData(), GA_ReadOnly );
-    mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri() ).constData(), GA_ReadOnly );
+    //mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri() ).constData(), GA_ReadOnly );
+    mGdalBaseDataset = GDALOpen( TO8F( dataSourceUri() ), GA_ReadOnly );
     //Since we are not a virtual warped dataset, mGdalDataSet and mGdalBaseDataset are supposed to be the same
     mGdalDataset = mGdalBaseDataset;
   }
@@ -1549,7 +1561,8 @@ QGISEXTERN bool isValidRasterFileName( QString const & theFileNameQString, QStri
   CPLErrorReset();
 
   //open the file using gdal making sure we have handled locale properly
-  myDataset = GDALOpen( QFile::encodeName( theFileNameQString ).constData(), GA_ReadOnly );
+  //myDataset = GDALOpen( QFile::encodeName( theFileNameQString ).constData(), GA_ReadOnly );
+  myDataset = GDALOpen( TO8F( theFileNameQString ), GA_ReadOnly );
   if ( myDataset == NULL )
   {
     if ( CPLGetLastErrorNo() != CPLE_OpenFailed )

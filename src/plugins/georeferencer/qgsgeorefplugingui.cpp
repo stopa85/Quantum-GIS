@@ -147,7 +147,7 @@ QgsGeorefPluginGui::~QgsGeorefPluginGui()
   // delete layer (and don't signal it as it's our private layer)
   if ( mLayer )
   {
-    QgsMapLayerRegistry::instance()->removeMapLayer( mLayer->getLayerID(), false );
+    QgsMapLayerRegistry::instance()->removeMapLayer( mLayer->id(), false );
   }
 
   delete mToolZoomIn;
@@ -252,7 +252,7 @@ void QgsGeorefPluginGui::openRaster()
 
   //delete any old rasterlayers
   if ( mLayer )
-    QgsMapLayerRegistry::instance()->removeMapLayer( mLayer->getLayerID(), false );
+    QgsMapLayerRegistry::instance()->removeMapLayer( mLayer->id(), false );
 
   // Add raster
   addRaster( mRasterFileName );
@@ -775,7 +775,7 @@ void QgsGeorefPluginGui::extentsChanged()
 // Registry layer QGis
 void QgsGeorefPluginGui::layerWillBeRemoved( QString theLayerId )
 {
-  mAgainAddRaster = mLayer && mLayer->getLayerID().compare( theLayerId ) == 0;
+  mAgainAddRaster = mLayer && mLayer->id().compare( theLayerId ) == 0;
 }
 
 // ------------------------------ private ---------------------------------- //

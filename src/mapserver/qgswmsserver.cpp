@@ -68,7 +68,7 @@ QgsWMSServer::QgsWMSServer()
 
 QDomDocument QgsWMSServer::getCapabilities()
 {
-  QgsMSDebugMsg( "Entering." )
+  QgsMSDebugMsg( "Entering." );
   QDomDocument doc;
   //wms:WMS_Capabilities element
   QDomElement wmsCapabilitiesElement = doc.createElement( "WMS_Capabilities"/*wms:WMS_Capabilities*/ );
@@ -203,12 +203,12 @@ QDomDocument QgsWMSServer::getCapabilities()
   }
 
   //add the xml content for the individual layers/styles
-  QgsMSDebugMsg( "calling layersAndStylesCapabilities" )
+  QgsMSDebugMsg( "calling layersAndStylesCapabilities" );
   if ( mConfigParser )
   {
     mConfigParser->layersAndStylesCapabilities( capabilityElement, doc );
   }
-  QgsMSDebugMsg( "layersAndStylesCapabilities returned" )
+  QgsMSDebugMsg( "layersAndStylesCapabilities returned" );
 
   //for debugging: save the document to disk
   /*QFile capabilitiesFile( QDir::tempPath() + "/capabilities.txt" );
@@ -231,7 +231,7 @@ QImage* QgsWMSServer::getLegendGraphics()
 
   if ( readLayersAndStyles( layersList, stylesList ) != 0 )
   {
-    QgsMSDebugMsg( "error reading layers and styles" )
+    QgsMSDebugMsg( "error reading layers and styles" );
     return 0;
   }
 
@@ -383,26 +383,32 @@ QByteArray* QgsWMSServer::getPrint( const QString& formatString )
     QPainter p( &generator );
     QRectF sourceArea( 0, 0, c->paperWidth(), c->paperHeight() );
     QRectF targetArea( 0, 0, width, height );
-    c->render( &p, targetArea, sourceArea );
+    if ( c->printAsRaster() ) //embed one raster into the svg
+    {
+      QImage* img = printCompositionToImage( c );
+      if ( img )
+      {
+        p.drawImage( targetArea, *img, QRectF( 0, 0, img->width(), img->height() ) );
+      }
+      delete img;
+    }
+    else
+    {
+      c->render( &p, targetArea, sourceArea );
+    }
     p.end();
   }
   else if ( formatString.compare( "png", Qt::CaseInsensitive ) == 0 || formatString.compare( "jpg", Qt::CaseInsensitive ) == 0 )
   {
-    int width = ( int )( c->paperWidth() * c->printResolution() / 25.4 ); //width in pixel
-    int height = ( int )( c->paperHeight() * c->printResolution() / 25.4 ); //height in pixel
-    QImage image( QSize( width, height ), QImage::Format_ARGB32 );
-    image.setDotsPerMeterX( c->printResolution() / 25.4 * 1000 );
-    image.setDotsPerMeterY( c->printResolution() / 25.4 * 1000 );
-    image.fill( 0 );
-    QPainter p( &image );
-    QRectF sourceArea( 0, 0, c->paperWidth(), c->paperHeight() );
-    QRectF targetArea( 0, 0, width, height );
-    c->render( &p, targetArea, sourceArea );
-    p.end();
-    ba = new QByteArray();
-    QBuffer buffer( ba );
-    buffer.open( QIODevice::WriteOnly );
-    image.save( &buffer, formatString.toLocal8Bit().data(), -1 );
+    QImage* image = printCompositionToImage( c );
+    if ( image )
+    {
+      ba = new QByteArray();
+      QBuffer buffer( ba );
+      buffer.open( QIODevice::WriteOnly );
+      image->save( &buffer, formatString.toLocal8Bit().data(), -1 );
+    }
+    delete image;
   }
   else if ( formatString.compare( "pdf", Qt::CaseInsensitive ) == 0 )
   {
@@ -414,15 +420,27 @@ QByteArray* QgsWMSServer::getPrint( const QString& formatString )
     }
 
     QPrinter printer;
+    printer.setResolution( c->printResolution() );
+    printer.setFullPage( true );
     printer.setOutputFormat( QPrinter::PdfFormat );
     printer.setOutputFileName( tempFile.fileName() );
     printer.setPaperSize( QSizeF( c->paperWidth(), c->paperHeight() ), QPrinter::Millimeter );
-    printer.setResolution( c->printResolution() );
-
     QRectF paperRectMM = printer.pageRect( QPrinter::Millimeter );
     QRectF paperRectPixel = printer.pageRect( QPrinter::DevicePixel );
     QPainter p( &printer );
-    c->render( &p, paperRectPixel, paperRectMM );
+    if ( c->printAsRaster() ) //embed one raster into the pdf
+    {
+      QImage* img = printCompositionToImage( c );
+      if ( img )
+      {
+        p.drawImage( paperRectPixel, *img, QRectF( 0, 0, img->width(), img->height() ) );
+      }
+      delete img;
+    }
+    else //vector pdf
+    {
+      c->render( &p, paperRectPixel, paperRectMM );
+    }
     p.end();
 
     ba = new QByteArray();
@@ -435,6 +453,22 @@ QByteArray* QgsWMSServer::getPrint( const QString& formatString )
 
   delete c;
   return ba;
+}
+
+QImage* QgsWMSServer::printCompositionToImage( QgsComposition* c ) const
+{
+  int width = ( int )( c->paperWidth() * c->printResolution() / 25.4 ); //width in pixel
+  int height = ( int )( c->paperHeight() * c->printResolution() / 25.4 ); //height in pixel
+  QImage* image = new QImage( QSize( width, height ), QImage::Format_ARGB32 );
+  image->setDotsPerMeterX( c->printResolution() / 25.4 * 1000 );
+  image->setDotsPerMeterY( c->printResolution() / 25.4 * 1000 );
+  image->fill( 0 );
+  QPainter p( image );
+  QRectF sourceArea( 0, 0, c->paperWidth(), c->paperHeight() );
+  QRectF targetArea( 0, 0, width, height );
+  c->render( &p, targetArea, sourceArea );
+  p.end();
+  return image;
 }
 
 QImage* QgsWMSServer::getMap()
@@ -578,7 +612,7 @@ int QgsWMSServer::getFeatureInfo( QDomDocument& result )
     //create maplayer from sld parser
     layerList = mConfigParser->mapLayerFromStyle( *layerIt, "" );
     currentLayer = layerList.at( 0 );
-    if ( !currentLayer || nonIdentifiableLayers.contains( currentLayer->getLayerID() ) )
+    if ( !currentLayer || nonIdentifiableLayers.contains( currentLayer->id() ) )
     {
       continue;
     }
@@ -586,7 +620,7 @@ int QgsWMSServer::getFeatureInfo( QDomDocument& result )
     {
       continue;
     }
-    QgsMSDebugMsg( "Info point in layer crs: " + QString::number( infoPoint.x() ) + "//" + QString::number( infoPoint.y() ) )
+    QgsMSDebugMsg( "Info point in layer crs: " + QString::number( infoPoint.x() ) + "//" + QString::number( infoPoint.y() ) );
 
     QDomElement layerElement = result.createElement( "Layer" );
     layerElement.setAttribute( "name", currentLayer->name() );
@@ -598,7 +632,7 @@ int QgsWMSServer::getFeatureInfo( QDomDocument& result )
     {
       //is there alias info for this vector layer?
       QMap< int, QString > layerAliasInfo;
-      QMap< QString, QMap< int, QString > >::const_iterator aliasIt = aliasInfo.find( currentLayer->getLayerID() );
+      QMap< QString, QMap< int, QString > >::const_iterator aliasIt = aliasInfo.find( currentLayer->id() );
       if ( aliasIt != aliasInfo.constEnd() )
       {
         layerAliasInfo = aliasIt.value();
@@ -606,7 +640,7 @@ int QgsWMSServer::getFeatureInfo( QDomDocument& result )
 
       //hidden attributes for this layer
       QSet<QString> layerHiddenAttributes;
-      QMap< QString, QSet<QString> >::const_iterator hiddenIt = hiddenAttributes.find( currentLayer->getLayerID() );
+      QMap< QString, QSet<QString> >::const_iterator hiddenIt = hiddenAttributes.find( currentLayer->id() );
       if ( hiddenIt != hiddenAttributes.constEnd() )
       {
         layerHiddenAttributes = hiddenIt.value();
@@ -640,19 +674,19 @@ QImage* QgsWMSServer::initializeRendering( QStringList& layersList, QStringList&
 {
   if ( !mConfigParser )
   {
-    QgsMSDebugMsg( "Error: mSLDParser is 0" )
+    QgsMSDebugMsg( "Error: mSLDParser is 0" );
     return 0;
   }
 
   if ( !mMapRenderer )
   {
-    QgsMSDebugMsg( "Error: mMapRenderer is 0" )
+    QgsMSDebugMsg( "Error: mMapRenderer is 0" );
     return 0;
   }
 
   if ( readLayersAndStyles( layersList, stylesList ) != 0 )
   {
-    QgsMSDebugMsg( "error reading layers and styles" )
+    QgsMSDebugMsg( "error reading layers and styles" );
     return 0;
   }
 
@@ -669,12 +703,12 @@ QImage* QgsWMSServer::initializeRendering( QStringList& layersList, QStringList&
     if ( gmlDoc->setContent( gmlIt->second, true ) )
     {
       QString layerName = gmlDoc->documentElement().attribute( "layerName" );
-      QgsMSDebugMsg( "Adding entry with key: " + layerName + " to external GML data" )
+      QgsMSDebugMsg( "Adding entry with key: " + layerName + " to external GML data" );
       mConfigParser->addExternalGMLData( layerName, gmlDoc );
     }
     else
     {
-      QgsMSDebugMsg( "Error, could not add external GML to QgsSLDParser" )
+      QgsMSDebugMsg( "Error, could not add external GML to QgsSLDParser" );
       delete gmlDoc;
     }
   }
@@ -714,10 +748,13 @@ QImage* QgsWMSServer::createImage( int width, int height ) const
     {
       width = 0; //width parameter is mandatory
     }
-    width = wit->second.toInt( &conversionSuccess );
-    if ( !conversionSuccess )
+    else
     {
-      width = 0;
+      width = wit->second.toInt( &conversionSuccess );
+      if ( !conversionSuccess )
+      {
+        width = 0;
+      }
     }
   }
 
@@ -728,10 +765,13 @@ QImage* QgsWMSServer::createImage( int width, int height ) const
     {
       height = 0; //height parameter is mandatory
     }
-    height = hit->second.toInt( &conversionSuccess );
-    if ( !conversionSuccess )
+    else
     {
-      height = 0;
+      height = hit->second.toInt( &conversionSuccess );
+      if ( !conversionSuccess )
+      {
+        height = 0;
+      }
     }
   }
 
@@ -854,7 +894,7 @@ int QgsWMSServer::configureMapRender( const QPaintDevice* paintDevice ) const
   else
   {
     //enable on the fly projection
-    QgsMSDebugMsg( "enable on the fly projection" )
+    QgsMSDebugMsg( "enable on the fly projection" );
     QgsProject::instance()->writeEntry( "SpatialRefSys", "/ProjectionsEnabled", 1 );
 
     QString crsString = crsIt->second;
@@ -872,7 +912,7 @@ int QgsWMSServer::configureMapRender( const QPaintDevice* paintDevice ) const
     outputCRS = QgsEPSGCache::instance()->searchCRS( epsgId );
     if ( !outputCRS.isValid() )
     {
-      QgsMSDebugMsg( "Error, could not create output CRS from EPSG" )
+      QgsMSDebugMsg( "Error, could not create output CRS from EPSG" );
       throw QgsMapServiceException( "InvalidCRS", "Could not create output CRS" );
       return 5;
     }
@@ -962,7 +1002,7 @@ int QgsWMSServer::initializeSLDParser( QStringList& layersList, QStringList& sty
     QStringList stylesSTDList;
     if ( mConfigParser->layersAndStyles( layersSTDList, stylesSTDList ) != 0 )
     {
-      QgsMSDebugMsg( "Error, no layers and styles found in SLD" )
+      QgsMSDebugMsg( "Error, no layers and styles found in SLD" );
       return 0;
     }
     QStringList::const_iterator layersIt;
@@ -1116,7 +1156,7 @@ QStringList QgsWMSServer::layerSet( const QStringList& layersList,
     {
       styleName = *slstIt;
     }
-    QgsMSDebugMsg( "Trying to get layer " + *llstIt + "//" + styleName )
+    QgsMSDebugMsg( "Trying to get layer " + *llstIt + "//" + styleName );
 
     //does the layer name appear several times in the layer list?
     //if yes, layer caching must be disabled because several named layers could have
@@ -1140,7 +1180,7 @@ QStringList QgsWMSServer::layerSet( const QStringList& layersList,
           //set the sourceSRS to the same as the destSRS
           theMapLayer->setCrs( destCRS );
         }
-        layerKeys.push_front( theMapLayer->getLayerID() );
+        layerKeys.push_front( theMapLayer->id() );
         QgsMapLayerRegistry::instance()->addMapLayer( theMapLayer, false );
       }
       else

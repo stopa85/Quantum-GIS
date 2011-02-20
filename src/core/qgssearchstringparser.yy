@@ -23,6 +23,11 @@
 #include <cstdlib>
 #include "qgssearchtreenode.h"
 
+#ifdef _MSC_VER
+#  pragma warning( disable: 4065 )  // switch statement contains 'default' but no 'case' labels
+#  pragma warning( disable: 4702 )  // unreachable code
+#endif
+
 // don't redeclare malloc/free
 #define YYINCLUDED_STDLIB_H 1
 
@@ -127,6 +132,8 @@ search_cond:
     // more predicates to come
 predicate:
     comp_predicate 
+    | scalar_exp IN '(' scalar_exp_list ')' { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opIN, $1, $4); joinTmpNodes($$,$1,$4); }
+    | scalar_exp NOT IN '(' scalar_exp_list ')' { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opNOTIN, $1, $5); joinTmpNodes($$,$1,$5); }
     ;
 
 comp_predicate:
@@ -174,9 +181,8 @@ scalar_exp:
     | ID                          { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opID, 0, 0); addToTmpNodes($$); }
     | NUMBER                      { $$ = new QgsSearchTreeNode($1); addToTmpNodes($$); }
     | STRING                      { $$ = new QgsSearchTreeNode(QString::fromUtf8(yytext), 0); addToTmpNodes($$); }
+    | NULLVALUE                   { $$ = new QgsSearchTreeNode(QString::null, 0); addToTmpNodes($$); }
     | COLUMN_REF                  { $$ = new QgsSearchTreeNode(QString::fromUtf8(yytext), 1); addToTmpNodes($$); }
-    | scalar_exp IN '(' scalar_exp_list ')' { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opIN, $1, $4); joinTmpNodes($$,$1,$4); }
-    | scalar_exp NOT IN '(' scalar_exp_list ')' { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opNOTIN, $1, $5); joinTmpNodes($$,$1,$5); }
 ;
 
 %%

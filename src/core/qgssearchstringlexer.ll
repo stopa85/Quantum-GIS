@@ -20,6 +20,7 @@
 %option noyywrap
 %option case-insensitive
 %option never-interactive
+%option nounput
 
  // ensure that lexer will be 8-bit (and not just 7-bit)
 %option 8bit
@@ -34,6 +35,10 @@
 // if not defined, searches for isatty()
 // which doesn't in MSVC compiler
 #define YY_NEVER_INTERACTIVE 1
+
+#ifndef YY_NO_UNPUT
+#define YY_NO_UNPUT	// unused
+#endif
 
 #ifdef _MSC_VER
 #define YY_NO_UNISTD_H

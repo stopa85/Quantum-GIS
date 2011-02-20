@@ -41,43 +41,67 @@ map service syntax for SOAP/HTTP POST
 
 void dummyMessageHandler( QtMsgType type, const char *msg )
 {
-  //be quiet
+#ifdef QGSMSDEBUG
+  QString output;
+
+  switch ( type )
+  {
+    case QtDebugMsg:
+      output += "Debug: ";
+      break;
+    case QtCriticalMsg:
+      output += "Critical: ";
+      break;
+    case QtWarningMsg:
+      output += "Warning: ";
+      break;
+    case QtFatalMsg:
+      output += "Fatal: ";
+  }
+
+  output += msg;
+
+  QgsMapServerLogger::instance()->printMessage( output );
+
+  if ( type == QtFatalMsg )
+    abort();
+#endif
 }
 
 void printRequestInfos()
 {
 #ifdef QGSMSDEBUG
   //print out some infos about the request
-  QgsMSDebugMsg( "************************new request**********************" )
-  QgsMSDebugMsg( QDateTime::currentDateTime().toString( "yyyy-mm-dd hh:mm:ss" ) );
+  QgsMSDebugMsg( "************************new request**********************" );
+  QgsMSDebugMsg( QDateTime::currentDateTime().toString( "yyyy-MM-dd hh:mm:ss" ) );
 
   if ( getenv( "REMOTE_ADDR" ) != NULL )
   {
-    QgsMSDebugMsg( "remote ip: " + QString( getenv( "REMOTE_ADDR" ) ) )
+    QgsMSDebugMsg( "remote ip: " + QString( getenv( "REMOTE_ADDR" ) ) );
   }
   if ( getenv( "REMOTE_HOST" ) != NULL )
   {
-    QgsMSDebugMsg( "remote host: " + QString( getenv( "REMOTE_HOST" ) ) )
+    QgsMSDebugMsg( "remote host: " + QString( getenv( "REMOTE_HOST" ) ) );
   }
   if ( getenv( "REMOTE_USER" ) != NULL )
   {
-    QgsMSDebugMsg( "remote user: " + QString( getenv( "REMOTE_USER" ) ) )
+    QgsMSDebugMsg( "remote user: " + QString( getenv( "REMOTE_USER" ) ) );
   }
   if ( getenv( "REMOTE_IDENT" ) != NULL )
   {
-    QgsMSDebugMsg( "REMOTE_IDENT: " + QString( getenv( "REMOTE_IDENT" ) ) )
+    QgsMSDebugMsg( "REMOTE_IDENT: " + QString( getenv( "REMOTE_IDENT" ) ) );
   }
   if ( getenv( "CONTENT_TYPE" ) != NULL )
   {
-    QgsMSDebugMsg( "CONTENT_TYPE: " + QString( getenv( "CONTENT_TYPE" ) ) )
+    QgsMSDebugMsg( "CONTENT_TYPE: " + QString( getenv( "CONTENT_TYPE" ) ) );
   }
   if ( getenv( "AUTH_TYPE" ) != NULL )
   {
-    QgsMSDebugMsg( "AUTH_TYPE: " + QString( getenv( "AUTH_TYPE" ) ) )
+    QgsMSDebugMsg( "AUTH_TYPE: " + QString( getenv( "AUTH_TYPE" ) ) );
   }
   if ( getenv( "HTTP_USER_AGENT" ) != NULL )
   {
-    QgsMSDebugMsg( "HTTP_USER_AGENT: " + QString( getenv( "HTTP_USER_AGENT" ) ) )
+    QgsMSDebugMsg( "HTTP_USER_AGENT: " + QString( getenv( "HTTP_USER_AGENT" ) ) );
   }
 #endif //QGSMSDEBUG
 }
@@ -106,7 +130,9 @@ QFileInfo defaultAdminSLD()
 
 int main( int argc, char * argv[] )
 {
+#ifndef _MSC_VER
   qInstallMsgHandler( dummyMessageHandler );
+#endif
 
   QgsApplication qgsapp( argc, argv, false );
 
@@ -126,16 +152,16 @@ int main( int argc, char * argv[] )
 
   // Instantiate the plugin directory so that providers are loaded
   QgsProviderRegistry::instance( QgsApplication::pluginPath() );
-#ifdef QGSMSDEBUG
+#if defined(QGSMSDEBUG) && !defined(_MSC_VER)
   //write to qgis_wms_server.log in application directory
   QgsMapServerLogger::instance()->setLogFilePath( qgsapp.applicationDirPath() + "/qgis_wms_server.log" );
 #endif
-  QgsMSDebugMsg( "Prefix  PATH: " + QgsApplication::prefixPath() )
-  QgsMSDebugMsg( "Plugin  PATH: " + QgsApplication::pluginPath() )
-  QgsMSDebugMsg( "PkgData PATH: " + QgsApplication::pkgDataPath() )
-  QgsMSDebugMsg( "User DB PATH: " + QgsApplication::qgisUserDbFilePath() )
+  QgsMSDebugMsg( "Prefix  PATH: " + QgsApplication::prefixPath() );
+  QgsMSDebugMsg( "Plugin  PATH: " + QgsApplication::pluginPath() );
+  QgsMSDebugMsg( "PkgData PATH: " + QgsApplication::pkgDataPath() );
+  QgsMSDebugMsg( "User DB PATH: " + QgsApplication::qgisUserDbFilePath() );
 
-  QgsMSDebugMsg( qgsapp.applicationDirPath() + "/qgis_wms_server.log" )
+  QgsMSDebugMsg( qgsapp.applicationDirPath() + "/qgis_wms_server.log" );
 
   //create config cache and search for config files in the current directory.
   //These configurations are used if no mapfile parameter is present in the request
@@ -170,18 +196,18 @@ int main( int argc, char * argv[] )
     {
       if ( strcmp( requestMethod, "POST" ) == 0 )
       {
-        QgsMSDebugMsg( "Creating QgsSOAPRequestHandler" )
+        QgsMSDebugMsg( "Creating QgsSOAPRequestHandler" );
         theRequestHandler = new QgsSOAPRequestHandler();
       }
       else
       {
-        QgsMSDebugMsg( "Creating QgsGetRequestHandler" )
+        QgsMSDebugMsg( "Creating QgsGetRequestHandler" );
         theRequestHandler = new QgsGetRequestHandler();
       }
     }
     else
     {
-      QgsMSDebugMsg( "Creating QgsGetRequestHandler" )
+      QgsMSDebugMsg( "Creating QgsGetRequestHandler" );
       theRequestHandler = new QgsGetRequestHandler();
     }
 
@@ -193,7 +219,7 @@ int main( int argc, char * argv[] )
     }
     catch ( QgsMapServiceException& e )
     {
-      QgsMSDebugMsg( "An exception was thrown during input parsing" )
+      QgsMSDebugMsg( "An exception was thrown during input parsing" );
       theRequestHandler->sendServiceException( e );
       continue;
     }
@@ -222,7 +248,7 @@ int main( int argc, char * argv[] )
     if ( serviceIt == parameterMap.end() )
     {
       //tell the user that service parameter is mandatory
-      QgsMSDebugMsg( "unable to find 'SERVICE' parameter, exiting..." )
+      QgsMSDebugMsg( "unable to find 'SERVICE' parameter, exiting..." );
       theRequestHandler->sendServiceException( QgsMapServiceException( "ServiceNotSpecified", "Service not specified. The SERVICE parameter is mandatory" ) );
       delete theRequestHandler;
       continue;
@@ -247,7 +273,7 @@ int main( int argc, char * argv[] )
     if ( requestIt == parameterMap.end() )
     {
       //do some error handling
-      QgsMSDebugMsg( "unable to find 'REQUEST' parameter, exiting..." )
+      QgsMSDebugMsg( "unable to find 'REQUEST' parameter, exiting..." );
       theRequestHandler->sendServiceException( QgsMapServiceException( "OperationNotSupported", "Please check the value of the REQUEST parameter" ) );
       delete theRequestHandler;
       delete theServer;
@@ -268,7 +294,7 @@ int main( int argc, char * argv[] )
         delete theServer;
         continue;
       }
-      QgsMSDebugMsg( "sending GetCapabilities response" )
+      QgsMSDebugMsg( "sending GetCapabilities response" );
       theRequestHandler->sendGetCapabilitiesResponse( capabilitiesDocument );
       delete theRequestHandler;
       delete theServer;
@@ -283,7 +309,7 @@ int main( int argc, char * argv[] )
       }
       catch ( QgsMapServiceException& ex )
       {
-        QgsMSDebugMsg( "Catched exception during GetMap request" )
+        QgsMSDebugMsg( "Catched exception during GetMap request" );
         theRequestHandler->sendServiceException( ex );
         delete theRequestHandler;
         delete theServer;
@@ -292,13 +318,13 @@ int main( int argc, char * argv[] )
 
       if ( result )
       {
-        QgsMSDebugMsg( "Sending GetMap response" )
+        QgsMSDebugMsg( "Sending GetMap response" );
         theRequestHandler->sendGetMapResponse( serviceIt->second, result );
       }
       else
       {
         //do some error handling
-        QgsMSDebugMsg( "result image is 0" )
+        QgsMSDebugMsg( "result image is 0" );
       }
       delete result;
       delete theRequestHandler;
@@ -368,14 +394,14 @@ int main( int argc, char * argv[] )
 
       if ( result )
       {
-        QgsMSDebugMsg( "Sending GetLegendGraphics response" )
+        QgsMSDebugMsg( "Sending GetLegendGraphics response" );
         //sending is the same for GetMap and GetLegendGraphics
         theRequestHandler->sendGetMapResponse( serviceIt->second, result );
       }
       else
       {
         //do some error handling
-        QgsMSDebugMsg( "result image is 0" )
+        QgsMSDebugMsg( "result image is 0" );
       }
       delete result;
       delete theRequestHandler;

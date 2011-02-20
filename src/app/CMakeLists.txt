@@ -3,7 +3,9 @@ SET(QGIS_APP_SRCS
   qgisapp.cpp
   qgisappinterface.cpp
   qgsabout.cpp
+  qgssponsors.cpp
   qgsaddattrdialog.cpp
+  qgsaddjoindialog.cpp
   qgsannotationwidget.cpp
   qgsattributeactiondialog.cpp
   qgsattributedialog.cpp
@@ -85,6 +87,8 @@ SET(QGIS_APP_SRCS
   qgssnappingdialog.cpp
   qgsundowidget.cpp
   qgstilescalewidget.cpp
+  qgstipgui.cpp
+  qgstipfactory.cpp
   qgsuniquevaluedialog.cpp
   qgsvectorlayerproperties.cpp
   qgsquerybuilder.cpp
@@ -135,20 +139,7 @@ SET(QGIS_APP_SRCS
 
   gps/qgsgpsinformationwidget.cpp
   gps/qgsgpsmarker.cpp
-  gps/qwtpolar/qwt_polar_canvas.cpp  
-  gps/qwtpolar/qwt_polar_curve.cpp
-  gps/qwtpolar/qwt_polar_fitter.cpp  
-  gps/qwtpolar/qwt_polar_grid.cpp   
-  gps/qwtpolar/qwt_polar_itemdict.cpp  
-  gps/qwtpolar/qwt_polar_item.cpp
-  gps/qwtpolar/qwt_polar_layout.cpp    
-  gps/qwtpolar/qwt_polar_magnifier.cpp
-  gps/qwtpolar/qwt_polar_marker.cpp     
-  gps/qwtpolar/qwt_polar_panner.cpp
-  gps/qwtpolar/qwt_polar_plot.cpp 
-  gps/qwtpolar/qwt_polar_point.cpp
-  gps/qwtpolar/qwt_polar_spectrogram.cpp
-)
+) 
 
 
 SET (QGIS_APP_MOC_HDRS
@@ -156,74 +147,78 @@ SET (QGIS_APP_MOC_HDRS
   qgisappinterface.h
   qgsabout.h
   qgsaddattrdialog.h
-  qgsdisplayangle.h
+  qgsaddjoindialog.h
   qgsannotationwidget.h
   qgsattributeactiondialog.h
   qgsattributedialog.h
   qgsattributetypedialog.h
   qgsattributetypeloaddialog.h
   qgsbookmarks.h
-  qgscontinuouscolordialog.h
   qgsconfigureshortcutsdialog.h
+  qgscontinuouscolordialog.h
   qgscustomprojectiondialog.h
+  qgsdbtablemodel.h
   qgsdelattrdialog.h
+  qgsdisplayangle.h
+  qgsfeatureaction.h
   qgsfieldcalculator.h
   qgsformannotationdialog.h
-  qgslabelinggui.h
-  qgslabelengineconfigdialog.h
-  qgsmaptoolmeasureangle.h
-  qgsnewvectorlayerdialog.h
   qgsgraduatedsymboldialog.h
   qgshelpviewer.h
   qgsidentifyresults.h
-  qgsfeatureaction.h
   qgslabeldialog.h
+  qgslabelengineconfigdialog.h
+  qgslabelinggui.h
   qgslabelpropertydialog.h
   qgsmanageconnectionsdialog.h
-  qgsmaptoolidentify.h
-  qgsmaptoolsplitfeatures.h
-  qgsmaptoolvertexedit.h
   qgsmaptooladdfeature.h
   qgsmaptooladdisland.h
   qgsmaptooladdring.h
+  qgsmaptooladdvertex.h
+  qgsmaptoolchangelabelproperties.h
+  qgsmaptooldeletepart.h
+  qgsmaptooldeletering.h
+  qgsmaptooldeletevertex.h
+  qgsmaptoolidentify.h
+  qgsmaptoolmeasureangle.h
   qgsmaptoolmovefeature.h
   qgsmaptoolmovelabel.h
+  qgsmaptoolmovevertex.h
   qgsmaptoolnodetool.h
   qgsmaptoolreshape.h
   qgsmaptoolrotatelabel.h
   qgsmaptoolrotatepointsymbols.h
-  qgsmaptoolselect.h
-  qgsmaptoolselectrectangle.h
   qgsmaptoolselectfreehand.h
+  qgsmaptoolselect.h
   qgsmaptoolselectpolygon.h
   qgsmaptoolselectradius.h
-  qgsmaptooladdvertex.h
-  qgsmaptoolchangelabelproperties.h
-  qgsmaptooldeletering.h
-  qgsmaptooldeletepart.h
-  qgsmaptooldeletevertex.h
-  qgsmaptoolmovevertex.h
+  qgsmaptoolselectrectangle.h
   qgsmaptoolsimplify.h
-  qgsmeasuretool.h
+  qgsmaptoolsplitfeatures.h
+  qgsmaptoolvertexedit.h
   qgsmeasuredialog.h
+  qgsmeasuretool.h
   qgsmergeattributesdialog.h
   qgsnewhttpconnection.h
+  qgsnewvectorlayerdialog.h
   qgsoptions.h
   qgspastetransformations.h
   qgspluginmanager.h
   qgsprojectproperties.h
+  qgsquerybuilder.h
   qgsrastercalcdialog.h
   qgsrasterlayerproperties.h
-  qgstextannotationdialog.h
-  qgswmssourceselect.h
   qgssinglesymboldialog.h
   qgssnappingdialog.h
+  qgssponsors.h
+  qgstextannotationdialog.h
+  qgstilescalewidget.h
+  qgstipgui.h
+  qgstipfactory.h
+  qgsundowidget.h
   qgsuniquevaluedialog.h
   qgsvectorlayerproperties.h
-  qgsdbtablemodel.h
-  qgsundowidget.h
-  qgstilescalewidget.h
-  qgsquerybuilder.h
+  qgswmssourceselect.h
 
   composer/qgsattributeselectiondialog.h
   composer/qgscomposer.h
@@ -256,11 +251,38 @@ SET (QGIS_APP_MOC_HDRS
   attributetable/qgsattributetabledelegate.h
 
   gps/qgsgpsinformationwidget.h
-  gps/qwtpolar/qwt_polar_canvas.h  
-  gps/qwtpolar/qwt_polar_magnifier.h
-  gps/qwtpolar/qwt_polar_panner.h
-  gps/qwtpolar/qwt_polar_plot.h 
   )
+
+IF(WITH_INTERNAL_QWTPOLAR)
+  SET(QGIS_APP_SRCS
+    ${QGIS_APP_SRCS}
+    gps/qwtpolar/qwt_polar_canvas.cpp  
+    gps/qwtpolar/qwt_polar_curve.cpp
+    gps/qwtpolar/qwt_polar_fitter.cpp  
+    gps/qwtpolar/qwt_polar_grid.cpp   
+    gps/qwtpolar/qwt_polar_itemdict.cpp  
+    gps/qwtpolar/qwt_polar_item.cpp
+    gps/qwtpolar/qwt_polar_layout.cpp    
+    gps/qwtpolar/qwt_polar_magnifier.cpp
+    gps/qwtpolar/qwt_polar_marker.cpp     
+    gps/qwtpolar/qwt_polar_panner.cpp
+    gps/qwtpolar/qwt_polar_plot.cpp 
+    gps/qwtpolar/qwt_polar_point.cpp
+    gps/qwtpolar/qwt_polar_spectrogram.cpp
+  )
+
+  SET (QGIS_APP_MOC_HDRS
+    ${QGIS_APP_MOC_HDRS}
+    gps/qwtpolar/qwt_polar_canvas.h  
+    gps/qwtpolar/qwt_polar_magnifier.h
+    gps/qwtpolar/qwt_polar_panner.h
+    gps/qwtpolar/qwt_polar_plot.h 
+  )
+
+  SET(QWTPOLAR_INCLUDE_DIR gps/qwtpolar)
+  SET(QWTPOLAR_LIBRARY "")
+ENDIF(WITH_INTERNAL_QWTPOLAR)
+
 
 IF (POSTGRES_FOUND)
   IF(HAVE_PGCONFIG)
@@ -279,17 +301,16 @@ ENDIF (POSTGRES_FOUND)
 
 IF (HAVE_SPATIALITE)
   SET (QGIS_APP_SRCS ${QGIS_APP_SRCS}
-    qgsspatialitesourceselect.cpp
-    qgsnewspatialitelayerdialog.cpp
-    qgsspatialitesridsdialog.cpp
-    qgsspatialitefilterproxymodel.cpp
-    qgsspatialitetablemodel.cpp
+    spatialite/qgsspatialitesourceselect.cpp
+    spatialite/qgsnewspatialitelayerdialog.cpp
+    spatialite/qgsspatialitesridsdialog.cpp
+    spatialite/qgsspatialitetablemodel.cpp
     )
   SET (QGIS_APP_MOC_HDRS ${QGIS_APP_MOC_HDRS}
-    qgsspatialitesourceselect.h
-    qgsnewspatialitelayerdialog.h
-    qgsspatialitesridsdialog.h
-    qgsspatialitetablemodel.h
+    spatialite/qgsspatialitesourceselect.h
+    spatialite/qgsnewspatialitelayerdialog.h
+    spatialite/qgsspatialitesridsdialog.h
+    spatialite/qgsspatialitetablemodel.h
     )
 ENDIF (HAVE_SPATIALITE)
 
@@ -325,6 +346,13 @@ IF (WIN32)
   ENDIF (MSVC)
 ENDIF (WIN32)
 
+IF(PEDANTIC)
+  # disable deprecation warnings
+  IF(NOT MSVC)
+    SET_SOURCE_FILES_PROPERTIES(qgisappinterface.cpp PROPERTIES COMPILE_FLAGS -Wno-deprecated)
+  ENDIF(NOT MSVC)
+ENDIF(PEDANTIC)
+
 INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR} composer legend attributetable
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -339,7 +367,6 @@ INCLUDE_DIRECTORIES(
   ../plugins
   ../python
   gps
-  gps/qwtpolar
   )
 
 IF (HAVE_SPATIALITE)
@@ -357,6 +384,7 @@ INCLUDE_DIRECTORIES(
   ${PROJ_INCLUDE_DIR}
   ${GEOS_INCLUDE_DIR}
   ${GDAL_INCLUDE_DIR}
+  ${QWTPOLAR_INCLUDE_DIR}
 )
 
 IF (POSTGRES_FOUND)
@@ -382,6 +410,7 @@ TARGET_LINK_LIBRARIES(${QGIS_APP_NAME}
   ${QT_QTUITOOLS_LIBRARY}
   #should only be needed for win
   ${QT_QTMAIN_LIBRARY} 
+  ${QWTPOLAR_LIBRARY}
   qgis_core
   qgis_gui
   qgis_analysis

@@ -26,6 +26,7 @@
 #include <QVariant>
 #include <QList>
 
+#include <qgis.h>
 #include <qgsfield.h>
 #include <qgsfeature.h>
 
@@ -154,8 +155,8 @@ class CORE_EXPORT QgsSearchTreeNode
     //! @note attribute and optional geom parameter replaced with feature in 1.6
     bool checkAgainst( const QgsFieldMap& fields, QgsFeature &f );
 
-    //! @note deprecated
-    bool checkAgainst( const QgsFieldMap& fields, const QgsAttributeMap& attributes, QgsGeometry* geom = 0 );
+    //! @deprecated
+    QGISDEPRECATED bool checkAgainst( const QgsFieldMap& fields, const QgsAttributeMap& attributes, QgsGeometry* geom = 0 );
 
     //! checks if there were errors during evaluation
     bool hasError() { return ( !mError.isEmpty() ); }
@@ -170,12 +171,12 @@ class CORE_EXPORT QgsSearchTreeNode
                    const QgsFieldMap& fields,
                    QgsFeature &f );
 
-    //! @note deprecated
-    bool getValue( QgsSearchTreeValue& value,
-                   QgsSearchTreeNode* node,
-                   const QgsFieldMap &fields,
-                   const QgsAttributeMap &attributes,
-                   QgsGeometry* geom = 0 );
+    //! @deprecated
+    QGISDEPRECATED bool getValue( QgsSearchTreeValue& value,
+                                  QgsSearchTreeNode* node,
+                                  const QgsFieldMap &fields,
+                                  const QgsAttributeMap &attributes,
+                                  QgsGeometry* geom = 0 );
 
     //! return a list of referenced columns in the tree
     //! @note added in 1.5
@@ -210,8 +211,8 @@ class CORE_EXPORT QgsSearchTreeNode
     //! returns scalar value of node
     QgsSearchTreeValue valueAgainst( const QgsFieldMap& fields, QgsFeature &f );
 
-    //! @note deprecated
-    QgsSearchTreeValue valueAgainst( const QgsFieldMap& fields, const QgsAttributeMap& attributes, QgsGeometry* geom = 0 );
+    //! @deprecated
+    QGISDEPRECATED QgsSearchTreeValue valueAgainst( const QgsFieldMap& fields, const QgsAttributeMap& attributes, QgsGeometry* geom = 0 );
 
     //! strips mText when node is of string type
     void stripText();

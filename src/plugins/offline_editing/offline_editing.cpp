@@ -189,7 +189,7 @@ void QgsOfflineEditing::synchronize( QgsLegendInterface* legendInterface )
       QgsMapLayerRegistry::instance()->addMapLayer( remoteLayer, true );
 
       // apply layer edit log
-      QString qgisLayerId = layer->getLayerID();
+      QString qgisLayerId = layer->id();
       QString sql = QString( "SELECT \"id\" FROM 'log_layer_ids' WHERE \"qgis_id\" = '%1'" ).arg( qgisLayerId );
       int layerId = sqlQueryInt( db, sql, -1 );
       if ( layerId != -1 )
@@ -547,7 +547,7 @@ void QgsOfflineEditing::copyVectorLayer( QgsVectorLayer* layer, sqlite3* db, con
         featureCount = 1;
 
         // update feature id lookup
-        int layerId = getOrCreateLayerId( db, newLayer->getLayerID() );
+        int layerId = getOrCreateLayerId( db, newLayer->id() );
         QList<int> offlineFeatureIds;
         newLayer->select( QgsAttributeList(), QgsRectangle(), false, false );
         while ( newLayer->nextFeature( f ) )
@@ -571,7 +571,7 @@ void QgsOfflineEditing::copyVectorLayer( QgsVectorLayer* layer, sqlite3* db, con
       }
 
       // remove remote layer
-      QgsMapLayerRegistry::instance()->removeMapLayer( layer->getLayerID() );
+      QgsMapLayerRegistry::instance()->removeMapLayer( layer->id() );
     }
   }
 }

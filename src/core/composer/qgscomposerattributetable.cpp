@@ -193,7 +193,7 @@ void QgsComposerAttributeTable::removeLayer( QString layerId )
 {
   if ( mVectorLayer )
   {
-    if ( layerId == mVectorLayer->getLayerID() )
+    if ( layerId == mVectorLayer->id() )
     {
       mVectorLayer = 0;
     }
@@ -231,7 +231,7 @@ bool QgsComposerAttributeTable::writeXML( QDomElement& elem, QDomDocument & doc 
   }
   if ( mVectorLayer )
   {
-    composerTableElem.setAttribute( "vectorLayer", mVectorLayer->getLayerID() );
+    composerTableElem.setAttribute( "vectorLayer", mVectorLayer->id() );
   }
 
   //display attributes

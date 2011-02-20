@@ -34,7 +34,7 @@
 #include "qgscomposershape.h"
 
 
-QgsProjectParser::QgsProjectParser( QDomDocument* xmlDoc ): QgsConfigParser(), mXMLDoc( xmlDoc )
+QgsProjectParser::QgsProjectParser( QDomDocument* xmlDoc, const QString& filePath ): QgsConfigParser(), mXMLDoc( xmlDoc ), mProjectPath( filePath )
 {
   mOutputUnits = QgsMapRenderer::Millimeters;
   setLegendParametersFromProject();
@@ -64,8 +64,8 @@ void QgsProjectParser::layersAndStylesCapabilities( QDomElement& parentElement, 
     QgsMapLayer *layer = createLayerFromElement( *layerIt );
     if ( layer )
     {
-      QgsMSDebugMsg( QString( "add layer %1 to map" ).arg( layer->getLayerID() ) );
-      layerMap.insert( layer->getLayerID(), layer );
+      QgsMSDebugMsg( QString( "add layer %1 to map" ).arg( layer->id() ) );
+      layerMap.insert( layer->id(), layer );
     }
 #if QGSMSDEBUG
     else
@@ -194,6 +194,13 @@ void QgsProjectParser::addLayers( QDomDocument &doc,
     else if ( currentChildElem.tagName() == "legendlayer" )
     {
       QString id = layerIdFromLegendLayer( currentChildElem );
+
+      if ( !layerMap.contains( id ) )
+      {
+        QgsMSDebugMsg( QString( "layer %1 not found in map - layer cache to small?" ).arg( id ) );
+        continue;
+      }
+
       QgsMapLayer *currentLayer = layerMap[ id ];
       if ( !currentLayer )
       {
@@ -201,7 +208,7 @@ void QgsProjectParser::addLayers( QDomDocument &doc,
         continue;
       }
 
-      if ( nonIdentifiableLayers.contains( currentLayer->getLayerID() ) )
+      if ( nonIdentifiableLayers.contains( currentLayer->id() ) )
       {
         layerElem.setAttribute( "queryable", "0" );
       }
@@ -257,8 +264,7 @@ void QgsProjectParser::addLayers( QDomDocument &doc,
       continue;
     }
 
-
-#if QGSMSDEBUG
+#if 0
     QString buf;
     QTextStream s( &buf );
     layerElem.save( s, 0 );
@@ -673,7 +679,7 @@ QMap< QString, QDomElement > QgsProjectParser::projectLayerElementsByName() cons
 
 QgsMapLayer* QgsProjectParser::createLayerFromElement( const QDomElement& elem ) const
 {
-  if ( elem.isNull() )
+  if ( elem.isNull() || !mXMLDoc )
   {
     return 0;
   }
@@ -684,14 +690,22 @@ QgsMapLayer* QgsProjectParser::createLayerFromElement( const QDomElement& elem )
     return 0;
   }
 
+  //convert relative pathes to absolute ones if necessary
   QString uri = dataSourceElem.text();
+  QString absoluteUri = convertToAbsolutePath( uri );
+  if ( uri != absoluteUri )
+  {
+    QDomText absoluteTextNode = mXMLDoc->createTextNode( absoluteUri );
+    dataSourceElem.replaceChild( absoluteTextNode, dataSourceElem.firstChild() );
+  }
+
   QString id = layerId( elem );
   if ( id.isNull() )
   {
     return 0;
   }
 
-  QgsMapLayer* layer = QgsMSLayerCache::instance()->searchLayer( uri, id );
+  QgsMapLayer* layer = QgsMSLayerCache::instance()->searchLayer( absoluteUri, id );
   if ( layer )
   {
     //reading symbology every time is necessary because it could have been changed by a user SLD based request
@@ -714,7 +728,7 @@ QgsMapLayer* QgsProjectParser::createLayerFromElement( const QDomElement& elem )
   {
     layer->readXML( const_cast<QDomElement&>( elem ) ); //should be changed to const in QgsMapLayer
     layer->setLayerName( layerName( elem ) );
-    QgsMSLayerCache::instance()->insertLayer( uri, id, layer );
+    QgsMSLayerCache::instance()->insertLayer( absoluteUri, id, layer );
   }
   return layer;
 }
@@ -896,9 +910,14 @@ QgsComposition* QgsProjectParser::initComposition( const QString& composerTempla
     {
       //legend needs to be loaded indirectly to have generic content
       //and to avoid usage of x-server with pixmap icons
+
+      //read full legend from xml
       QgsComposerLegend* legend = new QgsComposerLegend( composition );
-      legend->_readXML( currentElem.firstChildElement( "ComposerItem" ), *mXMLDoc );
-      legend->updateLegend();
+      legend->readXML( currentElem, *mXMLDoc );
+
+      //dynamic legend (would be interesting in case of layers dynamically defined in SLD)
+      //legend->_readXML( currentElem.firstChildElement( "ComposerItem" ), *mXMLDoc );
+      //legend->updateLegend();
       composition->addItem( legend );
     }
     else if ( elemName == "ComposerShape" )
@@ -930,6 +949,8 @@ QgsComposition* QgsProjectParser::initComposition( const QString& composerTempla
     {
       QgsComposerPicture* picture = new QgsComposerPicture( composition );
       picture->readXML( currentElem, *mXMLDoc );
+      //qgis mapserver needs an absolute file path
+      picture->setPictureFile( convertToAbsolutePath( picture->pictureFile() ) );
       composition->addItem( picture );
     }
     else if ( elemName == "ComposerScaleBar" )
@@ -951,6 +972,16 @@ void QgsProjectParser::printCapabilities( QDomElement& parentElement, QDomDocume
   }
 
   QDomNodeList composerNodeList = mXMLDoc->elementsByTagName( "Composer" );
+  if ( composerNodeList.size() < 1 )
+  {
+    return;
+  }
+
+  QDomElement composerTemplatesElem = doc.createElement( "ComposerTemplates" );
+  composerTemplatesElem.setAttribute( "xmlns:wms", "http://www.opengis.net/wms" );
+  composerTemplatesElem.setAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" );
+  composerTemplatesElem.setAttribute( "xsi:type", "wms:_ExtendedCapabilities" );
+
   for ( int i = 0; i < composerNodeList.size(); ++i )
   {
     QDomElement composerTemplateElem = doc.createElement( "ComposerTemplate" );
@@ -961,9 +992,6 @@ void QgsProjectParser::printCapabilities( QDomElement& parentElement, QDomDocume
     }
 
     composerTemplateElem.setAttribute( "name", currentComposerElem.attribute( "title" ) );
-    composerTemplateElem.setAttribute( "xmlns:wms", "http://www.opengis.net/wms" );
-    composerTemplateElem.setAttribute( "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance" );
-    composerTemplateElem.setAttribute( "xsi:type", "wms:_ExtendedCapabilities" );
 
     //get paper width and hight in mm from composition
     QDomElement compositionElem = currentComposerElem.firstChildElement( "Composition" );
@@ -1008,8 +1036,9 @@ void QgsProjectParser::printCapabilities( QDomElement& parentElement, QDomDocume
       composerTemplateElem.appendChild( composerLabelElem );
     }
 
-    parentElement.appendChild( composerTemplateElem );
+    composerTemplatesElem.appendChild( composerTemplateElem );
   }
+  parentElement.appendChild( composerTemplatesElem );
 }
 
 QDomElement QgsProjectParser::composerByName( const QString& composerName ) const
@@ -1128,5 +1157,57 @@ void QgsProjectParser::serviceCapabilities( QDomElement& parentElement, QDomDocu
   }
 
   parentElement.appendChild( contactInfoElem );
+}
+
+QString QgsProjectParser::convertToAbsolutePath( const QString& file ) const
+{
+  if ( !file.startsWith( "./" ) && !file.startsWith( "../" ) )
+  {
+    return file;
+  }
+
+  QString srcPath = file;
+  QString projPath = mProjectPath;
+
+#if defined(Q_OS_WIN)
+  srcPath.replace( "\\", "/" );
+  projPath.replace( "\\", "/" );
+
+  bool uncPath = projPath.startsWith( "//" );
+#endif
+
+  QStringList srcElems = file.split( "/", QString::SkipEmptyParts );
+  QStringList projElems = mProjectPath.split( "/", QString::SkipEmptyParts );
+
+#if defined(Q_OS_WIN)
+  if ( uncPath )
+  {
+    projElems.insert( 0, "" );
+    projElems.insert( 0, "" );
+  }
+#endif
+
+  // remove project file element
+  projElems.removeLast();
+
+  // append source path elements
+  projElems << srcElems;
+  projElems.removeAll( "." );
+
+  // resolve ..
+  int pos;
+  while (( pos = projElems.indexOf( ".." ) ) > 0 )
+  {
+    // remove preceding element and ..
+    projElems.removeAt( pos - 1 );
+    projElems.removeAt( pos - 1 );
+  }
+
+#if !defined(Q_OS_WIN)
+  // make path absolute
+  projElems.prepend( "" );
+#endif
+
+  return projElems.join( "/" );
 }
 

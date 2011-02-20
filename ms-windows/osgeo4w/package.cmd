@@ -16,7 +16,7 @@ if "%VERSION%"=="" goto error
 if "%PACKAGE%"=="" goto error
 if "%PACKAGENAME%"=="" set PACKAGENAME=qgis-dev
 
-path %SYSTEMROOT%\system32;%SYSTEMROOT%;%SYSTEMROOT%\System32\Wbem;%PROGRAMFILES%\CMake 2.6\bin
+path %SYSTEMROOT%\system32;%SYSTEMROOT%;%SYSTEMROOT%\System32\Wbem;%PROGRAMFILES%\CMake 2.8\bin
 set PYTHONPATH=
 
 set VS90COMNTOOLS=%PROGRAMFILES%\Microsoft Visual Studio 9.0\Common7\Tools\
@@ -83,6 +83,9 @@ if exist CMakeCache.txt goto skipcmake
 echo CMAKE: %DATE% %TIME%>>%LOG% 2>&1
 if errorlevel 1 goto error
 
+set LIB=%LIB%;%OSGEO4W_ROOT%\lib
+set INCLUDE=%INCLUDE%;%OSGEO4W_ROOT%\include
+
 cmake -G "Visual Studio 9 2008" ^
 	-D PEDANTIC=TRUE ^
 	-D WITH_SPATIALITE=TRUE ^
@@ -90,8 +93,7 @@ cmake -G "Visual Studio 9 2008" ^
 	-D WITH_INTERNAL_SPATIALITE=TRUE ^
 	-D CMAKE_BUILD_TYPE=%BUILDCONF% ^
 	-D CMAKE_CONFIGURATION_TYPES=%BUILDCONF% ^
-	-D GDAL_INCLUDE_DIR=%O4W_ROOT%/apps/gdal-17/include ^
-	-D GDAL_LIBRARY=%O4W_ROOT%/apps/gdal-17/lib/gdal_i.lib ^
+	-D GEOS_LIBRARY=%OSGEO4W_ROOT%/lib/geos_c_i.lib ^
 	-D PYTHON_EXECUTABLE=%O4W_ROOT%/bin/python.exe ^
 	-D PYTHON_INCLUDE_PATH=%O4W_ROOT%/apps/Python25/include ^
 	-D PYTHON_LIBRARY=%O4W_ROOT%/apps/Python25/libs/python25.lib ^

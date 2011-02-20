@@ -23,14 +23,18 @@
 #include <qgsmaptoolemitpoint.h>
 #include <qgsmaprenderer.h>
 
+#include <qgsmaplayerregistry.h>
+#include <qgsvectorlayer.h>
+#include <qgsvectordataprovider.h>
+
 // Road grap plugin includes
 #include "roadgraphplugin.h"
 #include "shortestpathwidget.h"
 #include "settingsdlg.h"
-#include "graphdirector.h"
-#include "linevectorlayerdirector.h"
-#include "simplegraphbuilder.h"
 
+#include "linevectorlayerdirector.h"
+#include "linevectorlayersettings.h"
+#include "simplegraphbuilder.h"
 //
 // Qt4 Related Includes
 //
@@ -49,7 +53,7 @@
 
 static const char * const sIdent = "$Id: roadgraphplugin.cpp 9327 2009-04-20 10:09:44Z YEKST $";
 static const QString sName = QObject::tr( "Road graph plugin" );
-static const QString sDescription = QObject::tr( "It solve shortest path poblem." );
+static const QString sDescription = QObject::tr( "It solves the shortest path problem." );
 static const QString sPluginVersion = QObject::tr( "Version 0.1" );
 static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
 
@@ -62,7 +66,7 @@ static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
 /**
  * Constructor for the plugin. The plugin is passed a pointer
  * an interface object that provides access to exposed functions in QGIS.
- * @param theQGisInterface - Pointer to the QGIS interface object
+ * @param theQgisInterface - Pointer to the QGIS interface object
  */
 RoadGraphPlugin::RoadGraphPlugin( QgisInterface * theQgisInterface ):
     QgisPlugin( sName, sDescription, sPluginVersion, sPluginType ),
@@ -70,7 +74,7 @@ RoadGraphPlugin::RoadGraphPlugin( QgisInterface * theQgisInterface ):
 {
 
   mQShortestPathDock = NULL;
-  mDirector = new RgLineVectorLayerDirector();
+  mSettings = new RgLineVectorLayerSettings();
   mTimeUnitName = "h";
   mDistanceUnitName = "km";
 }
@@ -92,7 +96,7 @@ void RoadGraphPlugin::initGui()
 
   // Create the action for tool
   mQSettingsAction  = new QAction( QIcon( ":/roadgraph/road.png" ), tr( "Road graph settings" ), this );
-  mQShowDirectionAction  = new QAction( QIcon( ":/roadgraph/showdirect.png" ), tr( "Show roads direction" ), this );
+  mQShowDirectionAction  = new QAction( QIcon( ":/roadgraph/showdirect.png" ), tr( "Show road's direction" ), this );
   mInfoAction = new QAction( QIcon( ":/roadgraph/about.png" ), tr( "About" ), this );
 
   // Set the what's this text
@@ -166,17 +170,18 @@ void RoadGraphPlugin::newProject()
 
 void RoadGraphPlugin::property()
 {
-  RgSettingsDlg dlg( mDirector, mQGisIface->mainWindow(), QgisGui::ModalDialogFlags );
+  RgSettingsDlg dlg( mSettings, mQGisIface->mainWindow(), QgisGui::ModalDialogFlags );
 
   dlg.setTimeUnitName( mTimeUnitName );
   dlg.setDistanceUnitName( mDistanceUnitName );
 
   if ( !dlg.exec() )
     return;
+
   mTimeUnitName = dlg.timeUnitName();
   mDistanceUnitName = dlg.distanceUnitName();
 
-  mDirector->settings()->write( QgsProject::instance() );
+  mSettings->write( QgsProject::instance() );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginTimeUnit", mTimeUnitName );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginDistanceUnit", mDistanceUnitName );
 
@@ -196,7 +201,7 @@ void RoadGraphPlugin::about()
   version->setAlignment( Qt::AlignHCenter | Qt::AlignVCenter );
   lines->addWidget( title );
   lines->addWidget( version );
-  lines->addWidget( new QLabel( tr( "Find shortest path on roads graph" ) ) );
+  lines->addWidget( new QLabel( tr( "Find shortest path on road's graph" ) ) );
   lines->addWidget( new QLabel( tr( "<b>Developers:</b>" ) ) );
   lines->addWidget( new QLabel( "    Sergey Yakushev" ) );
   lines->addWidget( new QLabel( tr( "<b>Homepage:</b>" ) ) );
@@ -236,7 +241,7 @@ void RoadGraphPlugin::about()
 
 void RoadGraphPlugin::projectRead()
 {
-  mDirector->settings()->read( QgsProject::instance() );
+  mSettings->read( QgsProject::instance() );
   mTimeUnitName = QgsProject::instance()->readEntry( "roadgraphplugin", "/pluginTimeUnit", "h" );
   mDistanceUnitName = QgsProject::instance()->readEntry( "roadgraphplugin", "/pluginDistanceUnit", "km" );
   setGuiElementsToDefault();
@@ -249,17 +254,51 @@ QgisInterface* RoadGraphPlugin::iface()
 
 const RgGraphDirector* RoadGraphPlugin::director() const
 {
-  return mDirector;
+  QString layerId;
+  QgsVectorLayer *layer = NULL;
+  QMap< QString, QgsMapLayer* > mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
+  QMap< QString, QgsMapLayer* >::const_iterator it;
+  for ( it = mapLayers.begin(); it != mapLayers.end(); ++it )
+  {
+    if ( it.value()->name() != mSettings->mLayer )
+      continue;
+    layerId = it.key();
+    layer = dynamic_cast< QgsVectorLayer* >( it.value() );
+    break;
+  }
+  if ( layer == NULL )
+    return NULL;
+
+  QgsVectorDataProvider *provider = dynamic_cast< QgsVectorDataProvider* >( layer->dataProvider() );
+  if ( provider == NULL )
+    return NULL;
+
+  RgLineVectorLayerDirector * director =
+    new RgLineVectorLayerDirector( layerId,
+                                   provider->fieldNameIndex( mSettings->mDirection ),
+                                   mSettings->mFirstPointToLastPointDirectionVal,
+                                   mSettings->mLastPointToFirstPointDirectionVal,
+                                   mSettings->mBothDirectionVal,
+                                   mSettings->mDefaultDirection,
+                                   mSettings->mSpeedUnitName,
+                                   provider->fieldNameIndex( mSettings->mSpeed ),
+                                   mSettings->mDefaultSpeed );
+
+  return director;
 }
 void RoadGraphPlugin::render( QPainter *painter )
 {
-  if ( mDirector == NULL )
-    return;
   if ( !mQShowDirectionAction->isChecked() )
     return;
-  RgSimpleGraphBuilder builder;
-  builder.setDestinationCrs( mQGisIface->mapCanvas()->mapRenderer()->destinationSrs() );
-  mDirector->makeGraph( &builder );
+
+  const RgGraphDirector *graphDirector = director();
+
+  if ( graphDirector == NULL )
+    return;
+
+  RgSimpleGraphBuilder builder( mQGisIface->mapCanvas()->mapRenderer()->destinationSrs() );
+  QVector< QgsPoint > null;
+  graphDirector->makeGraph( &builder , null, null );
   AdjacencyMatrix m = builder.adjacencyMatrix();
 
   AdjacencyMatrix::iterator it1;
@@ -293,7 +332,7 @@ void RoadGraphPlugin::render( QPainter *painter )
       painter->drawPolygon( tmp );
     }
   }
-
+  delete graphDirector;
 }// RoadGraphPlugin::render()
 QString RoadGraphPlugin::timeUnitName()
 {

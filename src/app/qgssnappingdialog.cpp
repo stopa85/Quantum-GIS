@@ -157,7 +157,7 @@ void QgsSnappingDialog::update()
 
     QCheckBox *cbxEnable = new QCheckBox( mLayerTreeWidget );
     mLayerTreeWidget->setItemWidget( item, 0, cbxEnable );
-    item->setData( 0, Qt::UserRole, currentVectorLayer->getLayerID() );
+    item->setData( 0, Qt::UserRole, currentVectorLayer->id() );
 
     item->setText( 1, currentVectorLayer->name() );
 
@@ -191,7 +191,7 @@ void QgsSnappingDialog::update()
       mLayerTreeWidget->setItemWidget( item, 5, cbxAvoidIntersection );
     }
 
-    int idx = layerIdList.indexOf( currentVectorLayer->getLayerID() );
+    int idx = layerIdList.indexOf( currentVectorLayer->id() );
     if ( idx < 0 )
     {
       // no settings for this layer yet
@@ -218,7 +218,7 @@ void QgsSnappingDialog::update()
     cbxUnits->setCurrentIndex( toleranceUnitList[idx].toInt() );
     if ( cbxAvoidIntersection )
     {
-      cbxAvoidIntersection->setChecked( avoidIntersectionsList.contains( currentVectorLayer->getLayerID() ) );
+      cbxAvoidIntersection->setChecked( avoidIntersectionsList.contains( currentVectorLayer->id() ) );
     }
   }
 

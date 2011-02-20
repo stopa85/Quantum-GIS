@@ -21,6 +21,7 @@
 #include <limits>
 
 #include "qgisapp.h"
+#include "qgsaddjoindialog.h"
 #include "qgsapplication.h"
 #include "qgsattributeactiondialog.h"
 #include "qgsapplydialog.h"
@@ -33,6 +34,7 @@
 #include "qgslabel.h"
 #include "qgsgenericprojectionselector.h"
 #include "qgslogger.h"
+#include "qgsmaplayerregistry.h"
 #include "qgspluginmetadata.h"
 #include "qgspluginregistry.h"
 #include "qgsproject.h"
@@ -125,13 +127,20 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(
 
   updateButtons();
 
-  leSpatialRefSys->setText( "EPSG:" + QString::number( layer->crs().epsg() ) + " - " + layer->srs().description() );
+  leSpatialRefSys->setText( "EPSG:" + QString::number( layer->crs().epsg() ) + " - " + layer->crs().description() );
   leSpatialRefSys->setCursorPosition( 0 );
 
   leEditForm->setText( layer->editForm() );
   leEditFormInit->setText( layer->editFormInit() );
 
   connect( sliderTransparency, SIGNAL( valueChanged( int ) ), this, SLOT( sliderTransparency_valueChanged( int ) ) );
+
+  //insert existing join info
+  const QList< QgsVectorJoinInfo >& joins = layer->vectorJoins();
+  for ( int i = 0; i < joins.size(); ++i )
+  {
+    addJoinToTreeWidget( joins[i] );
+  }
 
   //for each overlay plugin create a new tab
   int position;
@@ -157,6 +166,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(
 
 void QgsVectorLayerProperties::loadRows()
 {
+  QObject::disconnect( tblAttributes, SIGNAL( cellChanged( int, int ) ), this, SLOT( on_tblAttributes_cellChanged( int, int ) ) );
   const QgsFieldMap &fields = layer->pendingFields();
 
   tblAttributes->clear();
@@ -182,6 +192,7 @@ void QgsVectorLayerProperties::loadRows()
     setRow( row, it.key(), it.value() );
 
   tblAttributes->resizeColumnsToContents();
+  QObject::connect( tblAttributes, SIGNAL( cellChanged( int, int ) ), this, SLOT( on_tblAttributes_cellChanged( int, int ) ) );
 }
 
 void QgsVectorLayerProperties::setRow( int row, int idx, const QgsField &field )
@@ -373,7 +384,7 @@ void QgsVectorLayerProperties::deleteAttribute()
 
 void QgsVectorLayerProperties::editingToggled()
 {
-  if ( layer->isEditable() )
+  if ( !layer->isEditable() )
     loadRows();
 
   updateButtons();
@@ -674,7 +685,7 @@ void QgsVectorLayerProperties::apply()
   }
 
   // update symbology
-  emit refreshLegend( layer->getLayerID(), false );
+  emit refreshLegend( layer->id(), false );
 
   //no need to delete the old one, maplayer will do it if needed
   layer->setCacheImage( 0 );
@@ -813,7 +824,6 @@ QString QgsVectorLayerProperties::metadata()
   {
     xMin = QString( "%1" ).arg( myExtent.xMinimum() );
   }
-
   if ( qAbs( myExtent.yMinimum() ) > changeoverValue )
   {
     yMin = QString( "%1" ).arg( myExtent.yMinimum(), 0, 'f', 2 );
@@ -822,7 +832,6 @@ QString QgsVectorLayerProperties::metadata()
   {
     yMin = QString( "%1" ).arg( myExtent.yMinimum() );
   }
-
   if ( qAbs( myExtent.xMaximum() ) > changeoverValue )
   {
     xMax = QString( "%1" ).arg( myExtent.xMaximum(), 0, 'f', 2 );
@@ -831,7 +840,6 @@ QString QgsVectorLayerProperties::metadata()
   {
     xMax = QString( "%1" ).arg( myExtent.xMaximum() );
   }
-
   if ( qAbs( myExtent.yMaximum() ) > changeoverValue )
   {
     yMax = QString( "%1" ).arg( myExtent.yMaximum(), 0, 'f', 2 );
@@ -870,7 +878,7 @@ QString QgsVectorLayerProperties::metadata()
     myMetadata += tr( "Layer Spatial Reference System:" );
     myMetadata += "</td></tr>";
     myMetadata += "<tr><td>";
-    myMetadata += layer->srs().toProj4().replace( QRegExp( "\"" ), " \"" );
+    myMetadata += layer->crs().toProj4().replace( QRegExp( "\"" ), " \"" );
     myMetadata += "</td></tr>";
 
     //
@@ -969,7 +977,7 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
   QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector( this );
   mySelector->setMessage();
-  mySelector->setSelectedCrsId( layer->srs().srsid() );
+  mySelector->setSelectedCrsId( layer->crs().srsid() );
   if ( mySelector->exec() )
   {
     QgsCoordinateReferenceSystem srs( mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::InternalCrsId );
@@ -981,7 +989,7 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
   }
   delete mySelector;
 
-  leSpatialRefSys->setText( "EPSG:" + QString::number( layer->crs().epsg() ) + " - " + layer->srs().description() );
+  leSpatialRefSys->setText( "EPSG:" + QString::number( layer->crs().epsg() ) + " - " + layer->crs().description() );
   leSpatialRefSys->setCursorPosition( 0 );
 }
 
@@ -1169,6 +1177,70 @@ void QgsVectorLayerProperties::setUsingNewSymbology( bool useNewSymbology )
 
   // update GUI!
   updateSymbologyPage();
+}
+
+void QgsVectorLayerProperties::on_mButtonAddJoin_clicked()
+{
+  QgsAddJoinDialog d( layer );
+  if ( d.exec() == QDialog::Accepted )
+  {
+    QgsVectorJoinInfo info;
+    info.targetField = d.targetField();
+    info.joinLayerId = d.joinedLayerId();
+    info.joinField = d.joinField();
+    info.memoryCache = d.cacheInMemory();
+    if ( layer )
+    {
+      //create attribute index if possible. Todo: ask user if this should be done (e.g. in QgsAddJoinDialog)
+      if ( d.createAttributeIndex() )
+      {
+        QgsVectorLayer* joinLayer = qobject_cast<QgsVectorLayer*>( QgsMapLayerRegistry::instance()->mapLayer( info.joinLayerId ) );
+        if ( joinLayer )
+        {
+          joinLayer->dataProvider()->createAttributeIndex( info.joinField );
+        }
+      }
+
+      layer->addJoin( info );
+      loadRows(); //update attribute tab
+      addJoinToTreeWidget( info );
+    }
+  }
+}
+
+void QgsVectorLayerProperties::addJoinToTreeWidget( const QgsVectorJoinInfo& join )
+{
+  QTreeWidgetItem* joinItem = new QTreeWidgetItem();
+
+  QgsVectorLayer* joinLayer = qobject_cast<QgsVectorLayer*>( QgsMapLayerRegistry::instance()->mapLayer( join.joinLayerId ) );
+  if ( !joinLayer )
+  {
+    return;
+  }
+
+  joinItem->setText( 0, joinLayer->name() );
+  joinItem->setData( 0, Qt::UserRole, join.joinLayerId );
+  QString joinFieldName = joinLayer->pendingFields().value( join.joinField ).name();
+  QString targetFieldName = layer->pendingFields().value( join.targetField ).name();
+  joinItem->setText( 1, joinFieldName );
+  joinItem->setData( 1, Qt::UserRole, join.joinField );
+  joinItem->setText( 2, targetFieldName );
+  joinItem->setData( 2, Qt::UserRole, join.targetField );
+
+  mJoinTreeWidget->addTopLevelItem( joinItem );
+}
+
+void QgsVectorLayerProperties::on_mButtonRemoveJoin_clicked()
+{
+  QTreeWidgetItem* currentJoinItem = mJoinTreeWidget->currentItem();
+  if ( !layer || !currentJoinItem )
+  {
+    return;
+  }
+
+  layer->removeJoin( currentJoinItem->data( 0, Qt::UserRole ).toString() );
+  loadRows();
+  mJoinTreeWidget->takeTopLevelItem( mJoinTreeWidget->indexOfTopLevelItem( currentJoinItem ) );
 }
 
 void QgsVectorLayerProperties::useNewSymbology()

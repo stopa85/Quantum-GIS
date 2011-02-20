@@ -243,11 +243,11 @@ void QgsMapCanvas::setLayerSet( QList<QgsMapCanvasLayer> &layers )
 
     if ( lyr.isVisible() )
     {
-      layerSet.push_back( lyr.layer()->getLayerID() );
+      layerSet.push_back( lyr.layer()->id() );
     }
     if ( lyr.isInOverview() )
     {
-      layerSetOverview.push_back( lyr.layer()->getLayerID() );
+      layerSetOverview.push_back( lyr.layer()->id() );
     }
   }
 
@@ -422,7 +422,11 @@ void QgsMapCanvas::saveAsImage( QString theFileName, QPixmap * theQPixmap, QStri
   }
   else //use the map view
   {
-    mMap->pixmap().save( theFileName, theFormat.toLocal8Bit().data() );
+    QPixmap *pixmap = dynamic_cast<QPixmap *>( &mMap->paintDevice() );
+    if( !pixmap )
+      return;
+
+    pixmap->save( theFileName, theFormat.toLocal8Bit().data() );
   }
   //create a world file to go with the image...
   QgsRectangle myRect = mMapRenderer->extent();
@@ -937,7 +941,7 @@ void QgsMapCanvas::resizeEvent( QResizeEvent * e )
 
 void QgsMapCanvas::paintEvent( QPaintEvent *e )
 {
-  if( mNewSize.isValid() )
+  if ( mNewSize.isValid() )
   {
     static bool isAlreadyIn = false;
     static QSize lastSize = QSize();
@@ -980,7 +984,7 @@ void QgsMapCanvas::paintEvent( QPaintEvent *e )
 
       emit extentsChanged();
     }
-  isAlreadyIn = false;
+    isAlreadyIn = false;
   }
 
   QGraphicsView::paintEvent( e );
@@ -1232,10 +1236,33 @@ bool QgsMapCanvas::isFrozen()
 
 QPixmap& QgsMapCanvas::canvasPixmap()
 {
-  return mMap->pixmap();
+  QPixmap *pixmap = dynamic_cast<QPixmap *>( &canvasPaintDevice() );
+  if( pixmap )
+  {
+    return *pixmap;
+  }
+
+  qWarning( "QgsMapCanvas::canvasPixmap() deprecated - returning static pixmap instance - use QgsMapCanvas::paintDevice()" );
+
+  static QPixmap staticPixmap;
+
+  QImage *image = dynamic_cast<QImage *>( &mMap->paintDevice() );
+  if( image )
+  {
+    staticPixmap = QPixmap::fromImage( *image );
+  }
+  else
+  {
+    staticPixmap = QPixmap( canvasPaintDevice().width(), canvasPaintDevice().height() );
+  }
+
+  return staticPixmap;
 } // canvasPixmap
 
-
+QPaintDevice &QgsMapCanvas::canvasPaintDevice()
+{
+  return mMap->paintDevice();
+}
 
 double QgsMapCanvas::mapUnitsPerPixel() const
 {

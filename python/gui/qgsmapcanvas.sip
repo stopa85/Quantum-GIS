@@ -65,7 +65,11 @@ class QgsMapCanvas : QGraphicsView
     QgsMapRenderer* mapRenderer();
     
     //! Accessor for the canvas pixmap
-    QPixmap& canvasPixmap();
+    // @deprecated use canvasPaintDevice()
+    QPixmap& canvasPixmap() /Deprecated/;
+
+    //! Accessor for the canvas paint device
+    QPaintDevice &canvasPaintDevice();
 
     //! Get the last reported scale of the canvas
     double scale();
@@ -255,9 +259,6 @@ class QgsMapCanvas : QGraphicsView
     */
     void renderComplete(QPainter *);
 
-    //! Overridden paint event
-    void paintEvent(QPaintEvent *);
-
     /** Emitted when the canvas is about to be rendered.
       \note Added in 1.5 */
     void renderStarting();
@@ -304,6 +305,9 @@ class QgsMapCanvas : QGraphicsView
 
     //! Overridden resize event
     void resizeEvent(QResizeEvent * e);
+
+    //! Overridden paint event
+    void paintEvent(QPaintEvent *);
 
     //! called when panning is in action, reset indicates end of panning
     void moveCanvasContents(bool reset = FALSE);

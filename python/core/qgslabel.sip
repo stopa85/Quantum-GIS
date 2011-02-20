@@ -49,12 +49,12 @@ public:
 
 
     /** \brief render label
-        \note deprecated
+        \deprecated
       */
     void renderLabel ( QPainter* painter, QgsRectangle& viewExtent, 
                        QgsCoordinateTransform* coordinateTransform,
                        QgsMapToPixel *transform,
-                       QgsFeature &feature, bool selected, QgsLabelAttributes *classAttributes=0, double sizeScale = 1, double rasterScaleFactor = 1);
+                       QgsFeature &feature, bool selected, QgsLabelAttributes *classAttributes=0, double sizeScale = 1, double rasterScaleFactor = 1) /Deprecated/;
     
     /** \brief render label
      *  \param renderContext renderer context 
@@ -83,10 +83,9 @@ public:
     QMap<int, QgsField> & fields ( );
 
     /** Pointer to default attributes.
-     * @note this will be deprecated in version 2 as it is 
-     * badly named. Rather use attributes.
+     * @deprecated in version 2 badly named. Rather use attributes.
      * @see labelAttributes method rather */
-    QgsLabelAttributes *layerAttributes( );
+    QgsLabelAttributes *layerAttributes( ) /Deprecated/;
 
     /** Pointer to default attributes.
      * @note this replaces the to-be-deprecated layerAttributes method.

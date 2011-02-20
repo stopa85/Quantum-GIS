@@ -74,12 +74,14 @@ QgsLabelingGui::QgsLabelingGui( QgsPalLabeling* lbl, QgsVectorLayer* layer, QgsM
   populateDataDefinedCombos( lyr );
 
   // placement
+  int distUnitIndex = lyr.distInMapUnits ? 1 : 0;
   switch ( lyr.placement )
   {
     case QgsPalLayerSettings::AroundPoint:
       radAroundPoint->setChecked( true );
       radAroundCentroid->setChecked( true );
       spinDistPoint->setValue( lyr.dist );
+      mPointDistanceUnitComboBox->setCurrentIndex( distUnitIndex );
       //spinAngle->setValue(lyr.angle);
       break;
     case QgsPalLayerSettings::OverPoint:
@@ -107,6 +109,7 @@ QgsLabelingGui::QgsLabelingGui( QgsPalLabeling* lbl, QgsVectorLayer* layer, QgsM
   if ( lyr.placement == QgsPalLayerSettings::Line || lyr.placement == QgsPalLayerSettings::Curved )
   {
     spinDistLine->setValue( lyr.dist );
+    mLineDistanceUnitComboBox->setCurrentIndex( distUnitIndex );
     chkLineAbove->setChecked( lyr.placementFlags & QgsPalLayerSettings::AboveLine );
     chkLineBelow->setChecked( lyr.placementFlags & QgsPalLayerSettings::BelowLine );
     chkLineOn->setChecked( lyr.placementFlags & QgsPalLayerSettings::OnLine );
@@ -202,7 +205,7 @@ QgsPalLayerSettings QgsLabelingGui::layerSettings()
   {
     lyr.placement = QgsPalLayerSettings::AroundPoint;
     lyr.dist = spinDistPoint->value();
-    //lyr.angle = spinAngle->value();
+    lyr.distInMapUnits = ( mPointDistanceUnitComboBox->currentIndex() == 1 );
   }
   else if (( stackedPlacement->currentWidget() == pagePoint && radOverPoint->isChecked() )
            || ( stackedPlacement->currentWidget() == pagePolygon && radOverCentroid->isChecked() ) )
@@ -216,6 +219,7 @@ QgsPalLayerSettings QgsLabelingGui::layerSettings()
     bool curved = ( stackedPlacement->currentWidget() == pageLine && radLineCurved->isChecked() );
     lyr.placement = ( curved ? QgsPalLayerSettings::Curved : QgsPalLayerSettings::Line );
     lyr.dist = spinDistLine->value();
+    lyr.distInMapUnits = ( mLineDistanceUnitComboBox->currentIndex() == 1 );
     if ( chkLineAbove->isChecked() )
       lyr.placementFlags |= QgsPalLayerSettings::AboveLine;
     if ( chkLineBelow->isChecked() )
@@ -276,7 +280,6 @@ QgsPalLayerSettings QgsLabelingGui::layerSettings()
   lyr.minFeatureSize = mMinSizeSpinBox->value();
   lyr.fontSizeInMapUnits = ( mFontSizeUnitComboBox->currentIndex() == 1 );
 
-
   //data defined labeling
   setDataDefinedProperty( mSizeAttributeComboBox, QgsPalLayerSettings::Size, lyr );
   setDataDefinedProperty( mColorAttributeComboBox, QgsPalLayerSettings::Color, lyr );
@@ -300,8 +303,9 @@ QgsPalLayerSettings QgsLabelingGui::layerSettings()
 
 void QgsLabelingGui::populateFieldNames()
 {
-  QgsFieldMap fields = mLayer->dataProvider()->fields();
-  for ( QgsFieldMap::iterator it = fields.begin(); it != fields.end(); it++ )
+  const QgsFieldMap& fields = mLayer->pendingFields();
+  QgsFieldMap::const_iterator it = fields.constBegin();
+  for ( ; it != fields.constEnd(); it++ )
   {
     cboFieldName->addItem( it->name() );
   }

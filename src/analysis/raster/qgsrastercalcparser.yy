@@ -19,6 +19,11 @@
 %{
   #include "qgsrastercalcnode.h"
 
+#ifdef _MSC_VER
+#  pragma warning( disable: 4065 )  // switch statement contains 'default' but no 'case' labels
+#  pragma warning( disable: 4701 )  // Potentially uninitialized local variable 'name' used
+#endif
+
   // don't redeclare malloc/free
   #define YYINCLUDED_STDLIB_H 1
 

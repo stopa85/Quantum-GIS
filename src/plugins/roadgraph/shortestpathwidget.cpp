@@ -11,7 +11,7 @@
  ***************************************************************************/
 
 /**
- * \file shortestpahtwidget.cpp
+ * \file shortestpathwidget.cpp
  * \brief implemetation UI for find shotest path
  */
 
@@ -24,6 +24,7 @@
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <QToolButton>
+#include <QMessageBox>
 
 // Qgis includes
 #include <qgsmapcanvas.h>
@@ -61,7 +62,7 @@ RgShortestPathWidget::RgShortestPathWidget( QWidget* theParent, RoadGraphPlugin 
   QHBoxLayout *h = NULL;
   QLabel *l = NULL;
 
-  l = new QLabel( tr( "Start:" ), myWidget );
+  l = new QLabel( tr( "Start" ), myWidget );
   v->addWidget( l );
   h = new QHBoxLayout();
   mFrontPointLineEdit = new QLineEdit( myWidget );
@@ -73,7 +74,7 @@ RgShortestPathWidget::RgShortestPathWidget( QWidget* theParent, RoadGraphPlugin 
   h->addWidget( selectFrontPoint );
   v->addLayout( h );
 
-  l = new QLabel( tr( "Stop:" ), myWidget );
+  l = new QLabel( tr( "Stop" ), myWidget );
   v->addWidget( l );
   h = new QHBoxLayout();
   mBackPointLineEdit = new QLineEdit( myWidget );
@@ -86,7 +87,7 @@ RgShortestPathWidget::RgShortestPathWidget( QWidget* theParent, RoadGraphPlugin 
   v->addLayout( h );
 
   h = new QHBoxLayout( this );
-  l = new QLabel( tr( "Criterion:" ), myWidget );
+  l = new QLabel( tr( "Criterion" ), myWidget );
   mCriterionName = new QComboBox( myWidget );
   mCriterionName->insertItem( 0, tr( "Length" ) );
   mCriterionName->insertItem( 1, tr( "Time" ) );
@@ -95,7 +96,7 @@ RgShortestPathWidget::RgShortestPathWidget( QWidget* theParent, RoadGraphPlugin 
   v->addLayout( h );
 
   h = new QHBoxLayout( myWidget );
-  l = new QLabel( tr( "Length:" ), myWidget );
+  l = new QLabel( tr( "Length" ), myWidget );
   mPathCostLineEdit = new QLineEdit( myWidget );
   mPathCostLineEdit->setReadOnly( true );
   h->addWidget( l );
@@ -103,7 +104,7 @@ RgShortestPathWidget::RgShortestPathWidget( QWidget* theParent, RoadGraphPlugin 
   v->addLayout( h );
 
   h = new QHBoxLayout( myWidget );
-  l = new QLabel( tr( "Time:" ), myWidget );
+  l = new QLabel( tr( "Time" ), myWidget );
   mPathTimeLineEdit = new QLineEdit( myWidget );
   mPathTimeLineEdit->setReadOnly( true );
   h->addWidget( l );
@@ -222,17 +223,37 @@ bool RgShortestPathWidget::getPath( AdjacencyMatrix& matrix, QgsPoint& p1, QgsPo
 {
   if ( mFrontPointLineEdit->text().isNull() || mBackPointLineEdit->text().isNull() )
     return false;
-  RgSimpleGraphBuilder builder;
-  builder.setDestinationCrs( mPlugin->iface()->mapCanvas()->mapRenderer()->destinationSrs() );
-  mPlugin->director()->makeGraph( &builder );
-  bool ok;
+  RgSimpleGraphBuilder builder( mPlugin->iface()->mapCanvas()->mapRenderer()->destinationSrs() );
+  {
+    const RgGraphDirector *director = mPlugin->director();
+    if ( director == NULL )
+    {
+      QMessageBox::critical( this, tr( "Plugin isn't configured" ), tr( "Plugin isn't configured!" ) );
+      return false;
+    }
+    QVector< QgsPoint > points;
+    QVector< QgsPoint > tiedPoint;
 
-  p1 = builder.tiePoint( mFrontPoint, ok );
-  if ( !ok )
+    points.push_back( mFrontPoint );
+    points.push_back( mBackPoint );
+
+    director->makeGraph( &builder, points, tiedPoint );
+    p1 = tiedPoint[ 0 ];
+    p2 = tiedPoint[ 1 ];
+    // not need
+    delete director;
+  }
+
+  if ( p1 == QgsPoint( 0.0, 0.0 ) )
+  {
+    QMessageBox::critical( this, tr( "Tie point failed" ), tr( "Start point doesn't tie to the road!" ) );
     return false;
-  p2 = builder.tiePoint( mBackPoint, ok );
-  if ( !ok )
+  }
+  if ( p1 == QgsPoint( 0.0, 0.0 ) )
+  {
+    QMessageBox::critical( this, tr( "Tie point failed" ), tr( "Stop point doesn't tie to the road!" ) );
     return false;
+  }
   AdjacencyMatrix m = builder.adjacencyMatrix();
 
   DijkstraFinder::OptimizationCriterion criterion = DijkstraFinder::byCost;

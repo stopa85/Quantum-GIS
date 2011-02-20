@@ -21,27 +21,27 @@
 
 
 // Qgis includes
-#include "graphdirector.h"
 #include "settings.h"
 
 //standard includes
 
-RgSettingsDlg::RgSettingsDlg( RgGraphDirector *director, QWidget* parent, Qt::WFlags fl )
-    : mDirector( director ), QDialog( parent, fl )
+RgSettingsDlg::RgSettingsDlg( RgSettings *settings, QWidget* parent, Qt::WFlags fl )
+    : QDialog( parent, fl )
+    , mSettings( settings )
 {
   // create base widgets;
-  setWindowTitle( tr( "Road graph plugins settings" ) );
+  setWindowTitle( tr( "Road graph plugin settings" ) );
   QVBoxLayout *v = new QVBoxLayout( this );
 
   QHBoxLayout *h = new QHBoxLayout();
-  QLabel *l = new QLabel( tr( "Plugins time unit:" ), this );
+  QLabel *l = new QLabel( tr( "Time unit" ), this );
   h->addWidget( l );
   mcbPluginsTimeUnit = new QComboBox( this );
   h->addWidget( mcbPluginsTimeUnit );
   v->addLayout( h );
 
   h = new QHBoxLayout();
-  l = new QLabel( tr( "Plugins distance unit:" ), this );
+  l = new QLabel( tr( "Distance unit" ), this );
   h->addWidget( l );
   mcbPluginsDistanceUnit = new QComboBox( this );
   h->addWidget( mcbPluginsDistanceUnit );
@@ -55,7 +55,8 @@ RgSettingsDlg::RgSettingsDlg( RgGraphDirector *director, QWidget* parent, Qt::WF
   h->addWidget(mcbGraphDirector);
   v->addLayout(h);
   */
-  mSettingsWidget = director->settings()->getGui( this );
+
+  mSettingsWidget = mSettings->getGui( this );
   v->addWidget( mSettingsWidget );
 
   QDialogButtonBox *bb = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this );
@@ -76,7 +77,7 @@ RgSettingsDlg::~RgSettingsDlg()
 
 void RgSettingsDlg::on_buttonBox_accepted()
 {
-  mDirector->settings()->setFromGui( mSettingsWidget );
+  mSettings->setFromGui( mSettingsWidget );
   accept();
 }
 

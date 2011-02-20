@@ -74,6 +74,7 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
       RandomSelectGeometryAtId =     1 << 10,
       /** DEPRECATED - do not use */
       SequentialSelectGeometryAtId = 1 << 11,
+      CreateAttributeIndex = 1 << 12
     };
 
     /** bitmask of all provider's editing capabilities */
@@ -234,9 +235,9 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
      * Add new attributes
      * @param attributes map of attributes name as key and type as value
      * @return true in case of success and false in case of failure
-     * @note deprecated
+     * @deprecated
      */
-    virtual bool addAttributes( const QMap<QString, QString> &attributes );
+    QGISDEPRECATED virtual bool addAttributes( const QMap<QString, QString> &attributes );
 
     /**
      * Deletes existing attributes
@@ -271,6 +272,9 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
      * @return true in case of success
      */
     virtual bool createSpatialIndex();
+
+    /**Create an attribute index on the datasource*/
+    virtual bool createAttributeIndex( int field );
 
     /** Returns a bitmask containing the supported capabilities
         Note, some capabilities may change depending on whether
@@ -341,9 +345,9 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
 
     /**
      * Returns the names of the supported types
-     * @note deprecated
+     * @deprecated use nativeTypes()
      */
-    const QMap<QString, QVariant::Type> &supportedNativeTypes() const;
+    QGISDEPRECATED const QMap<QString, QVariant::Type> &supportedNativeTypes() const;
 
     /** Returns true if the provider is strict about the type of inserted features
           (e.g. no multipolygon in a polygon layer)

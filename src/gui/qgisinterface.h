@@ -25,11 +25,6 @@ class QToolBar;
 class QDockWidget;
 class QMainWindow;
 class QWidget;
-#include <QObject>
-#include <QPair>
-
-#include <map>
-
 
 class QgsComposerView;
 class QgsMapLayer;
@@ -38,6 +33,17 @@ class QgsRasterLayer;
 class QgsVectorLayer;
 class QgsLegendInterface;
 class QgsFeature;
+
+#include <QObject>
+#include <QPair>
+#include <map>
+
+#include <qgis.h>
+
+#ifdef _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable: 4996 )  // was declared deprecated
+#endif
 
 /** \ingroup gui
  * QgisInterface
@@ -145,8 +151,11 @@ class GUI_EXPORT QgisInterface : public QObject
     virtual void removeDockWidget( QDockWidget * dockwidget ) = 0;
 
     /** refresh the legend of a layer
-     \note deprecated - use QgsLegendInterface::refreshLayerSymbology
+     \deprecated use QgsLegendInterface::refreshLayerSymbology
      */
+#ifndef Q_MOC_RUN
+    QGISDEPRECATED
+#endif
     virtual void refreshLegend( QgsMapLayer *l ) = 0;
 
     /** open layer properties dialog
@@ -185,6 +194,9 @@ class GUI_EXPORT QgisInterface : public QObject
      * @param useQgisDocDirectory If true, the URL will be formed by concatenating
      * url to the QGIS documentation directory path (prefix/share/doc)
      */
+#ifndef Q_MOC_RUN
+    QGISDEPRECATED
+#endif
     virtual void openURL( QString url, bool useQgisDocDirectory = true ) = 0;
 
 
@@ -359,14 +371,15 @@ class GUI_EXPORT QgisInterface : public QObject
 
 };
 
+#ifdef _MSC_VER
+#  pragma warning( pop )
+#  pragma warning( disable: 4190 )
+#endif
+
 // FIXME: also in core/qgis.h
 #ifndef QGISEXTERN
 #ifdef WIN32
 #  define QGISEXTERN extern "C" __declspec( dllexport )
-#  ifdef _MSC_VER
-// do not warn about C bindings returning QString
-#    pragma warning(disable:4190)
-#  endif
 #else
 #  define QGISEXTERN extern "C"
 #endif

@@ -210,7 +210,7 @@ int QgsLegendModel::addVectorLayerItems( QStandardItem* layerItem, QgsVectorLaye
       continue;
     }
 
-    QStandardItem* currentSymbolItem = itemFromSymbol( *symbolIt, opacity, vlayer->getLayerID() );
+    QStandardItem* currentSymbolItem = itemFromSymbol( *symbolIt, opacity, vlayer->id() );
     if ( !currentSymbolItem )
     {
       continue;
@@ -242,7 +242,7 @@ int QgsLegendModel::addRasterLayerItem( QStandardItem* layerItem, QgsMapLayer* r
   {
     currentSymbolItem->setIcon( QIcon( rasterLayer->legendAsPixmap( true ) ) );
   }
-  currentSymbolItem->setLayerID( rasterLayer->getLayerID() );
+  currentSymbolItem->setLayerID( rasterLayer->id() );
   int currentRowCount = layerItem->rowCount();
   layerItem->setChild( currentRowCount, 0, currentSymbolItem );
 
@@ -338,7 +338,7 @@ void QgsLegendModel::addLayer( QgsMapLayer* theMapLayer )
   }
 
   QgsComposerLayerItem* layerItem = new QgsComposerLayerItem( theMapLayer->name() );
-  layerItem->setLayerID( theMapLayer->getLayerID() );
+  layerItem->setLayerID( theMapLayer->id() );
   layerItem->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable );
 
   invisibleRootItem()->setChild( invisibleRootItem()->rowCount(), layerItem );
@@ -507,7 +507,7 @@ bool QgsLegendModel::readXML( const QDomElement& legendModelElem, const QDomDocu
     {
       currentItem = new QgsComposerGroupItem();
     }
-    currentItem->readXML( currentElem );
+    currentItem->readXML( currentElem, mHasTopLevelWindow );
     appendRow( currentItem );
   }
 

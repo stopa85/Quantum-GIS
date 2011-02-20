@@ -25,6 +25,7 @@
 #include <QVariant>
 #include <QImage>
 
+#include "qgis.h"
 #include "qgsrectangle.h"
 
 class QgsRenderContext;
@@ -67,8 +68,15 @@ class CORE_EXPORT QgsMapLayer : public QObject
      */
     QgsMapLayer::LayerType type() const;
 
-    /** Get this layer's unique ID, this ID is used to access this layer from map layer registry */
-    QString getLayerID() const;
+    /** Get this layer's unique ID, this ID is used to access this layer from map layer registry
+     * @note added in 1.7
+     **/
+    QString id() const;
+
+    /** Get this layer's unique ID, this ID is used to access this layer from map layer registry
+     * @deprecated use id()
+     **/
+    QGISDEPRECATED QString getLayerID() const { return id(); }
 
     /** Set the display name of the layer
      * @param name New name for the layer
@@ -374,7 +382,8 @@ class CORE_EXPORT QgsMapLayer : public QObject
 
 
     /** Read custom properties from project file. Added in v1.4
-        @param keyStartsWith reads only properties starting with the specified string (or all if the string is empty)*/
+      @param layerNode note to read from
+      @param keyStartsWith reads only properties starting with the specified string (or all if the string is empty)*/
     void readCustomProperties( QDomNode & layerNode, const QString& keyStartsWith = "" );
 
     /** Write custom properties to project file. Added in v1.4 */

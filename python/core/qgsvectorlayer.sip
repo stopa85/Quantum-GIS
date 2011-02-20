@@ -145,6 +145,10 @@ public:
   /** Returns point, line or polygon */
   QGis::GeometryType geometryType() const;
 
+  /** Returns true if this is a geometry layer and false in case of NoGeometry (table only) or UnknownGeometry
+  @note added in 1.7*/
+  bool hasGeometryType() const;
+
   /**Returns the WKBType or WKBUnknown in case of error*/
   QGis::WkbType wkbType() const;
 
@@ -390,13 +394,13 @@ public:
 
   /** add an attribute field (but does not commit it) 
       returns true in case of success
-      @note deprecated
+      @deprecated
       */
-  bool addAttribute( QString name, QString type );
+  bool addAttribute( QString name, QString type ) /Deprecated/;
 
   /**Sets an alias (a display name) for attributes to display in dialogs
       @note added in version 1.2*/
-    void addAttributeAlias( int attIndex, QString aliasString );
+  void addAttributeAlias( int attIndex, QString aliasString );
 
   /**Returns the alias of an attribute name or an empty string if there is no alias
       @note added in version 1.2*/

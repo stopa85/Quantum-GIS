@@ -57,16 +57,16 @@ class CORE_EXPORT QgsVectorFileWriter
     };
 
     /** Write contents of vector layer to a shapefile
-        @note: deprecated. Use writeAsVectorFormat instead*/
-    static WriterError writeAsShapefile( QgsVectorLayer* layer,
-                                         const QString& shapefileName,
-                                         const QString& fileEncoding,
-                                         const QgsCoordinateReferenceSystem *destCRS,
-                                         bool onlySelected = false,
-                                         QString *errorMessage = 0,
-                                         const QStringList &datasourceOptions = QStringList(), // added in 1.6
-                                         const QStringList &layerOptions = QStringList() // added in 1.6
-                                       );
+        @deprecated Use writeAsVectorFormat instead*/
+    QGISDEPRECATED static WriterError writeAsShapefile( QgsVectorLayer* layer,
+        const QString& shapefileName,
+        const QString& fileEncoding,
+        const QgsCoordinateReferenceSystem *destCRS,
+        bool onlySelected = false,
+        QString *errorMessage = 0,
+        const QStringList &datasourceOptions = QStringList(), // added in 1.6
+        const QStringList &layerOptions = QStringList() // added in 1.6
+                                                      );
 
     /** Write contents of vector layer to an (OGR supported) vector formt
         @note: this method was added in version 1.5*/
@@ -148,7 +148,7 @@ class CORE_EXPORT QgsVectorFileWriter
     QMap<int, int> mAttrIdxToOgrIdx;
 
   private:
-    static QPair<QString, QString> nameAndGlob( QString driverName );
+    static bool driverMetadata( QString driverName, QString &longName, QString &trLongName, QString &glob, QString &ext );
 };
 
 #endif

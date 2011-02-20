@@ -1253,9 +1253,10 @@ QString QgsPostgresProvider::getPrimaryKey()
           }
 
           // mPrimaryKeyDefault stays null and is retrieved later on demand
+          // if mUseEstimatedMetadata is on assume that the already keyfield is still unique
 
           if (( type != "int4" && type != "oid" ) ||
-              !uniqueData( mQuery, primaryKey ) )
+              ( !mUseEstimatedMetadata && !uniqueData( mQuery, primaryKey ) ) )
           {
             primaryKey = "";
           }
@@ -2792,7 +2793,7 @@ int QgsPostgresProvider::capabilities() const
   return enabledCapabilities;
 }
 
-bool QgsPostgresProvider::setSubsetString( QString theSQL )
+bool QgsPostgresProvider::setSubsetString( QString theSQL, bool updateFeatureCount )
 {
   QString prevWhere = sqlWhereClause;
 
@@ -2827,7 +2828,10 @@ bool QgsPostgresProvider::setSubsetString( QString theSQL )
   // uri? Perhaps this needs some rationalisation.....
   setDataSourceUri( mUri.uri() );
 
-  featuresCounted = -1;
+  if ( updateFeatureCount )
+  {
+    featuresCounted = -1;
+  }
   layerExtent.setMinimal();
 
   return true;

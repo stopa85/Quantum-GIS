@@ -415,6 +415,8 @@ bool QgsWMSSourceSelect::populateLayerList( QgsWmsProvider *wmsProvider )
 
   if ( wmsProvider->baseUrl() != wmsProvider->getMapUrl() )
   {
+    QApplication::setOverrideCursor( Qt::ArrowCursor );
+
     if ( QMessageBox::information( this,
                                    tr( "WMS Provider" ),
                                    tr( "Advertised GetMap URL\n\n  %2\n\nis different from GetCapabilities URL\n\n  %1\n\n"
@@ -430,6 +432,8 @@ bool QgsWMSSourceSelect::populateLayerList( QgsWmsProvider *wmsProvider )
       cbxIgnoreGetMap->setChecked( true );
     }
     cbxIgnoreGetMap->setEnabled( true );
+
+    QApplication::restoreOverrideCursor();
   }
   else
   {
@@ -439,6 +443,8 @@ bool QgsWMSSourceSelect::populateLayerList( QgsWmsProvider *wmsProvider )
 
   if ( wmsProvider->baseUrl() != wmsProvider->getFeatureInfoUrl() )
   {
+    QApplication::setOverrideCursor( Qt::ArrowCursor );
+
     if ( QMessageBox::information( this,
                                    tr( "WMS Provider" ),
                                    tr( "Advertised GetFeatureInfo URL\n\n  %2\n\nis different from GetCapabilities URL\n\n  %1\n\n"
@@ -454,6 +460,8 @@ bool QgsWMSSourceSelect::populateLayerList( QgsWmsProvider *wmsProvider )
       cbxIgnoreGetFeatureInfo->setChecked( true );
     }
     cbxIgnoreGetFeatureInfo->setEnabled( true );
+
+    QApplication::restoreOverrideCursor();
   }
 
   return true;
@@ -1066,7 +1074,6 @@ QString QgsWMSSourceSelect::descriptionForAuthId( QString authId )
 void QgsWMSSourceSelect::addDefaultServers()
 {
   QMap<QString, QString> exampleServers;
-  exampleServers["NASA (JPL)"] = "http://wms.jpl.nasa.gov/wms.cgi";
   exampleServers["DM Solutions GMap"] = "http://www2.dmsolutions.ca/cgi-bin/mswms_gmap";
   exampleServers["Lizardtech server"] =  "http://wms.lizardtech.com/lizardtech/iserv/ows";
   exampleServers["GEOIMAGE-AUSTRIA"] =  "http://wms.geoimage.at/dop-1mfree?";

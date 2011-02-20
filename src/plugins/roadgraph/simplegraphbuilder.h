@@ -28,8 +28,7 @@ class QgsCoordinateTransform;
 
 /**
 * \class RgSimpleGraphBuilder
-* \brief This class making the simple graph for visualisation
-* contained the settings
+* \brief This class making the simple graph
 */
 
 class RgSimpleGraphBuilder : public RgGraphBuilder
@@ -38,16 +37,13 @@ class RgSimpleGraphBuilder : public RgGraphBuilder
     /**
      * default constructor
      */
-    RgSimpleGraphBuilder();
+    RgSimpleGraphBuilder( const QgsCoordinateReferenceSystem& crs );
+
     /**
-     * MANDATORY DIRECTOR PROPERTY DECLARATION
+     * MANDATORY BUILDER PROPERTY DECLARATION
      */
-    ~RgSimpleGraphBuilder();
-    void setSourceCrs( const QgsCoordinateReferenceSystem& crs );
-    void setDestinationCrs( const QgsCoordinateReferenceSystem& crs );
     void addVertex( const QgsPoint& pt );
-    void addArc( const QgsPoint& pt1, const QgsPoint& pt2, double speed );
-    QgsPoint tiePoint( const QgsPoint& pt, bool& ok );
+    void addArc( const QgsPoint& pt1, const QgsPoint& pt2, double cost, double speed );
 
     /**
      * return Adjacecncy matrix;
@@ -55,9 +51,5 @@ class RgSimpleGraphBuilder : public RgGraphBuilder
     AdjacencyMatrix adjacencyMatrix();
   private:
     AdjacencyMatrix mMatrix;
-
-    QgsDistanceArea* mDistanceArea;
-
-    QgsCoordinateTransform* mCoordinateTransform;
 };
 #endif //SIMPLEGRAPHBUILDER

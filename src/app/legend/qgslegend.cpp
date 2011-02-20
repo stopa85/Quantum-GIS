@@ -230,7 +230,7 @@ void QgsLegend::removeLayer( QString layerId )
       // save legend layer (parent of a legend layer file we're going to delete)
       QgsLegendLayer* ll = qobject_cast<QgsLegendLayer *>( li );
 
-      if ( ll && ll->layer() && ll->layer()->getLayerID() == layerId )
+      if ( ll && ll->layer() && ll->layer()->id() == layerId )
       {
         removeItem( ll );
         delete ll;
@@ -626,7 +626,7 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
 
   setItemExpanded( llayer, true );
 
-  refreshLayerSymbology( layer->getLayerID() );
+  refreshLayerSymbology( layer->id() );
 
   updateMapCanvasLayerSet();
 
@@ -738,7 +738,7 @@ void QgsLegend::removeGroup( QgsLegendGroup *lg )
     QgsLegendGroup *cg = dynamic_cast<QgsLegendGroup *>( child );
 
     if ( cl )
-      QgsMapLayerRegistry::instance()->removeMapLayer( cl->layer()->getLayerID() );
+      QgsMapLayerRegistry::instance()->removeMapLayer( cl->layer()->id() );
     else if ( cg )
       removeGroup( cg );
 
@@ -755,7 +755,7 @@ void QgsLegend::moveLayer( QgsMapLayer *ml, int groupIndex )
   if ( !ml )
     return;
 
-  QgsLegendLayer *layer = findLegendLayer( ml->getLayerID() );
+  QgsLegendLayer *layer = findLegendLayer( ml->id() );
   if ( !layer )
     return;
 
@@ -915,7 +915,7 @@ bool QgsLegend::writeXML( QList<QTreeWidgetItem *> items, QDomNode &node, QDomDo
       QDomElement legendlayerfilenode = document.createElement( "legendlayerfile" );
 
       // layer id
-      legendlayerfilenode.setAttribute( "layerid", layer->getLayerID() );
+      legendlayerfilenode.setAttribute( "layerid", layer->id() );
       layerfilegroupnode.appendChild( legendlayerfilenode );
 
       // visible flag
@@ -1022,7 +1022,7 @@ bool QgsLegend::readXML( QgsLegendGroup *parent, const QDomNode &node )
       }
 
       // load symbology
-      refreshLayerSymbology( currentLayer->layer()->getLayerID() );
+      refreshLayerSymbology( currentLayer->layer()->id() );
 
       if ( isOpen )
       {
@@ -1101,7 +1101,7 @@ QgsLegendLayer* QgsLegend::findLegendLayer( const QString& layerKey )
     theLegendLayer = dynamic_cast<QgsLegendLayer *>( theItem );
     if ( theLegendLayer ) //item is a legend layer
     {
-      if ( theLegendLayer->layer()->getLayerID() == layerKey )
+      if ( theLegendLayer->layer()->id() == layerKey )
       {
         return theLegendLayer;
       }
@@ -1221,7 +1221,7 @@ QList< GroupLayerInfo > QgsLegend::groupLayerRelationship()
       if ( lLayer->layer() )
       {
         QList<QString> layerList;
-        layerList.push_back( lLayer->layer()->getLayerID() );
+        layerList.push_back( lLayer->layer()->id() );
         groupLayerList.push_back( qMakePair( QString(), layerList ) );
       }
     }
@@ -1240,7 +1240,7 @@ QList< GroupLayerInfo > QgsLegend::groupLayerRelationship()
         {
           if ( lLayer->layer() )
           {
-            layerList.push_back( lLayer->layer()->getLayerID() );
+            layerList.push_back( lLayer->layer()->id() );
           }
         }
 
@@ -1449,7 +1449,7 @@ QStringList QgsLegend::layerIDs()
     if ( ll )
     {
       QgsMapLayer *lyr = ll->layer();
-      layers.push_front( lyr->getLayerID() );
+      layers.push_front( lyr->id() );
     }
   }
 
@@ -1712,6 +1712,8 @@ void QgsLegend::legendLayerStretchUsingCurrentExtent()
   QgsRasterLayer *layer =  qobject_cast<QgsRasterLayer *>( currentLayer->layer() );
   if ( layer )
   {
+    // Note: Do we really want to do these next clauses? The user will get a surprise when the
+    // drawing style they are using suddenly changes....! TS
     if ( layer->drawingStyle() == QgsRasterLayer::SingleBandPseudoColor )
     {
       layer->setDrawingStyle( QgsRasterLayer::SingleBandGray );
@@ -1727,6 +1729,8 @@ void QgsLegend::legendLayerStretchUsingCurrentExtent()
     }
 
     layer->setMinimumMaximumUsingLastExtent();
+    layer->setCacheImage( NULL );
+    refreshLayerSymbology( layer->id() );
     mMapCanvas->refresh();
   }
 }
@@ -1843,7 +1847,7 @@ void QgsLegend::removeSelectedLayers()
     QgsLegendLayer *ll = dynamic_cast<QgsLegendLayer *>( item );
     if ( ll && ll->layer() )
     {
-      QgsMapLayerRegistry::instance()->removeMapLayer( ll->layer()->getLayerID() );
+      QgsMapLayerRegistry::instance()->removeMapLayer( ll->layer()->id() );
       continue;
     }
   }
