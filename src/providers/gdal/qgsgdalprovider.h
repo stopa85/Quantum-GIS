@@ -268,7 +268,9 @@ class QgsGdalProvider : public QgsRasterDataProvider
     bool mHasPyramids;
 
     /** \brief Gdal data types used to represent data in in QGIS, 
-               may be longer than source data type to keep nulls */
+               may be longer than source data type to keep nulls 
+               indexed from 1 
+     */
     QList<int>mGdalDataType;
 
     QgsRectangle mExtent;

@@ -2605,7 +2605,9 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
   //TODO hasBand is really obsolete and only used in the Palette instance, change to new function hasPalette(int)
   //else if ( hasBand( "Palette" ) ) //don't tr() this its a gdal word!
   // not sure if is worth to add colorTable capability - CT can be empty in any case
-  else if ( bandStatistics(1).colorTable.count() > 0 )  
+  // Calc bandStatistics is very slow!!!
+  //else if ( bandStatistics(1).colorTable.count() > 0 )  
+  else if ( mDataProvider->colorInterpretation(1) == QgsRasterDataProvider::PaletteIndex )
   {
     mRasterType = Palette;
   }

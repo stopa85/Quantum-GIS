@@ -256,7 +256,9 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
   // Determine the nodata value and data type
   //
   mValidNoDataValue = true;
-  for ( int i = 0; i < GDALGetRasterCount( mGdalBaseDataset ); i++ )
+  mGdalDataType.append( 0 ); // not used index
+  mNoDataValue.append( 0 ); // not used index
+  for ( int i = 1; i <= GDALGetRasterCount( mGdalBaseDataset ); i++ )
   {
     GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, i );
     GDALDataType myGdalDataType = GDALGetRasterDataType( myGdalBand );
@@ -703,8 +705,8 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
 }
 
 double  QgsGdalProvider::noDataValue() const {
-  if ( mNoDataValue.size () > 0 ) {
-    return mNoDataValue[0];
+  if ( mNoDataValue.size () > 1 ) {
+    return mNoDataValue[1];
   }
   return std::numeric_limits<int>::max(); // should not happen or be used
 }
