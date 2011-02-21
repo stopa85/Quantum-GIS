@@ -2580,7 +2580,8 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     mRasterStatsList.push_back( myRasterBandStats );
 
     //Build a new contrast enhancement for the band and store in list
-    QgsContrastEnhancement myContrastEnhancement(( QgsContrastEnhancement::QgsRasterDataType )mDataProvider->dataType( i ) );
+    //QgsContrastEnhancement myContrastEnhancement(( QgsContrastEnhancement::QgsRasterDataType )mDataProvider->dataType( i ) );
+    QgsContrastEnhancement myContrastEnhancement(( QgsContrastEnhancement::QgsRasterDataType )mDataProvider->srcDataType( i ) );
     mContrastEnhancementList.append( myContrastEnhancement );
   }
 
@@ -4371,7 +4372,7 @@ void QgsRasterLayer::drawSingleBandGray( QPainter * theQPainter, QgsRasterViewPo
         myGrayVal = 255 - myGrayVal;
       }
 
-      //QgsDebugMsg( QString( "i = %1 myGrayValue = %2 myAlphaValue = %3").arg(i).arg( myGrayValue ).arg(myAlphaValue) );
+      QgsDebugMsg( QString( "i = %1 myGrayValue = %2 myGrayVal = %3 myAlphaValue = %4").arg(i).arg( myGrayValue ).arg(myGrayVal).arg(myAlphaValue) );
       imageScanLine[ i ] = qRgba( myGrayVal, myGrayVal, myGrayVal, myAlphaValue );
     }
   }

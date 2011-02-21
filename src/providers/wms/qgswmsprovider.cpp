@@ -996,7 +996,7 @@ void QgsWmsProvider::capabilitiesReplyFinished()
   mCapabilitiesReply = 0;
 }
 
-int QgsWmsProvider::dataType( int bandNo ) const
+int QgsWmsProvider::srcDataType( int bandNo ) const
 {
   return QgsRasterDataProvider::ARGBDataType;
 }

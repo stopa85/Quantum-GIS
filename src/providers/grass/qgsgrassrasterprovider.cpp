@@ -340,7 +340,7 @@ int QgsGrassRasterProvider::capabilities() const
   return capability;
 }
 
-int QgsGrassRasterProvider::dataType( int bandNo ) const
+int QgsGrassRasterProvider::srcDataType( int bandNo ) const
 {
   switch ( mGrassDataType ) {
     case CELL_TYPE:

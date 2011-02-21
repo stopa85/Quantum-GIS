@@ -71,7 +71,9 @@ QgsRasterLayerProperties::QgsRasterLayerProperties( QgsMapLayer* lyr, QgsMapCanv
   mGrayMinimumMaximumEstimated = true;
   mRGBMinimumMaximumEstimated = true;
 
-  mRasterLayerIsInternal = mRasterLayer->dataProvider() == 0;
+  // TODO: use providers capabilietes
+  //mRasterLayerIsInternal = mRasterLayer->dataProvider() == 0;
+  mRasterLayerIsInternal = true;
 
   setupUi( this );
   connect( buttonBox, SIGNAL( accepted() ), this, SLOT( accept() ) );
@@ -520,10 +522,11 @@ void QgsRasterLayerProperties::sync()
 
   if ( !mRasterLayerIsInternal )
   {
-    delete tabPageSymbology;
-    delete tabPageColormap;
-    delete tabPagePyramids;
-    delete tabPageHistogram;
+    // TODO: add providers capabilities
+    //delete tabPageSymbology;
+    //delete tabPageColormap;
+    //delete tabPagePyramids;
+    //delete tabPageHistogram;
 
     gboxNoDataValue->setEnabled( false );
     gboxCustomTransparency->setEnabled( false );

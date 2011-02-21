@@ -529,8 +529,8 @@ class QgsWmsProvider : public QgsRasterDataProvider
     int capabilities() const;
 
     int dataType ( int bandNo ) const;
+    int srcDataType ( int bandNo ) const;
     int bandCount() const;
-   
     
 
     /**

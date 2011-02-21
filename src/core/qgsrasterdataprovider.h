@@ -168,7 +168,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     /** Returns data type for the band specified by number */
     virtual int dataType ( int bandNo ) const
     {
-      return QgsRasterDataProvider::UnknownDataType;
+      return srcDataType ( bandNo );
     }
 
     /** Returns source data type for the band specified by number,
@@ -462,7 +462,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     @note: this member has been added in version 1.2*/
     int mDpi;
 
-    /** \brief Cell value representing no data. e.g. -9999, indexed from 1  */
+    /** \brief Cell value representing no data. e.g. -9999, indexed from 0  */
     QList<double> mNoDataValue;
 
     /** \brief Flag indicating if the nodatavalue is valid*/
