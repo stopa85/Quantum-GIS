@@ -335,9 +335,14 @@ bool QgsGrassRasterProvider::identify( const QgsPoint& thePoint, QMap<QString, Q
 int QgsGrassRasterProvider::capabilities() const
 {
   int capability = QgsRasterDataProvider::Identify 
-                 | QgsRasterDataProvider::Data
-                 | QgsRasterDataProvider::ExactMinimumMaximum;
+                | QgsRasterDataProvider::ExactMinimumMaximum
+                | QgsRasterDataProvider::Size;
   return capability;
+}
+
+int QgsGrassRasterProvider::dataType( int bandNo ) const
+{
+  return srcDataType( bandNo );
 }
 
 int QgsGrassRasterProvider::srcDataType( int bandNo ) const

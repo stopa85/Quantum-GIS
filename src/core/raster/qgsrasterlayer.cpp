@@ -1001,7 +1001,8 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
   QgsDebugMsg( "Checking for provider capability." );
 
   // Some providers were returning QImage directly, not they are passing ARGB data - ARGBDataType
-  if ( mDataProvider->capabilities() & QgsRasterDataProvider::Draw )
+  //if ( mDataProvider->capabilities() & QgsRasterDataProvider::Draw )
+  if ( false )
   {
   // Currently not used
   /*
@@ -1100,7 +1101,8 @@ bool QgsRasterLayer::draw( QgsRenderContext& rendererContext )
     }
     */
   }
-  else if  ( mDataProvider->capabilities() & QgsRasterDataProvider::Data )
+  //else if  ( mDataProvider->capabilities() & QgsRasterDataProvider::Data )
+  else 
   {
     // (Otherwise use the old-fashioned GDAL direct-drawing style
     // TODO: Move into its own GDAL provider.)
@@ -2388,13 +2390,14 @@ void QgsRasterLayer::init()
 
 QLibrary* QgsRasterLayer::loadProviderLibrary( QString theProviderKey ) 
 {
-  QgsDebugMsg( "Entered" );
+  QgsDebugMsg( "theProviderKey = " + theProviderKey );
   // load the plugin
   QgsProviderRegistry * pReg = QgsProviderRegistry::instance();
-  QString ogrlib = pReg->library( theProviderKey );
+  QString myLibPath = pReg->library( theProviderKey );
+  QgsDebugMsg( "myLibPath = " + myLibPath );
 
 #ifdef TESTPROVIDERLIB
-  const char *cOgrLib = ( const char * ) ogrlib;
+  const char *cOgrLib = ( const char * ) myLibPath;
   // test code to help debug provider loading problems
   //  void *handle = dlopen(cOgrLib, RTLD_LAZY);
   void *handle = dlopen( cOgrLib, RTLD_LAZY | RTLD_GLOBAL );
@@ -2411,7 +2414,7 @@ QLibrary* QgsRasterLayer::loadProviderLibrary( QString theProviderKey )
 #endif
 
   // load the data provider
-  QLibrary*  myLib = new QLibrary( ogrlib );
+  QLibrary*  myLib = new QLibrary( myLibPath );
   
   QgsDebugMsg( "Library name is " + myLib->fileName() );
   bool loaded = myLib->load();
@@ -4372,7 +4375,7 @@ void QgsRasterLayer::drawSingleBandGray( QPainter * theQPainter, QgsRasterViewPo
         myGrayVal = 255 - myGrayVal;
       }
 
-      QgsDebugMsg( QString( "i = %1 myGrayValue = %2 myGrayVal = %3 myAlphaValue = %4").arg(i).arg( myGrayValue ).arg(myGrayVal).arg(myAlphaValue) );
+      //QgsDebugMsg( QString( "i = %1 myGrayValue = %2 myGrayVal = %3 myAlphaValue = %4").arg(i).arg( myGrayValue ).arg(myGrayVal).arg(myAlphaValue) );
       imageScanLine[ i ] = qRgba( myGrayVal, myGrayVal, myGrayVal, myAlphaValue );
     }
   }

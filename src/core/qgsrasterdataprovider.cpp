@@ -147,14 +147,9 @@ QString QgsRasterDataProvider::capabilitiesString() const
     abilitiesList += tr( "Identify" );
   }
 
-  if ( abilities & QgsRasterDataProvider::Draw )
+  if ( abilities & QgsRasterDataProvider::BuildPyramids )
   {
-    abilitiesList += tr( "Draw" );
-  }
-
-  if ( abilities & QgsRasterDataProvider::Data )
-  {
-    abilitiesList += tr( "Data" );
+    abilitiesList += tr( "Build Pyramids" );
   }
 
   QgsDebugMsg( "Capability: " + abilitiesList.join( ", " ) );

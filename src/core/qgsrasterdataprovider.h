@@ -55,15 +55,13 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     //! If you add to this, please also add to capabilitiesString()
     enum Capability
     {
-      NoCapabilities =              0,
-      Identify =                    1,
-      // Draw: the provider is capable to render data on QImage, e.g. WMS, GRASS
-      Draw =                   1 << 1,
-      // Data: the provider is capable to return data values, so that 
-      // QgsRasterLayer can render them using selected rendering mode, e.g. GDAL, GRASS
-      Data =          1 << 2,
-      ExactMinimumMaximum =   1 << 3,
-      EstimatedMinimumMaximum =  1 << 4,
+      NoCapabilities =          0,
+      Identify =                1,
+      ExactMinimumMaximum =     1 << 1,
+      EstimatedMinimumMaximum = 1 << 2,
+      BuildPyramids =           1 << 3,
+      Histogram =               1 << 4,
+      Size =                    1 << 5  // has fixed source type
     };
 
     // This is modified copy of GDALDataType

@@ -996,6 +996,10 @@ void QgsWmsProvider::capabilitiesReplyFinished()
   mCapabilitiesReply = 0;
 }
 
+int QgsWmsProvider::dataType( int bandNo ) const
+{
+  return srcDataType( bandNo );
+}
 int QgsWmsProvider::srcDataType( int bandNo ) const
 {
   return QgsRasterDataProvider::ARGBDataType;
@@ -2169,8 +2173,7 @@ bool QgsWmsProvider::calculateExtent()
 
 int QgsWmsProvider::capabilities() const
 {
-  //int capability = QgsRasterDataProvider::Draw;
-  int capability = QgsRasterDataProvider::Data;
+  int capability = NoCapabilities;
   bool canIdentify = false;
 
   QgsDebugMsg( "entering." );

@@ -918,8 +918,10 @@ bool QgsGdalProvider::identify( const QgsPoint& thePoint, QMap<QString, QString>
 int QgsGdalProvider::capabilities() const
 {
   int capability = QgsRasterDataProvider::Identify 
-                 | QgsRasterDataProvider::Data
-                 | QgsRasterDataProvider::EstimatedMinimumMaximum;
+                | QgsRasterDataProvider::EstimatedMinimumMaximum
+                | QgsRasterDataProvider::BuildPyramids
+                | QgsRasterDataProvider::Histogram
+                | QgsRasterDataProvider::Size;
   return capability;
 }
 
