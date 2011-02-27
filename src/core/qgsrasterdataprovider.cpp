@@ -69,6 +69,7 @@ void QgsRasterDataProvider::readBlock( int bandNo, QgsRectangle  const & viewExt
     }
   }
   QgsDebugMsg( QString( "reproject block time  (ms): %1" ).arg( time.elapsed() ) );
+  //std::cerr << "reproject block time  (ms): " << time.elapsed() << std::endl;
 
   free( mySrcData );
 };

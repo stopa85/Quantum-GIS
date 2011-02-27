@@ -107,7 +107,8 @@ class QgsRasterProjector
     bool checkRows ();
 
     /** Calculate array of src helper points */
-    void calcHelper ( int theMatrixRow, QList<QgsPoint> *thePoints );
+    //void calcHelper ( int theMatrixRow, QList<QgsPoint> *thePoints );
+    void calcHelper ( int theMatrixRow, QgsPoint *thePoints );
 
     /** Calc / switch helper */
     void nextHelper();
@@ -181,12 +182,14 @@ class QgsRasterProjector
     //QList< QList<double *> > mCPMatrix;
 
     /** Array of source points for each destination column on top of current CPMatrix grid row */
-    QList <QgsPoint> mHelperTop;
-    QList <QgsPoint> *pHelperTop;
+    /* Warning: using QList is slow on access */
+    //QList <QgsPoint> mHelperTop;
+    QgsPoint *pHelperTop;
 
     /** Array of source points for each destination column on bottom of current CPMatrix grid row */
-    QList <QgsPoint> mHelperBottom;
-    QList <QgsPoint> *pHelperBottom;
+    /* Warning: using QList is slow on access */
+    //QList <QgsPoint> mHelperBottom;
+    QgsPoint *pHelperBottom;
 
     /** Current mHelperTop matrix row */
     int mHelperTopRow;

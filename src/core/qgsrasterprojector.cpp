@@ -99,16 +99,10 @@ QgsRasterProjector::QgsRasterProjector (
   mSrcYRes = mSrcExtent.width() / mSrcCols;
 
   // init helper points 
-  //mHelperTop.resize ( mDestCols );
-  //mHelperBottom.resize ( mDestCols );
-  for ( int i = 0; i < mDestCols; i++) {
-    mHelperTop.append ( QgsPoint() );
-    mHelperBottom.append ( QgsPoint() );
-  }
-  pHelperTop = &mHelperTop;
-  pHelperBottom = &mHelperBottom;
-  calcHelper ( 0, &mHelperTop );
-  calcHelper ( 1, &mHelperBottom );
+  pHelperTop = new QgsPoint[mDestCols];
+  pHelperBottom = new QgsPoint[mDestCols];
+  calcHelper ( 0, pHelperTop );
+  calcHelper ( 1, pHelperBottom );
   mHelperTopRow = 0;
 }
 
@@ -138,6 +132,7 @@ void QgsRasterProjector::calcSrcExtent ()
   }
   // Expand a bit to avoid possible approx coords falling out because of representation error
   //mSrcExtent.setXMinimum();
+
   QgsDebugMsg(  "mSrcExtent = " + mSrcExtent.toString() );
 }
 
@@ -223,7 +218,8 @@ QgsPoint QgsRasterProjector::srcPoint ( int theDestRow, int theCol )
 }
 
 
-void QgsRasterProjector::calcHelper ( int theMatrixRow, QList<QgsPoint> *thePoints )
+//void QgsRasterProjector::calcHelper ( int theMatrixRow, QList<QgsPoint> *thePoints )
+void QgsRasterProjector::calcHelper ( int theMatrixRow, QgsPoint *thePoints )
 {
   // TODO?: should we also precalc dest cell center coordinates for x and y?
   for ( int myDestCol = 0; myDestCol < mDestCols; myDestCol++) {
@@ -243,36 +239,32 @@ void QgsRasterProjector::calcHelper ( int theMatrixRow, QList<QgsPoint> *thePoin
 
     double xfrac = ( myDestX - myDestXMin ) / ( myDestXMax - myDestXMin );
 
-    //QgsPoint *mySrcPoint0 = &(mCPMatrix[theMatrixRow+1][myMatrixCol]);
-    //QgsPoint *mySrcPoint1 = &(mCPMatrix[theMatrixRow+1][myMatrixCol+1]);
-    //QgsPoint *mySrcPoint2 = &(mCPMatrix[theMatrixRow][myMatrixCol]);
-    //QgsPoint *mySrcPoint3 = &(mCPMatrix[theMatrixRow][myMatrixCol+1]);
-
-    //QgsPoint *mySrcPoint0 = &(mCPMatrix[theMatrixRow][myMatrixCol]);
-    //QgsPoint *mySrcPoint1 = &(mCPMatrix[theMatrixRow][myMatrixCol+1]);
-    //double s = mySrcPoint0->x() + ( mySrcPoint1->x() - mySrcPoint0->x() ) * xfrac;
-    //double t = mySrcPoint0->y() + ( mySrcPoint1->y() - mySrcPoint0->y() ) * xfrac; 
-    QgsPoint mySrcPoint0 = mCPMatrix[theMatrixRow][myMatrixCol];
-    QgsPoint mySrcPoint1 = mCPMatrix[theMatrixRow][myMatrixCol+1];
+    QgsPoint &mySrcPoint0 = mCPMatrix[theMatrixRow][myMatrixCol];
+    QgsPoint &mySrcPoint1 = mCPMatrix[theMatrixRow][myMatrixCol+1];
     double s = mySrcPoint0.x() + ( mySrcPoint1.x() - mySrcPoint0.x() ) * xfrac;
     double t = mySrcPoint0.y() + ( mySrcPoint1.y() - mySrcPoint0.y() ) * xfrac; 
 
     //QgsDebugMsg( QString("s = %1 t = %2").arg(s).arg(t) );
-    //double u = mySrcPoint2->x() + ( mySrcPoint3->x() - mySrcPoint2->x() ) * xfrac;
-    //double v = mySrcPoint2->y() + ( mySrcPoint3->y() - mySrcPoint2->y() ) * xfrac; 
 
     //QgsDebugMsg( QString("thePoints = %1").arg ( (long)thePoints ) );
-    (*thePoints)[myDestCol].setX ( s );
-    (*thePoints)[myDestCol].setY ( t );
-    //thePoints->at(myDestCol).setX ( s );
-    //thePoints->at(myDestCol).setY ( t );
+
+    thePoints[myDestCol].setX ( s );
+    thePoints[myDestCol].setY ( t );
+
     //QgsDebugMsg( QString("thePoints[myDestCol] = %1").arg( (*thePoints)[myDestCol].toString() ) );
   }
 }
 void QgsRasterProjector::nextHelper ()
 {
   //QgsDebugMsg( QString("mHelperTopRow = %1").arg(mHelperTopRow) );
+  /*
   QList <QgsPoint> *tmp;
+  tmp = pHelperTop;
+  pHelperTop = pHelperBottom;
+  pHelperBottom = tmp;
+  calcHelper ( mHelperTopRow+2, pHelperBottom );
+  */
+  QgsPoint *tmp;
   tmp = pHelperTop;
   pHelperTop = pHelperBottom;
   pHelperBottom = tmp;
@@ -286,11 +278,16 @@ void QgsRasterProjector::srcRowCol ( int theDestRow, int theDestCol, int *theSrc
   int myMatrixRow = matrixRow ( theDestRow );
   int myMatrixCol = matrixCol ( theDestCol );
 
+  //int myMatrixRow = 0;
+  //int myMatrixCol = 0;
+  *theSrcRow = 0; // debug
+  *theSrcCol = 0;
+
   if ( myMatrixRow > mHelperTopRow ) {
+    // TODO: make it more robust (for random, not sequential reading)
     nextHelper ();
   }
 
-  //double myDestX = mDestExtent.xMinimum() + ( theDestCol + 0.5 ) * mDestXRes;
   double myDestY = mDestExtent.yMaximum() - ( theDestRow + 0.5 ) * mDestYRes;
 
   //QgsDebugMsg( QString("myDestX = %1 myDestY = %2").arg( myDestX ).arg( myDestY) );
@@ -304,50 +301,37 @@ void QgsRasterProjector::srcRowCol ( int theDestRow, int theDestCol, int *theSrc
   destPointOnCPMatrix ( myMatrixRow + 1, myMatrixCol, &myDestXMin, &myDestYMin );
   destPointOnCPMatrix ( myMatrixRow, myMatrixCol + 1, &myDestXMax, &myDestYMax );
 
-  //QgsDebugMsg( "myDestLL = " + myDestLL.toString() + " myDestUR = " + myDestUR.toString() );
-
-  QgsPoint *mySrcPoint0 = &(mCPMatrix[myMatrixRow+1][myMatrixCol]);
-  QgsPoint *mySrcPoint1 = &(mCPMatrix[myMatrixRow+1][myMatrixCol+1]);
-  QgsPoint *mySrcPoint2 = &(mCPMatrix[myMatrixRow][myMatrixCol]);
-  QgsPoint *mySrcPoint3 = &(mCPMatrix[myMatrixRow][myMatrixCol+1]);
-
   //QgsDebugMsg( "mySrcPoint : " + mySrcPoint0.toString() + " " + mySrcPoint1.toString() + " " +mySrcPoint2.toString() + " " + mySrcPoint3.toString() + " " );
 
-  //double xfrac = ( myDestX - myDestXMin ) / ( myDestXMax - myDestXMin );
   double yfrac = ( myDestY - myDestYMin ) / ( myDestYMax - myDestYMin );
-  //QgsDebugMsg( QString("xfrac = %1 yfrac = %2").arg(xfrac).arg(yfrac) );
-  //assert ( xfrac >= 0 );
+  //QgsDebugMsg( QString("yfrac = %2").arg(yfrac) );
   //assert ( yfrac >= 0 );
   
-  //double s = mySrcPoint0->x() + ( mySrcPoint1->x() - mySrcPoint0->x() ) * xfrac;
-  //double t = mySrcPoint0->y() + ( mySrcPoint1->y() - mySrcPoint0->y() ) * xfrac; 
+  QgsPoint &myTop = pHelperTop[theDestCol];
+  QgsPoint &myBot = pHelperBottom[theDestCol];
 
-  //double u = mySrcPoint2->x() + ( mySrcPoint3->x() - mySrcPoint2->x() ) * xfrac;
-  //double v = mySrcPoint2->y() + ( mySrcPoint3->y() - mySrcPoint2->y() ) * xfrac; 
+  // Warning: this is very SLOW compared to the following code!:
+  //double mySrcX = myBot.x() + (myTop.x() - myBot.x()) * yfrac;
+  //double mySrcY = myBot.y() + (myTop.y() - myBot.y()) * yfrac;
 
-  //QgsDebugMsg( QString("s = %1 t = %2").arg(s).arg(t) );
-  //QgsDebugMsg( QString("u = %1 v = %2").arg(u).arg(v) );
-
-  QgsPoint *myTop = &((*pHelperTop)[theDestCol]);
-  QgsPoint *myBot = &((*pHelperBottom)[theDestCol]);
-
-  //QgsDebugMsg( QString("s = %1 t = %2 myTop = %3").arg(s).arg(t).arg ( myTop->toString() ) );
-  //QgsDebugMsg( QString("u = %1 v = %2 myBot = %3").arg(u).arg(v).arg ( myBot->toString() ) );
-  
-  //double mySrcX = s + (u - s) * yfrac;
-  //double mySrcY = t + (v - t) * yfrac;
-
-  double mySrcX = myBot->x() + (myTop->x() - myBot->x()) * yfrac;
-  double mySrcY = myBot->y() + (myTop->y() - myBot->y()) * yfrac;
-
+  double tx = myTop.x();
+  double ty = myTop.y();
+  double bx = myBot.x();
+  double by = myBot.y();
+  double mySrcX = bx + (tx - bx) * yfrac;
+  double mySrcY = by + (ty - by) * yfrac;
 
   //QgsDebugMsg( QString("mySrcX = %1 mySrcY = %2").arg(mySrcX).arg(mySrcY) );
 
   // TODO: check again cell selection (coor is in the middle)
 
   //QgsDebugMsg( QString("mSrcExtent.yMaximum() = %1 mySrcY = %2").arg(mSrcExtent.yMaximum()).arg(mySrcY)) ;
+
   *theSrcRow = (int) floor ( ( mSrcExtent.yMaximum() - mySrcY ) / mSrcXRes );
   *theSrcCol =  (int) floor ( ( mySrcX - mSrcExtent.xMinimum() ) / mSrcYRes );
+
+  //*theSrcRow = 0; // debug
+  //*theSrcCol = 0;
 
   //QgsDebugMsg( QString("( mSrcExtent.yMaximum() - mySrcY ) / ( mSrcExtent.height() / mSrcRows ) = %1") .arg( ( mSrcExtent.yMaximum() - mySrcY ) / ( mSrcExtent.height() / mSrcRows )  ) );
   //QgsDebugMsg( QString("mySrcY = %1 yMaximum = %2").arg(mySrcY).arg(mSrcExtent.yMaximum()) );
