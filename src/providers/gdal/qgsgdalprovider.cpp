@@ -532,7 +532,12 @@ void QgsGdalProvider::readBlock( int theBandNo, int xBlock, int yBlock, void *bl
   QgsDebugMsg( "yBlock = "  + QString::number( yBlock ) );
 
   GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, theBandNo );
-  GDALReadBlock( myGdalBand, xBlock, yBlock, block );
+  //GDALReadBlock( myGdalBand, xBlock, yBlock, block );
+
+  /* We have to read with correct data type consistent with other readBlock functions */
+  int xOff = xBlock * mXBlockSize; 
+  int yOff = yBlock * mYBlockSize;
+  GDALRasterIO ( myGdalBand, GF_Read, xOff, yOff, mXBlockSize, mYBlockSize, block, mXBlockSize, mYBlockSize, (GDALDataType) mGdalDataType[theBandNo-1], 0, 0 );
 }
 
 void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, void *theBlock )
