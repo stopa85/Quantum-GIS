@@ -333,7 +333,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
                 ) {};
 
     /** \brief Create pyramid overviews */
-    QString buildPyramids( const QList<QgsRasterPyramid>  & thePyramidList,
+    virtual QString buildPyramids( const QList<QgsRasterPyramid>  & thePyramidList,
                            const QString &  theResamplingMethod = "NEAREST",
                            bool theTryInternalFlag = false ) { return "FAILED_NOT_SUPPORTED"; };
 
@@ -342,7 +342,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
      * ACTUALLY exists you need to look at the existsFlag member in each struct stored in the
      * list.
      */
-    QList<QgsRasterPyramid> buildPyramidList() { return QList<QgsRasterPyramid>(); };
+    virtual QList<QgsRasterPyramid> buildPyramidList() { return QList<QgsRasterPyramid>(); };
 
 
     /** \brief helper function to create zero padded band names */
