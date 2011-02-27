@@ -124,6 +124,9 @@ class QgsRasterProjector
     void setSrcRows( int theRows ) { mSrcRows = theRows; mSrcXRes = mSrcExtent.height() / mSrcRows; }
     void setSrcCols( int theCols ) { mSrcCols = theCols; mSrcYRes = mSrcExtent.width() / mSrcCols; }
 
+    /** get mCPMatrix as string */
+    QString cpToString();
+
   private:
     /** Source CRS */
     QgsCoordinateReferenceSystem mSrcCRS;

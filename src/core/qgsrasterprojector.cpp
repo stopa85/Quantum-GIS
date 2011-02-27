@@ -90,6 +90,8 @@ QgsRasterProjector::QgsRasterProjector (
   mDestRowsPerMatrixRow =  (float)mDestRows / (mCPRows - 1);
   mDestColsPerMatrixCol = (float)mDestCols / (mCPCols - 1);
 
+  QgsDebugMsg( "CPMatrix:\n" + cpToString() );
+
   // Calculate source dimensions
   calcSrcExtent();
   calcSrcRowsCols();
@@ -139,6 +141,20 @@ void QgsRasterProjector::calcSrcExtent ()
   QgsDebugMsg(  "mSrcExtent = " + mSrcExtent.toString() );
 }
 
+QString QgsRasterProjector::cpToString()
+{
+  QString myString;
+  for ( int i = 0; i < mCPRows; i++) {
+    if ( i > 0 ) myString += "\n";
+    for ( int j = 0; j < mCPCols; j++) {
+      if ( j > 0 ) myString += "  ";
+      QgsPoint myPoint = mCPMatrix[i][j];
+      myString += myPoint.toString();
+    }
+  }
+  return myString;
+}
+
 void QgsRasterProjector::calcSrcRowsCols ()
 {
   // Wee need to calculate minimum cell size in the source 
@@ -158,16 +174,21 @@ void QgsRasterProjector::calcSrcRowsCols ()
       QgsPoint myPointA = mCPMatrix[i][j];
       QgsPoint myPointB = mCPMatrix[i][j+1];
       QgsPoint myPointC = mCPMatrix[i+1][j];
-      double mySize = myPointA.sqrDist( myPointB ) / myDestColsPerMatrixCell; 
+      double mySize = sqrt(myPointA.sqrDist( myPointB )) / myDestColsPerMatrixCell; 
       if ( mySize < myMinSize ) { myMinSize = mySize; }
 
-      mySize = myPointA.sqrDist( myPointC ) / myDestRowsPerMatrixCell;
+      mySize = sqrt(myPointA.sqrDist( myPointC )) / myDestRowsPerMatrixCell;
       if ( mySize < myMinSize ) { myMinSize = mySize; }
     }
   }
+  
+  // Make it a bit higher resolution
+  // TODO: find the best coefficient 
+  myMinSize *= 0.5; 
+
   double myMinXSize = mMaxSrcXRes > myMinSize ? mMaxSrcXRes : myMinSize;
   double myMinYSize = mMaxSrcYRes > myMinSize ? mMaxSrcYRes : myMinSize;
-  // TODO: limit by source data resolution
+  QgsDebugMsg( QString("mSrcExtent.width = %1 mSrcExtent.height = %2" ).arg ( mSrcExtent.width() ).arg( mSrcExtent.height() ) );
   mSrcRows = (int) ceil ( mSrcExtent.height() / myMinYSize );
   mSrcCols = (int) ceil ( mSrcExtent.width() / myMinXSize );
 
@@ -224,13 +245,17 @@ void QgsRasterProjector::calcHelper ( int theMatrixRow, QList<QgsPoint> *thePoin
 
     //QgsPoint *mySrcPoint0 = &(mCPMatrix[theMatrixRow+1][myMatrixCol]);
     //QgsPoint *mySrcPoint1 = &(mCPMatrix[theMatrixRow+1][myMatrixCol+1]);
-    QgsPoint *mySrcPoint0 = &(mCPMatrix[theMatrixRow][myMatrixCol]);
-    QgsPoint *mySrcPoint1 = &(mCPMatrix[theMatrixRow][myMatrixCol+1]);
     //QgsPoint *mySrcPoint2 = &(mCPMatrix[theMatrixRow][myMatrixCol]);
     //QgsPoint *mySrcPoint3 = &(mCPMatrix[theMatrixRow][myMatrixCol+1]);
 
-    double s = mySrcPoint0->x() + ( mySrcPoint1->x() - mySrcPoint0->x() ) * xfrac;
-    double t = mySrcPoint0->y() + ( mySrcPoint1->y() - mySrcPoint0->y() ) * xfrac; 
+    //QgsPoint *mySrcPoint0 = &(mCPMatrix[theMatrixRow][myMatrixCol]);
+    //QgsPoint *mySrcPoint1 = &(mCPMatrix[theMatrixRow][myMatrixCol+1]);
+    //double s = mySrcPoint0->x() + ( mySrcPoint1->x() - mySrcPoint0->x() ) * xfrac;
+    //double t = mySrcPoint0->y() + ( mySrcPoint1->y() - mySrcPoint0->y() ) * xfrac; 
+    QgsPoint mySrcPoint0 = mCPMatrix[theMatrixRow][myMatrixCol];
+    QgsPoint mySrcPoint1 = mCPMatrix[theMatrixRow][myMatrixCol+1];
+    double s = mySrcPoint0.x() + ( mySrcPoint1.x() - mySrcPoint0.x() ) * xfrac;
+    double t = mySrcPoint0.y() + ( mySrcPoint1.y() - mySrcPoint0.y() ) * xfrac; 
 
     //QgsDebugMsg( QString("s = %1 t = %2").arg(s).arg(t) );
     //double u = mySrcPoint2->x() + ( mySrcPoint3->x() - mySrcPoint2->x() ) * xfrac;
