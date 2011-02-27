@@ -208,8 +208,8 @@ class QgsGdalProvider : public QgsRasterDataProvider
 
     double noDataValue() const;
     void computeMinMax(int bandNo);
-    double minimumValue(int bandNo);
-    double maximumValue(int bandNo);
+    double minimumValue(int bandNo) const;
+    double maximumValue(int bandNo) const;
 
     QList<QgsColorRampShader::ColorRampItem> colorTable(int bandNo)const;
 
