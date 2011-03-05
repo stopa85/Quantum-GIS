@@ -171,18 +171,19 @@ void QgsRasterProjector::calcSrcRowsCols ()
       QgsPoint myPointB = mCPMatrix[i][j+1];
       QgsPoint myPointC = mCPMatrix[i+1][j];
       double mySize = sqrt(myPointA.sqrDist( myPointB )) / myDestColsPerMatrixCell; 
-      QgsDebugMsg( QString("mySize = %1" ).arg ( mySize ) );
+      //QgsDebugMsg( QString("mySize = %1" ).arg ( mySize ) );
       if ( mySize < myMinSize ) { myMinSize = mySize; }
 
       mySize = sqrt(myPointA.sqrDist( myPointC )) / myDestRowsPerMatrixCell;
-      QgsDebugMsg( QString("mySize = %1" ).arg ( mySize ) );
+      //QgsDebugMsg( QString("mySize = %1" ).arg ( mySize ) );
       if ( mySize < myMinSize ) { myMinSize = mySize; }
     }
   }
   
   // Make it a bit higher resolution
-  // TODO: find the best coefficient 
-  myMinSize *= 0.5; 
+  // TODO: find the best coefficient, attention, increasing resolution for WMS 
+  // is changing WMS content
+  myMinSize *= 0.75; 
 
   QgsDebugMsg( QString("mMaxSrcXRes = %1 mMaxSrcYRes = %2" ).arg ( mMaxSrcXRes ).arg( mMaxSrcYRes ) );
   // mMaxSrcXRes, mMaxSrcYRes may be 0 - no limit (WMS)
