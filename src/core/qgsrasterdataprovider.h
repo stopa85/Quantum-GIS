@@ -58,10 +58,11 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
       NoCapabilities =          0,
       Identify =                1,
       ExactMinimumMaximum =     1 << 1,
-      EstimatedMinimumMaximum = 1 << 2,
-      BuildPyramids =           1 << 3,
-      Histogram =               1 << 4,
-      Size =                    1 << 5  // has fixed source type
+      ExactResolution =         1 << 2,
+      EstimatedMinimumMaximum = 1 << 3,
+      BuildPyramids =           1 << 4,
+      Histogram =               1 << 5,
+      Size =                    1 << 6  // has fixed source type
     };
 
     // This is modified copy of GDALDataType

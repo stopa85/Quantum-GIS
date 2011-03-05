@@ -161,6 +161,7 @@ void QgsRasterProjector::calcSrcRowsCols ()
   // For now, we take cell sizes projected to source but not to source axes
   double myDestColsPerMatrixCell = mDestCols / mCPCols;
   double myDestRowsPerMatrixCell = mDestRows / mCPRows;
+  QgsDebugMsg( QString("myDestColsPerMatrixCell = %1 myDestRowsPerMatrixCell = %2" ).arg ( myDestColsPerMatrixCell ).arg( myDestRowsPerMatrixCell ) );
 
   double myMinSize = DBL_MAX;
   
@@ -170,9 +171,11 @@ void QgsRasterProjector::calcSrcRowsCols ()
       QgsPoint myPointB = mCPMatrix[i][j+1];
       QgsPoint myPointC = mCPMatrix[i+1][j];
       double mySize = sqrt(myPointA.sqrDist( myPointB )) / myDestColsPerMatrixCell; 
+      QgsDebugMsg( QString("mySize = %1" ).arg ( mySize ) );
       if ( mySize < myMinSize ) { myMinSize = mySize; }
 
       mySize = sqrt(myPointA.sqrDist( myPointC )) / myDestRowsPerMatrixCell;
+      QgsDebugMsg( QString("mySize = %1" ).arg ( mySize ) );
       if ( mySize < myMinSize ) { myMinSize = mySize; }
     }
   }
@@ -181,13 +184,16 @@ void QgsRasterProjector::calcSrcRowsCols ()
   // TODO: find the best coefficient 
   myMinSize *= 0.5; 
 
+  QgsDebugMsg( QString("mMaxSrcXRes = %1 mMaxSrcYRes = %2" ).arg ( mMaxSrcXRes ).arg( mMaxSrcYRes ) );
+  // mMaxSrcXRes, mMaxSrcYRes may be 0 - no limit (WMS)
   double myMinXSize = mMaxSrcXRes > myMinSize ? mMaxSrcXRes : myMinSize;
   double myMinYSize = mMaxSrcYRes > myMinSize ? mMaxSrcYRes : myMinSize;
+  QgsDebugMsg( QString("myMinXSize = %1 myMinYSize = %2" ).arg ( myMinXSize ).arg( myMinYSize ) );
   QgsDebugMsg( QString("mSrcExtent.width = %1 mSrcExtent.height = %2" ).arg ( mSrcExtent.width() ).arg( mSrcExtent.height() ) );
   mSrcRows = (int) ceil ( mSrcExtent.height() / myMinYSize );
   mSrcCols = (int) ceil ( mSrcExtent.width() / myMinXSize );
 
-  QgsDebugMsg( QString("mSrcRows = %1 theSrcCols = %2").arg(mSrcRows).arg(mSrcCols) );
+  QgsDebugMsg( QString("mSrcRows = %1 mSrcCols = %2").arg(mSrcRows).arg(mSrcCols) );
 }
 
 
