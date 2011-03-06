@@ -68,7 +68,6 @@ void QgsRasterDataProvider::readBlock( int bandNo, QgsRectangle  const & viewExt
   int mySrcOffset;
   int myDestOffset;
   for ( int r = 0; r < height; r++) {
-  //for ( int r = height-1; r < height; r++) {
     for ( int c = 0; c < width; c++) {
       myProjector.srcRowCol ( r, c, &mySrcRow, &mySrcCol );
       mySrcOffset = mySize * ( mySrcRow * myProjector.srcCols() + mySrcCol );
@@ -78,7 +77,6 @@ void QgsRasterDataProvider::readBlock( int bandNo, QgsRectangle  const & viewExt
     }
   }
   QgsDebugMsg( QString( "reproject block time  (ms): %1" ).arg( time.elapsed() ) );
-  //std::cerr << "reproject block time  (ms): " << time.elapsed() << std::endl;
 
   free( mySrcData );
 };
@@ -177,12 +175,5 @@ QString QgsRasterDataProvider::lastErrorFormat()
 {
   return "text/plain";
 }
-
-//void QgsRasterDataProvider::buildSupportedRasterFileFilter( QString & theFileFiltersString ) 
-//{ 
-  //QgsDebugMsg ( "Entered" );  
-//};
-
-
 
 // ENDS

@@ -44,7 +44,6 @@ class QgsRasterBandStats;
  *         QgsVectorDataProvider, and does not yet make
  *         sense for Raster layers.
  */
-
 class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
 {
 
@@ -447,8 +446,6 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     /** \brief Is the NoDataValue Valid */
     bool isNoDataValueValid() const { return mValidNoDataValue; }
 
-
-
     static QStringList cStringList2Q_( char ** stringList );
 
     static QString makeTableCell( QString const & value );
@@ -467,10 +464,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
     /** \brief Flag indicating if the nodatavalue is valid*/
     bool mValidNoDataValue;
 
-
     QgsRectangle mExtent;
-    
-
 };
 
 #endif

@@ -271,10 +271,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
      * band populated, any additional stats are calculated on a need to know basis.*/
     typedef QList<QgsRasterBandStats> RasterStatsList;
 
-
-
-
-
     //
     // Static methods:
     //
@@ -415,10 +411,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
 
     /** \brief Accessor that returns the width of the (unclipped) raster  */
     int width() { return mWidth; }
-
-
-
-
 
     //
     // Non Static methods
@@ -642,10 +634,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     /** \brief Emit a signal asking for a repaint. (inherited from maplayer) */
     void triggerRepaint();
 
-
-
-
-
     //
     // Virtural methods
     //
@@ -661,7 +649,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
      * Set the visibility of the given sublayer name
      */
     virtual void setSubLayerVisibility( const QString & name, bool vis );
-
 
   public slots:
     /** \brief Create GDAL pyramid overviews */
@@ -681,16 +668,9 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     /** \brief Propagate progress updates from GDAL up to the parent app */
     void updateProgress( int, int );
 
-
-
-
-
   signals:
     /** \brief Signal for notifying listeners of long running processes */
     void progressUpdate( int theValue );
-
-
-
 
   protected:
 
@@ -705,10 +685,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
 
     /** \brief Write layer specific state to project file Dom node */
     bool writeXml( QDomNode & layer_node, QDomDocument & doc );
-
-
-
-
 
   private:
     //
@@ -782,10 +758,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     /** \brief Find out whether a given band exists.    */
     bool hasBand( const QString &  theBandName );
 
-    /** \brief Places the rendered image onto the canvas */
-    void paintImageToCanvas( QPainter* theQPainter, QgsRasterViewPort * theRasterViewPort,
-                             const QgsMapToPixel* theQgsMapToPixel, QImage* theImage );
-
     /** \brief Query GDAL to find out the Wkt projection string for this layer.*/
     QString projectionWkt();
 
@@ -805,9 +777,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
 
     /** \brief Verify and transform band name for internal consistency. Return 'Not Set' on any type of failure */
     QString validateBandName( const QString & theBandName );
-
-
-
 
     //
     // Private member vars
@@ -942,7 +911,6 @@ class QPainter;*/
 class CORE_EXPORT QgsRasterImageBuffer
 {
   public:
-    //QgsRasterImageBuffer( GDALRasterBandH rasterBand, QPainter* p,
     QgsRasterImageBuffer( QgsRasterDataProvider *dataProvider, int bandNo, QPainter* p,
                           QgsRasterViewPort* viewPort, const QgsMapToPixel* mapToPixel, double* mGeoTransform  );
     ~QgsRasterImageBuffer();
@@ -960,7 +928,6 @@ class CORE_EXPORT QgsRasterImageBuffer
     /**Peter's fix for zoomed in rasters*/
     void drawPixelRectangle();
 
-    //GDALRasterBandH mRasterBand; //raster band
     QgsRasterDataProvider* mDataProvider;
     int mBandNo;
     QPainter* mPainter;
@@ -981,9 +948,7 @@ class CORE_EXPORT QgsRasterImageBuffer
     int mCurrentPartImageRow; //current image row
     int mNumCurrentImageRows; //number of image rows for the current part
 
-    //QgsRectangle mCurrentPartExtent; // extent of current part in map units
     int mCurrentPart; 
-    
 
     //current memory image and gdal scan data
     QImage* mCurrentImage;

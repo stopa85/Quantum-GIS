@@ -65,12 +65,6 @@ class QgsRasterProjector
     int matrixRow ( int theDestRow );
     int matrixCol ( int theDestCol );
 
-    /** \brief destination point x for dest col */
-    //double destX ( int theDestCol );
-
-    /** \brief destination point x for dest row */
-    //double destY ( int theDestRow );
-
     /** \brief get destination point for _current_ matrix position */
     QgsPoint srcPoint ( int theRow, int theCol );
 
@@ -112,9 +106,6 @@ class QgsRasterProjector
 
     /** Calc / switch helper */
     void nextHelper();
-
-    /** \brief get point for matrix position */
-    //QgsPoint matrixPoint ( int theRow, int theCol ) { return QgsPoint ( mCPMatrix[theRow][theCol][0], mCPMatrix[theRow][theCol][1] ); }
 
     /** get source extent */
     QgsRectangle srcExtent() { return mSrcExtent; } 
@@ -176,19 +167,14 @@ class QgsRasterProjector
     double mDestColsPerMatrixCol;
 
     /** Grid of source control points */
-    // using QList< QList<double *> > mCPMatrix; takes however a more time (about 20%) than QList< QList<QgsPoint> > mCPMatrix; - why?
-
     QList< QList<QgsPoint> > mCPMatrix;
-    //QList< QList<double *> > mCPMatrix;
 
     /** Array of source points for each destination column on top of current CPMatrix grid row */
     /* Warning: using QList is slow on access */
-    //QList <QgsPoint> mHelperTop;
     QgsPoint *pHelperTop;
 
     /** Array of source points for each destination column on bottom of current CPMatrix grid row */
     /* Warning: using QList is slow on access */
-    //QList <QgsPoint> mHelperBottom;
     QgsPoint *pHelperBottom;
 
     /** Current mHelperTop matrix row */
