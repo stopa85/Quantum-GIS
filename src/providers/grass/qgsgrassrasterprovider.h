@@ -237,7 +237,6 @@ class QgsGrassRasterProvider : public QgsRasterDataProvider
 
     RASTER_MAP_TYPE mGrassDataType; // CELL_TYPE, DCELL_TYPE, FCELL_TYPE
 
-    //QgsRectangle mExtent;
     int mCols;
     int mRows;
     int mYBlockSize;

@@ -204,7 +204,6 @@ class QgsGdalProvider : public QgsRasterDataProvider
 
     void readBlock( int bandNo, int xBlock, int yBlock, void *data );
     void readBlock( int bandNo, QgsRectangle  const & viewExtent, int width, int height, void *data );
-    void readBlockOld( int bandNo, QgsRectangle  const & viewExtent, int width, int height, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS,  void *data );
 
     double noDataValue() const;
     void computeMinMax(int bandNo);
@@ -229,14 +228,6 @@ class QgsGdalProvider : public QgsRasterDataProvider
 
     /** \brief ensures that GDAL drivers are registered, but only once */
     static void registerGdalDrivers();
-
-    //void buildSupportedRasterFileFilter( QString & theFileFiltersString ); 
-
-    //bool isValidRasterFileName( QString const & theFileNameQString, QString & retErrMsg );
-
-    //bool isValidRasterFileName( const QString & theFileNameQString );
-
-    //static QStringList subLayers( GDALDatasetH dataset );
 
     /** \brief Returns the sublayers of this layer - Useful for providers that manage their own layers, such as WMS */
     QStringList subLayers() const;
@@ -297,8 +288,6 @@ class QgsGdalProvider : public QgsRasterDataProvider
 
     /** \brief Values for mapping pixel to world coordinates. Contents of this array are the same as the GDAL adfGeoTransform */
     double mGeoTransform[6];
-
-    //QHash<QString, QString> mInfo;
 
     QgsCoordinateReferenceSystem mCrs;
 

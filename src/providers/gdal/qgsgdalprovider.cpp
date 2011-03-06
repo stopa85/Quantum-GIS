@@ -66,9 +66,6 @@ int CPL_STDCALL progressCallback( double dfComplete,
   // TODO: add signals to providers
   static double dfLastComplete = -1.0;
 
-
-  //QgsRasterLayer * mypLayer = ( QgsRasterLayer * ) pProgressArg;
-
   if ( dfLastComplete > dfComplete )
   {
     if ( dfLastComplete >= 1.0 )
@@ -195,10 +192,6 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
 
   mHasPyramids = GDALGetOverviewCount( myGDALBand ) > 0;
 
-  //populate the list of what pyramids exist
-  // TODO
-  //buildPyramidList();
-
   // Get the layer's projection info and set up the
   // QgsCoordinateTransform for this layer
   // NOTE: we must do this before metadata is called
@@ -277,17 +270,14 @@ QgsGdalProvider::QgsGdalProvider( QString const & uri )
       switch ( srcDataType( i ) ) {
         case QgsRasterDataProvider::Byte:
           // Use longer data type to avoid conflict with real data
-          //myNoDataValue = 255.0;
           myNoDataValue = -32768.0;
           mGdalDataType.append( GDT_Int16 );
           break;
         case QgsRasterDataProvider::Int16:
-          //myNoDataValue = -32768.0;
           myNoDataValue = -2147483648.0;
           mGdalDataType.append( GDT_Int32 );
           break;
         case QgsRasterDataProvider::UInt16:
-          //myNoDataValue = 65535.0;
           myNoDataValue = -2147483648.0;
           mGdalDataType.append( GDT_Int32 );
           break;
@@ -384,14 +374,7 @@ void QgsGdalProvider::closeDataset()
 
   GDALClose( mGdalDataset );
   mGdalDataset = NULL;
-
-  //mHasPyramids = false;
-  //mPyramidList.clear();
-
-  //mRasterStatsList.clear();
 }
-
-
     
 QString QgsGdalProvider::metadata()
 {
@@ -543,42 +526,24 @@ void QgsGdalProvider::readBlock( int theBandNo, int xBlock, int yBlock, void *bl
 
 void QgsGdalProvider::readBlock( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, void *theBlock )
 {
-  return readBlockOld( theBandNo, theExtent, thePixelWidth, thePixelHeight, QgsCoordinateReferenceSystem(), QgsCoordinateReferenceSystem(), theBlock );
-}
-
-void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExtent, int thePixelWidth, int thePixelHeight, QgsCoordinateReferenceSystem theSrcCRS, QgsCoordinateReferenceSystem theDestCRS, void *theBlock )
-{
   QgsDebugMsg( "thePixelWidth = "  + QString::number( thePixelWidth ) );
   QgsDebugMsg( "thePixelHeight = "  + QString::number( thePixelHeight ) );
   QgsDebugMsg( "theExtent: " + theExtent.toString() );
   QgsDebugMsg( "crs(): " + crs().toWkt() );
-  QgsDebugMsg( "theSrcCRS: " + theDestCRS.toWkt() );
-  QgsDebugMsg( "theDestCRS: " + theDestCRS.toWkt() );
 
 
   GDALRasterBandH myGdalBand = GDALGetRasterBand( mGdalDataset, theBandNo );
   GDALDataType myGdalDataType = GDALGetRasterDataType( myGdalBand );
 
-  //QString myMemDsn = QString( "MEM:::DATAPOINTER=%1,PIXELS=%2,LINES=%3,BANDS=1,DATATYPE=%4,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0")
-    //.arg ( (long) theBlock )  
-    //.arg ( thePixelWidth )  
-    //.arg ( thePixelHeight )  
-    //.arg ( GDALGetDataTypeName( myGdalDataType ) ); 
-
   QString myMemDsn;
   myMemDsn.sprintf ( "DATAPOINTER = %p", theBlock ); 
   QgsDebugMsg(  myMemDsn );
-
  
-  // TODO: more bands support
-  //myMemDsn.sprintf ( "MEM:::DATAPOINTER=%lu,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (long)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( myGdalDataType ) );
   myMemDsn.sprintf ( "MEM:::DATAPOINTER=%lu,PIXELS=%d,LINES=%d,BANDS=1,DATATYPE=%s,PIXELOFFSET=0,LINEOFFSET=0,BANDOFFSET=0", (long)theBlock, thePixelWidth, thePixelHeight,  GDALGetDataTypeName( (GDALDataType)mGdalDataType[theBandNo-1] ) );
 
   QgsDebugMsg( "Open GDAL MEM : " + myMemDsn );
-
   
   CPLErrorReset();
-  //GDALDatasetH myGdalMemDataset = GDALOpen( myMemDsn.toAscii().constData(),GA_Update);
   GDALDatasetH myGdalMemDataset = GDALOpen( TO8F( myMemDsn ), GA_Update );
 
   if ( !myGdalMemDataset )
@@ -589,14 +554,7 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
      return;
   }
   
-  // TODO add CRS to method params
-  // TODO: SRC CRS can be forced from GUI - check? Also default project sould be 
-  // probably used if the source has no CRS
-  //GDALSetProjection( myGdalMemDataset, crs().toWkt().toAscii().constData() );
-  //const char *mySrcCRSChar = crs().toWkt().toAscii().constData();
-
-  //GDALSetProjection( myGdalMemDataset, GDALGetProjectionRef( mGdalDataset ) ); 
-  GDALSetProjection( myGdalMemDataset, theDestCRS.toWkt().toAscii().constData() );
+  //GDALSetProjection( myGdalMemDataset, theDestCRS.toWkt().toAscii().constData() );
 
   double myMemGeoTransform[6];
   myMemGeoTransform[0] = theExtent.xMinimum(); /* top left x */
@@ -623,7 +581,6 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
   myWarpOptions->nBandCount = 1;
   myWarpOptions->panSrcBands = 
     (int *) CPLMalloc(sizeof(int) * myWarpOptions->nBandCount );
-  //myWarpOptions->panSrcBands[0] = 1;
   myWarpOptions->panSrcBands[0] = theBandNo;
   myWarpOptions->panDstBands = 
     (int *) CPLMalloc(sizeof(int) * myWarpOptions->nBandCount );
@@ -637,37 +594,18 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
   myWarpOptions->pTransformerArg = 
       GDALCreateGenImgProjTransformer( 
         mGdalDataset, 
-        //mySrcCRSChar, 
-        //GDALGetProjectionRef(mGdalDataset), 
-        theSrcCRS.toWkt().toAscii().constData(),
+        NULL,
         myGdalMemDataset,
-        GDALGetProjectionRef(myGdalMemDataset), 
+        NULL, 
         FALSE, 0.0, 1 
       );
 
   CPLAssert( myWarpOptions->pTransformerArg  != NULL); 
   myWarpOptions->pfnTransformer = GDALGenImgProjTransform;
 
-  //double myNoDataRow = (double *) CPLMalloc( sizeof(double) * thePixelWidth );
-
-  
-  
   myWarpOptions->padfDstNoDataReal = (double *) CPLMalloc( myWarpOptions->nBandCount * sizeof(double));
   myWarpOptions->padfDstNoDataImag = (double *) CPLMalloc( myWarpOptions->nBandCount * sizeof(double));
 
-  /*
-  for  ( int i = 0; i < myWarpOptions->nBandCount; i++ )
-  {
-    
-    myWarpOptions->padfDstNoDataReal[i] = mNoDataValue;
-    myWarpOptions->padfDstNoDataImag[i] = 0.0;
-
-    GDALSetRasterNoDataValue( GDALGetRasterBand( myGdalMemDataset, 
-                        myWarpOptions->panDstBands[i] ),
-                        myWarpOptions->padfDstNoDataReal[i] );
-
-  }
-  */
   myWarpOptions->padfDstNoDataReal[0] = mNoDataValue[theBandNo-1];
   myWarpOptions->padfDstNoDataImag[0] = 0.0;
 
@@ -681,7 +619,6 @@ void QgsGdalProvider::readBlockOld( int theBandNo, QgsRectangle  const & theExte
     CSLSetNameValue(myWarpOptions->papszWarpOptions,"INIT_DEST", "NO_DATA" );
 
   myWarpOptions->eResampleAlg = GRA_NearestNeighbour;
-
 
   GDALWarpOperation myOperation;
 
@@ -745,7 +682,6 @@ double  QgsGdalProvider::maximumValue( int theBandNo ) const
  * @param theList a pointer the object that will hold the color table
  * @return true of a color table was able to be read, false otherwise
  */
-//bool QgsRasterLayer::readColorTable( int theBandNumber, QList<QgsColorRampShader::ColorRampItem>* theList )
 QList<QgsColorRampShader::ColorRampItem> QgsGdalProvider::colorTable(int theBandNumber)const 
 {
   QgsDebugMsg( "entered." );
@@ -887,10 +823,6 @@ bool QgsGdalProvider::identify( const QgsPoint& thePoint, QMap<QString, QString>
     for ( int i = 1; i <= GDALGetRasterCount( mGdalDataset ); i++ )
     {
       GDALRasterBandH gdalBand = GDALGetRasterBand( mGdalDataset, i );
-      //GDALDataType type = GDALGetRasterDataType( gdalBand );
-      //int size = GDALGetDataTypeSize( type ) / 8;
-
-      //void *data = CPLMalloc( size );
       double value;
 
       CPLErr err = GDALRasterIO( gdalBand, GF_Read, col, row, 1, 1,
@@ -1090,7 +1022,6 @@ void QgsGdalProvider::populateHistogram( int theBandNo,   QgsRasterBandStats & t
     theBandStats.isHistogramOutOfRange = theIgnoreOutOfRangeFlag;
     int *myHistogramArray = new int[theBinCount];
 
-
     /*
      *  CPLErr GDALRasterBand::GetHistogram (
      *          double       dfMin,
@@ -1285,8 +1216,6 @@ QString QgsGdalProvider::buildPyramids(  QList<QgsRasterPyramid> const & theRast
   {
     //close the gdal dataset and reopen it in read only mode
     GDALClose( mGdalBaseDataset );
-    //mGdalBaseDataset = GDALOpen( QFile::encodeName( mDataSource ).constData(), GA_ReadOnly );
-    //mGdalBaseDataset = GDALOpen( QFile::encodeName( dataSourceUri() ).constData(), GA_ReadOnly );
     mGdalBaseDataset = GDALOpen( TO8F( dataSourceUri() ), GA_ReadOnly );
     //Since we are not a virtual warped dataset, mGdalDataSet and mGdalBaseDataset are supposed to be the same
     mGdalDataset = mGdalBaseDataset;
@@ -1304,8 +1233,6 @@ QList<QgsRasterPyramid> QgsGdalProvider::buildPyramidList()
   int myWidth = mWidth;
   int myHeight = mHeight;
   int myDivisor = 2;
-
-  //if ( mDataProvider ) return mPyramidList;
 
   GDALRasterBandH myGDALBand = GDALGetRasterBand( mGdalDataset, 1 ); //just use the first band
 
