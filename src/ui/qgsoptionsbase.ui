@@ -33,7 +33,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="iconSize">
       <size>
@@ -59,9 +59,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-155</y>
+            <y>0</y>
             <width>746</width>
-            <height>640</height>
+            <height>862</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_12">
@@ -249,6 +249,44 @@
                </layout>
               </item>
               <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QLabel" name="label_15">
+                  <property name="text">
+                   <string>Double click action in legend</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbLegendDoubleClickAction">
+                  <item>
+                   <property name="text">
+                    <string>Open layer properties</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Open attribute table</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
                <widget class="QCheckBox" name="capitaliseCheckBox">
                 <property name="text">
                  <string>Capitalise layer names in legend</string>
@@ -387,6 +425,52 @@
                 </item>
                </layout>
               </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_4">
+                <property name="title">
+                 <string>Plugin paths</string>
+                </property>
+                <layout class="QGridLayout" name="_2">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="mSVGLabel_2">
+                   <property name="text">
+                    <string>Path(s) to search for additional C++ plugins libraries</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <spacer>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>31</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="mBtnAddPluginPath">
+                   <property name="text">
+                    <string>Add</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QPushButton" name="mBtnRemovePluginPath">
+                   <property name="text">
+                    <string>Remove</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" colspan="4">
+                  <widget class="QListWidget" name="mListPluginPaths"/>
+                 </item>
+                </layout>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -416,7 +500,7 @@
             <x>0</x>
             <y>0</y>
             <width>746</width>
-            <height>466</height>
+            <height>481</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_8">
@@ -587,7 +671,7 @@
             <x>0</x>
             <y>0</y>
             <width>746</width>
-            <height>480</height>
+            <height>500</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
@@ -867,7 +951,7 @@
             <x>0</x>
             <y>0</y>
             <width>762</width>
-            <height>458</height>
+            <height>457</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_10">
@@ -941,8 +1025,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>762</width>
-            <height>458</height>
+            <width>837</width>
+            <height>454</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_13">
@@ -1271,76 +1355,108 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>746</width>
-            <height>527</height>
+            <width>762</width>
+            <height>457</height>
            </rect>
           </property>
-          <layout class="QGridLayout" name="gridLayout_15">
+          <layout class="QGridLayout" name="gridLayout_22">
            <item row="0" column="0">
             <widget class="QGroupBox" name="grpProjectionBehaviour">
              <property name="title">
               <string>Default Coordinate Reference System</string>
              </property>
-             <layout class="QVBoxLayout">
-              <property name="margin">
-               <number>11</number>
-              </property>
-              <item>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
                <widget class="QLabel" name="label_8">
                 <property name="text">
-                 <string>When a new layer is created, or when a layer is loaded that has no coordinate reference system (CRS)</string>
+                 <string>When a new layer is created, or when a layer is loaded that has no Coordinate Reference System (CRS)</string>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="1" column="0">
                <widget class="QRadioButton" name="radPromptForProjection">
                 <property name="text">
                  <string>Prompt for CRS</string>
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="2" column="0">
                <widget class="QRadioButton" name="radUseProjectProjection">
                 <property name="text">
                  <string>Project wide default CRS will be used</string>
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="3" column="0">
                <widget class="QRadioButton" name="radUseGlobalProjection">
                 <property name="text">
                  <string>Global default CRS displa&amp;yed below will be used</string>
                 </property>
                </widget>
               </item>
+              <item row="4" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <item>
+                 <widget class="QLineEdit" name="leGlobalCRS">
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pbnSelectProjection">
+                  <property name="text">
+                   <string>Select ...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
              </layout>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QTextBrowser" name="txtGlobalWkt"/>
-           </item>
-           <item row="2" column="0">
-            <widget class="QPushButton" name="pbnSelectProjection">
-             <property name="text">
-              <string>Select Global Default ...</string>
+            <widget class="QGroupBox" name="grpOtfTransform">
+             <property name="title">
+              <string>Enable 'on the fly' reprojection by defaul</string>
              </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_15">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_16">
+                <property name="text">
+                 <string>When this opton is enabled, any new project you create will have 'on the fly' projection enabled by default and the CRS below will be used for the project.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <item>
+                 <widget class="QLineEdit" name="leGlobalOtfProjString">
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pbnSelectOtfProjection">
+                  <property name="text">
+                   <string>Select ...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </widget>
-           </item>
-           <item row="3" column="0">
-            <spacer>
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>51</width>
-               <height>135</height>
-              </size>
-             </property>
-            </spacer>
            </item>
           </layout>
          </widget>
@@ -1368,7 +1484,7 @@
             <x>0</x>
             <y>0</y>
             <width>746</width>
-            <height>545</height>
+            <height>551</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_17">
@@ -1459,7 +1575,7 @@
             <x>0</x>
             <y>0</y>
             <width>746</width>
-            <height>531</height>
+            <height>548</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_20">
@@ -1731,7 +1847,6 @@
   <tabstop>radPromptForProjection</tabstop>
   <tabstop>radUseProjectProjection</tabstop>
   <tabstop>radUseGlobalProjection</tabstop>
-  <tabstop>txtGlobalWkt</tabstop>
   <tabstop>pbnSelectProjection</tabstop>
   <tabstop>grpLocale</tabstop>
   <tabstop>cboLocale</tabstop>

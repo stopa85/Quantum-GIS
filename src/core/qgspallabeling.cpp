@@ -578,7 +578,7 @@ void QgsPalLayerSettings::registerFeature( QgsFeature& f, const QgsRenderContext
 
   if ( distance != 0 )
   {
-    if( distInMapUnits ) //convert distance from mm/map units to pixels
+    if ( distInMapUnits ) //convert distance from mm/map units to pixels
     {
       distance /= context.mapToPixel().mapUnitsPerPixel();
     }
@@ -734,7 +734,7 @@ int QgsPalLabeling::prepareLayer( QgsVectorLayer* layer, QSet<int>& attrIndices,
 
   lyr.xform = mMapRenderer->coordinateTransform();
   if ( mMapRenderer->hasCrsTransformEnabled() )
-    lyr.ct = new QgsCoordinateTransform( layer->srs(), mMapRenderer->destinationSrs() );
+    lyr.ct = new QgsCoordinateTransform( layer->crs(), mMapRenderer->destinationSrs() );
   else
     lyr.ct = NULL;
   lyr.ptZero = lyr.xform->toMapCoordinates( 0, 0 );

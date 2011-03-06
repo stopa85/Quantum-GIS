@@ -90,6 +90,7 @@ QgsVectorFileWriter::QgsVectorFileWriter(
       vectorFileName += ".shp";
     }
 
+#if defined(GDAL_VERSION_NUM) && GDAL_VERSION_NUM < 1700
     // check for unique fieldnames
     QSet<QString> fieldNames;
     QgsFieldMap::const_iterator fldIt;
@@ -105,6 +106,7 @@ QgsVectorFileWriter::QgsVectorFileWriter(
       }
       fieldNames << name;
     }
+#endif
 
     deleteShapeFile( vectorFileName );
   }
@@ -329,6 +331,7 @@ QgsVectorFileWriter::QgsVectorFileWriter(
     int ogrIdx = OGR_FD_GetFieldIndex( defn, mCodec->fromUnicode( attrField.name() ) );
     if ( ogrIdx < 0 )
     {
+#if defined(GDAL_VERSION_NUM) && GDAL_VERSION_NUM < 1700
       // if we didn't find our new column, assume it's name was truncated and
       // it was the last one added (like for shape files)
       int fieldCount = OGR_FD_GetFieldCount( defn );
@@ -343,6 +346,10 @@ QgsVectorFileWriter::QgsVectorFileWriter(
           ogrIdx = fieldCount - 1;
         }
       }
+#else
+      // GDAL 1.7 not just truncates, but launders more aggressivly.
+      ogrIdx = OGR_FD_GetFieldCount( defn ) - 1;
+#endif
 
       if ( ogrIdx < 0 )
       {
@@ -566,7 +573,7 @@ QgsVectorFileWriter::writeAsVectorFormat( QgsVectorLayer* layer,
   else
   {
     // This means we shouldn't transform, use source CRS as output (if defined)
-    outputCRS = &layer->srs();
+    outputCRS = &layer->crs();
   }
   QgsVectorFileWriter* writer =
     new QgsVectorFileWriter( fileName, fileEncoding, skipAttributeCreation ? QgsFieldMap() : layer->pendingFields(), layer->wkbType(), outputCRS, driverName, datasourceOptions, layerOptions );
@@ -596,7 +603,7 @@ QgsVectorFileWriter::writeAsVectorFormat( QgsVectorLayer* layer,
   // Create our transform
   if ( destCRS )
   {
-    ct = new QgsCoordinateTransform( layer->srs(), *destCRS );
+    ct = new QgsCoordinateTransform( layer->crs(), *destCRS );
   }
 
   // Check for failure
@@ -816,7 +823,7 @@ bool QgsVectorFileWriter::driverMetadata( QString driverName, QString &longName,
     longName = "Comma Separated Value";
     trLongName = QObject::tr( "Comma Separated Value" );
     glob = "*.csv";
-    ext = "*.bna";
+    ext = "csv";
   }
   else if ( driverName.startsWith( "ESRI" ) )
   {

@@ -221,10 +221,10 @@ class CORE_EXPORT QgsMapLayer : public QObject
 
     /** Returns layer's spatial reference system
     @note This method is here for API compatibility
-    and will be deprecited in 2.0
-    @see crs()
+    and will be deprecated in 2.0
+    @deprecated use crs()
     */
-    const QgsCoordinateReferenceSystem& srs();
+    QGISDEPRECATED const QgsCoordinateReferenceSystem& srs();
 
     /** Sets layer's spatial reference system
     @note emitSignal added in 1.4 */
@@ -384,7 +384,7 @@ class CORE_EXPORT QgsMapLayer : public QObject
     /** Read custom properties from project file. Added in v1.4
       @param layerNode note to read from
       @param keyStartsWith reads only properties starting with the specified string (or all if the string is empty)*/
-    void readCustomProperties( QDomNode & layerNode, const QString& keyStartsWith = "" );
+    void readCustomProperties( const QDomNode& layerNode, const QString& keyStartsWith = "" );
 
     /** Write custom properties to project file. Added in v1.4 */
     void writeCustomProperties( QDomNode & layerNode, QDomDocument & doc ) const;

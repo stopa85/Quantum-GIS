@@ -79,9 +79,23 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   spinBoxIdentifyValue->setMinimum( 0.01 );
   spinBoxIdentifyValue->setValue( identifyValue );
 
+  //local directories to search when loading c++ plugins
+  QString myPaths = settings.value( "plugins/searchPathsForPlugins", "" ).toString();
+  if ( !myPaths.isEmpty() )
+  {
+    QStringList myPathList = myPaths.split( "|" );
+    QStringList::const_iterator pathIt = myPathList.constBegin();
+    for ( ; pathIt != myPathList.constEnd(); ++pathIt )
+    {
+      QListWidgetItem* newItem = new QListWidgetItem( mListPluginPaths );
+      newItem->setText( *pathIt );
+      newItem->setFlags( Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable );
+      mListPluginPaths->addItem( newItem );
+    }
+  }
 
   //local directories to search when looking for an SVG with a given basename
-  QString myPaths = settings.value( "svg/searchPathsForSVG", "" ).toString();
+  myPaths = settings.value( "svg/searchPathsForSVG", "" ).toString();
   if ( !myPaths.isEmpty() )
   {
     QStringList myPathList = myPaths.split( "|" );
@@ -174,8 +188,17 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   {
     radUseGlobalProjection->setChecked( true );
   }
+  QString myGlobalCrsString = settings.value( "/Projections/defaultProjectionString", GEOPROJ4 ).toString();
+  mGlobalCrs.createFromProj4( myGlobalCrsString );
+  //display the crs as friendly text rather than in wkt
+  leGlobalCRS->setText( mGlobalCrs.authid() + " - " + mGlobalCrs.description() );
 
-  txtGlobalWkt->setText( settings.value( "/Projections/defaultProjectionString", GEOPROJ4 ).toString() );
+  //on the fly CRS transformation settings
+  grpOtfTransform->setChecked( settings.value( "/Projections/otfTransformEnabled", 0 ).toBool() );
+  QString myDefaultCrsString = settings.value( "/Projections/defaultOTFProjectionString", GEOPROJ4 ).toString();
+  mDefaultCrs.createFromProj4( myDefaultCrsString );
+  //display the crs as friendly text rather than in wkt
+  leGlobalOtfProjString->setText( mDefaultCrs.authid() + " - " + mDefaultCrs.description() );
 
   // populate combo box with ellipsoids
   getEllipsoidList();
@@ -246,10 +269,12 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   cmbTheme->setCurrentIndex( cmbTheme->findText( settings.value( "/Themes", "default" ).toString() ) );
   cmbSize->setCurrentIndex( cmbSize->findText( settings.value( "/IconSize", 24 ).toString() ) );
   //set the state of the checkboxes
-  chkAntiAliasing->setChecked( settings.value( "/qgis/enable_anti_aliasing", false ).toBool() );
+  //Changed to default to true as of QGIS 1.7
+  chkAntiAliasing->setChecked( settings.value( "/qgis/enable_anti_aliasing", true ).toBool() );
   chkUseRenderCaching->setChecked( settings.value( "/qgis/enable_render_caching", false ).toBool() );
 
-  chkUseSymbologyNG->setChecked( settings.value( "/qgis/use_symbology_ng", false ).toBool() );
+  //Changed to default to true as of QGIS 1.7
+  chkUseSymbologyNG->setChecked( settings.value( "/qgis/use_symbology_ng", true ).toBool() );
 
   // Slightly awkard here at the settings value is true to use QImage,
   // but the checkbox is true to use QPixmap
@@ -265,6 +290,8 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   cbxAddNewLayersToCurrentGroup->setChecked( settings.value( "/qgis/addNewLayersToCurrentGroup", false ).toBool() );
   cbxCreateRasterLegendIcons->setChecked( settings.value( "/qgis/createRasterLegendIcons", true ).toBool() );
   leNullValue->setText( settings.value( "qgis/nullValue", "NULL" ).toString() );
+
+  cmbLegendDoubleClickAction->setCurrentIndex( settings.value( "/qgis/legendDoubleClickAction", 0 ).toInt() );
 
   //set the color for selections
   int myRed = settings.value( "/qgis/default_selection_color_red", 255 ).toInt();
@@ -479,8 +506,19 @@ void QgsOptions::saveOptions()
 {
   QSettings settings;
 
-  //search directories for svgs
+  //search directories for user plugins
   QString myPaths;
+  for ( int i = 0; i < mListPluginPaths->count(); ++i )
+  {
+    if ( i != 0 )
+    {
+      myPaths += "|";
+    }
+    myPaths += mListPluginPaths->item( i )->text();
+  }
+  settings.setValue( "plugins/searchPathsForPlugins", myPaths );
+
+  //search directories for svgs
   for ( int i = 0; i < mListSVGPaths->count(); ++i )
   {
     if ( i != 0 )
@@ -541,32 +579,33 @@ void QgsOptions::saveOptions()
   settings.setValue( "/qgis/enable_render_caching", chkUseRenderCaching->isChecked() );
   settings.setValue( "/qgis/use_qimage_to_render", !( chkUseQPixmap->isChecked() ) );
   settings.setValue( "/qgis/use_symbology_ng", chkUseSymbologyNG->isChecked() );
-  settings.setValue( "qgis/capitaliseLayerName", capitaliseCheckBox->isChecked() );
-  settings.setValue( "qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked() );
-  settings.setValue( "qgis/warnOldProjectVersion", chbWarnOldProjectVersion->isChecked() );
-  settings.setValue( "qgis/nullValue", leNullValue->text() );
+  settings.setValue( "/qgis/legendDoubleClickAction", cmbLegendDoubleClickAction->currentIndex() );
+  settings.setValue( "/qgis/capitaliseLayerName", capitaliseCheckBox->isChecked() );
+  settings.setValue( "/qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked() );
+  settings.setValue( "/qgis/warnOldProjectVersion", chbWarnOldProjectVersion->isChecked() );
+  settings.setValue( "/qgis/nullValue", leNullValue->text() );
 
   //overlay placement method
   int overlayIndex = mOverlayAlgorithmComboBox->currentIndex();
   if ( overlayIndex == 1 )
   {
-    settings.setValue( "qgis/overlayPlacementAlgorithm", "Chain" );
+    settings.setValue( "/qgis/overlayPlacementAlgorithm", "Chain" );
   }
   else if ( overlayIndex == 2 )
   {
-    settings.setValue( "qgis/overlayPlacementAlgorithm", "Popmusic tabu chain" );
+    settings.setValue( "/qgis/overlayPlacementAlgorithm", "Popmusic tabu chain" );
   }
   else if ( overlayIndex == 3 )
   {
-    settings.setValue( "qgis/overlayPlacementAlgorithm",  "Popmusic tabu" );
+    settings.setValue( "/qgis/overlayPlacementAlgorithm",  "Popmusic tabu" );
   }
   else if ( overlayIndex == 4 )
   {
-    settings.setValue( "qgis/overlayPlacementAlgorithm", "Popmusic chain" );
+    settings.setValue( "/qgis/overlayPlacementAlgorithm", "Popmusic chain" );
   }
   else
   {
-    settings.setValue( "qgis/overlayPlacementAlgorithm", "Central point" );
+    settings.setValue( "/qgis/overlayPlacementAlgorithm", "Central point" );
   }
 
   if ( cmbTheme->currentText().length() == 0 )
@@ -599,7 +638,11 @@ void QgsOptions::saveOptions()
     settings.setValue( "/Projections/defaultBehaviour", "useGlobal" );
   }
 
-  settings.setValue( "/Projections/defaultProjectionString", txtGlobalWkt->toPlainText() );
+  settings.setValue( "/Projections/defaultProjectionString", mGlobalCrs.toProj4() );
+
+  // save 'on the fly' CRS transformation settings
+  settings.setValue( "/Projections/otfTransformEnabled", grpOtfTransform->isChecked() );
+  settings.setValue( "/Projections/defaultOTFProjectionString", mDefaultCrs.toProj4() );
 
   settings.setValue( "/qgis/measure/ellipsoid", getEllipsoidAcronym( cmbEllipsoid->currentText() ) );
 
@@ -708,19 +751,15 @@ void QgsOptions::on_pbnSelectProjection_clicked()
 {
   QSettings settings;
   QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector( this );
-
-  //find out srs id of current proj4 string
-  QgsCoordinateReferenceSystem refSys;
-  if ( refSys.createFromProj4( txtGlobalWkt->toPlainText() ) )
-  {
-    mySelector->setSelectedCrsId( refSys.srsid() );
-  }
+  mySelector->setSelectedCrsId( mGlobalCrs.srsid() );
 
   if ( mySelector->exec() )
   {
-    //! @todo changes this control name in gui to txtGlobalProjString
-    txtGlobalWkt->setText( mySelector->selectedProj4String() );
-    QgsDebugMsg( QString( "------ Global Default Projection Selection set to ----------\n%1" ).arg( txtGlobalWkt->toPlainText() ) );
+    mGlobalCrs.createFromProj4( mySelector->selectedProj4String() );
+    leGlobalCRS->setText( mySelector->selectedProj4String() );
+    leGlobalCRS->setText( mGlobalCrs.authid() + " - " +
+      mGlobalCrs.description() );
+    QgsDebugMsg( QString( "------ Global Default Projection Selection set to ----------\n%1" ).arg( leGlobalCRS->text() ) );
   }
   else
   {
@@ -730,28 +769,25 @@ void QgsOptions::on_pbnSelectProjection_clicked()
 
 }
 
-void QgsOptions::on_chkAntiAliasing_stateChanged()
+void QgsOptions::on_pbnSelectOtfProjection_clicked()
 {
-  // We can't have the anti-aliasing turned on when QPixmap is being
-  // used (we we can. but it then doesn't do anti-aliasing, and this
-  // will confuse people).
-  if ( chkAntiAliasing->isChecked() )
+  QSettings settings;
+  QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector( this );
+  mySelector->setSelectedCrsId( mDefaultCrs.srsid() );
+
+  if ( mySelector->exec() )
   {
-    chkUseQPixmap->setChecked( false );
+    mDefaultCrs.createFromProj4( mySelector->selectedProj4String() );
+    QgsDebugMsg( QString( "Setting default project CRS to : %1").arg( mySelector->selectedProj4String() ) );
+    leGlobalOtfProjString->setText( mDefaultCrs.authid() + " - " +
+      mDefaultCrs.description() );
+    QgsDebugMsg( QString( "------ Global OTF Projection Selection set to ----------\n%1" ).arg( leGlobalOtfProjString->text() ) );
   }
-
-}
-
-void QgsOptions::on_chkUseQPixmap_stateChanged()
-{
-  // We can't have the anti-aliasing turned on when QPixmap is being
-  // used (we we can. but it then doesn't do anti-aliasing, and this
-  // will confuse people).
-  if ( chkUseQPixmap->isChecked() )
+  else
   {
-    chkAntiAliasing->setChecked( false );
+    QgsDebugMsg( "------ Global OTF Projection Selection change cancelled ----------" );
+    QApplication::restoreOverrideCursor();
   }
-
 }
 
 // Return state of the visibility flag for newly added layers. If
@@ -880,6 +916,33 @@ QStringList QgsOptions::i18nList()
   }
   return myList;
 }
+
+void QgsOptions::on_mBtnAddPluginPath_clicked()
+{
+  QString myDir = QFileDialog::getExistingDirectory(
+                    this,
+                    tr( "Choose a directory" ),
+                    QDir::toNativeSeparators( QDir::homePath() ),
+                    QFileDialog::ShowDirsOnly
+                  );
+
+  if ( ! myDir.isEmpty() )
+  {
+    QListWidgetItem* newItem = new QListWidgetItem( mListPluginPaths );
+    newItem->setText( myDir );
+    newItem->setFlags( Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable );
+    mListPluginPaths->addItem( newItem );
+    mListPluginPaths->setCurrentItem( newItem );
+  }
+}
+
+void QgsOptions::on_mBtnRemovePluginPath_clicked()
+{
+  int currentRow = mListPluginPaths->currentRow();
+  QListWidgetItem* itemToRemove = mListPluginPaths->takeItem( currentRow );
+  delete itemToRemove;
+}
+
 
 void QgsOptions::on_mBtnAddSVGPath_clicked()
 {

@@ -114,6 +114,15 @@ class GeometryDialog(QDialog, Ui_Dialog):
         self.lineEdit.setRange(0, 100)
         self.lineEdit.setSingleStep(5)
         self.lineEdit.setValue(0)
+      elif self.myFunction == 11: #Lines to polygons
+        self.setWindowTitle( self.tr(  "Lines to polygons" ) )
+        self.label_2.setText( self.tr( "Output shapefile" ) )
+        self.label_3.setText( self.tr( "Input line vector layer" ) )
+        self.label.setVisible(False)
+        self.lineEdit.setVisible(False)
+        self.cmbField.setVisible(False)
+        self.field_label.setVisible(False)
+
       else: # Polygon from layer extent
         self.setWindowTitle( self.tr( "Polygon from layer extent" ) )
         self.label_3.setText( self.tr( "Input layer" ) )
@@ -133,6 +142,8 @@ class GeometryDialog(QDialog, Ui_Dialog):
       myList = ftools_utils.getLayerNames( [ QGis.Point ] )
     elif self.myFunction == 9:
       myList = ftools_utils.getLayerNames( "all" )
+    elif self.myFunction == 11:
+      myList = ftools_utils.getLayerNames( [ QGis.Line ] )
     else:
       myList = ftools_utils.getLayerNames( [ QGis.Point, QGis.Line, QGis.Polygon ] )
     self.inShape.addItems( myList )
@@ -148,6 +159,7 @@ class GeometryDialog(QDialog, Ui_Dialog):
 #8: Delaunay triangulation
 #9: Polygon from layer extent
 #10:Voronoi polygons
+#11: Lines to polygons
 
   def geometry( self, myLayer, myParam, myField ):
     if self.myFunction == 9:
@@ -194,8 +206,8 @@ class GeometryDialog(QDialog, Ui_Dialog):
       self.cancel_close.setText( "Close" )
       QObject.disconnect( self.cancel_close, SIGNAL( "clicked()" ), self.cancelThread )
       if success:
-        addToTOC = QMessageBox.question( self, self.tr("Geometry"), 
-          self.tr( "Created output shapefile:\n%1\n%2\n\nWould you like to add the new layer to the TOC?" ).arg( unicode( self.shapefileName ) ).arg( extra ), 
+        addToTOC = QMessageBox.question( self, self.tr("Geometry"),
+          self.tr( "Created output shapefile:\n%1\n%2\n\nWould you like to add the new layer to the TOC?" ).arg( unicode( self.shapefileName ) ).arg( extra ),
           QMessageBox.Yes, QMessageBox.No, QMessageBox.NoButton )
         if addToTOC == QMessageBox.Yes:
           if not ftools_utils.addShapeToCanvas( unicode( self.shapefileName ) ):
@@ -242,6 +254,8 @@ class geometryThread( QThread ):
       success = self.layer_extent()
     elif self.myFunction == 10: # Voronoi Polygons
       success = self.voronoi_polygons()
+    elif self.myFunction == 11: # Lines to polygons
+      success = self.lines_to_polygons()
     self.emit( SIGNAL( "runFinished(PyQt_PyObject)" ), success )
     self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
 
@@ -389,6 +403,39 @@ class geometryThread( QThread ):
       outFeat.setAttributeMap( atMap )
       for h in lineList:
         outFeat.setGeometry( outGeom.fromPolyline( h ) )
+        writer.addFeature( outFeat )
+    del writer
+    return True
+
+  def lines_to_polygons( self ):
+    vprovider = self.vlayer.dataProvider()
+    allAttrs = vprovider.attributeIndexes()
+    vprovider.select( allAttrs )
+    fields = vprovider.fields()
+    writer = QgsVectorFileWriter( self.myName, self.myEncoding,
+    fields, QGis.WKBPolygon, vprovider.crs() )
+    inFeat = QgsFeature()
+    outFeat = QgsFeature()
+    inGeom = QgsGeometry()
+    nFeat = vprovider.featureCount()
+    nElement = 0
+    self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0)
+    self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, nFeat ) )
+    while vprovider.nextFeature(inFeat):
+      outGeomList = []
+      multi = False
+      nElement += 1
+      self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ),  nElement )
+      if inFeat.geometry().isMultipart():
+        outGeomList = inFeat.geometry().asMultiPolyline()
+        multi = True
+      else:
+        outGeomList.append( inFeat.geometry().asPolyline() )
+      polyGeom = self.remove_bad_lines( outGeomList )
+      if len(polyGeom) <> 0:
+        outFeat.setGeometry( QgsGeometry.fromPolygon( polyGeom ) )
+        atMap = inFeat.attributeMap()
+        outFeat.setAttributeMap( atMap )
         writer.addFeature( outFeat )
     del writer
     return True
@@ -556,7 +603,7 @@ class geometryThread( QThread ):
     del writer
     return True
 
-    
+
   def clip_voronoi(self, edges, c, width, height, extent, exX, exY):
     """ Clip voronoi function based on code written for Inkscape
         Copyright (C) 2010 Alvin Penner, penner@vaxxine.com
@@ -649,7 +696,7 @@ class geometryThread( QThread ):
       if hasYMin:
         lines.append(QgsPoint(width+extent.xMinimum()+exX, extent.yMinimum()-exY))
     return lines
-    
+
   def layer_extent( self ):
     self.emit( SIGNAL( "runStatus(PyQt_PyObject)" ), 0 )
     self.emit( SIGNAL( "runRange(PyQt_PyObject)" ), ( 0, 0 ) )
@@ -666,7 +713,7 @@ class geometryThread( QThread ):
     9 : QgsField( "WIDTH", QVariant.Double ) }
 
     writer = QgsVectorFileWriter( self.myName, self.myEncoding,
-    fields, QGis.WKBPolygon, self.vlayer.srs() )
+    fields, QGis.WKBPolygon, self.vlayer.crs() )
     rect = self.vlayer.extent()
     minx = rect.xMinimum()
     miny = rect.yMinimum()
@@ -798,15 +845,26 @@ class geometryThread( QThread ):
     else:
       return []
 
+  def remove_bad_lines( self, lines ):
+    temp_geom = []
+    if len(lines)==1:
+      if len(lines[0]) > 2:
+        temp_geom = lines
+      else:
+        temp_geom = []
+    else:
+      temp_geom = [elem for elem in lines if len(elem) > 2]
+    return temp_geom
+
   def singleToMultiGeom(self, wkbType):
       try:
-          if wkbType in (QGis.WKBPoint, QGis.WKBMultiPoint, 
+          if wkbType in (QGis.WKBPoint, QGis.WKBMultiPoint,
                          QGis.WKBPoint25D, QGis.WKBMultiPoint25D):
               return QGis.WKBMultiPoint
           elif wkbType in (QGis.WKBLineString, QGis.WKBMultiLineString,
                            QGis.WKBMultiLineString25D, QGis.WKBLineString25D):
               return QGis.WKBMultiLineString
-          elif wkbType in (QGis.WKBPolygon, QGis.WKBMultiPolygon, 
+          elif wkbType in (QGis.WKBPolygon, QGis.WKBMultiPolygon,
                            QGis.WKBMultiPolygon25D, QGis.WKBPolygon25D):
               return QGis.WKBMultiPolygon
           else:

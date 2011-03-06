@@ -77,12 +77,9 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="btnBuildQuery">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
+    <widget class="QCheckBox" name="cbxAllowGeometrylessTables">
      <property name="text">
-      <string>Build query</string>
+      <string>Also list tables with no geometry</string>
      </property>
     </widget>
    </item>
@@ -187,7 +184,6 @@
   <tabstop>btnEdit</tabstop>
   <tabstop>btnDelete</tabstop>
   <tabstop>mTablesTreeView</tabstop>
-  <tabstop>btnBuildQuery</tabstop>
   <tabstop>mSearchGroupBox</tabstop>
   <tabstop>mSearchTableEdit</tabstop>
   <tabstop>mSearchColumnComboBox</tabstop>

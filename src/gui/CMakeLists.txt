@@ -20,6 +20,7 @@ symbology-ng/qgsvectorgradientcolorrampv2dialog.cpp
 symbology-ng/qgsvectorrandomcolorrampv2dialog.cpp
 symbology-ng/qgsvectorcolorbrewercolorrampv2dialog.cpp
 symbology-ng/characterwidget.cpp
+symbology-ng/qgsstylev2exportimportdialog.cpp
 
 qgisgui.cpp
 qgisinterface.cpp
@@ -79,6 +80,7 @@ symbology-ng/qgscolorrampcombobox.h
 symbology-ng/characterwidget.h
 symbology-ng/qgspenstylecombobox.h
 symbology-ng/qgsbrushstylecombobox.h
+symbology-ng/qgsstylev2exportimportdialog.h
 
 qgsattributeeditor.h
 qgscomposerview.h
@@ -135,11 +137,19 @@ IF (WIN32)
   ENDIF (MSVC)
 ENDIF (WIN32)
 
-# disable deprecation warnings for qgisinterface (re-exporting deprecated methods)
+# disable deprecation warnings for classes re-exporting deprecated methods
 IF(MSVC)
-  SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/src/gui/moc_qgisinterface.cxx PROPERTIES COMPILE_FLAGS "-wd4996")
+  SET_SOURCE_FILES_PROPERTIES(
+    ${CMAKE_BINARY_DIR}/src/gui/moc_qgisinterface.cxx
+    ${CMAKE_BINARY_DIR}/src/gui/moc_qgsgenericprojectionselector.cxx
+    ${CMAKE_BINARY_DIR}/src/gui/moc_qgsprojectionselector.cxx
+    PROPERTIES COMPILE_FLAGS "-wd4996")
 ELSE(MSVC)
-  SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/src/gui/moc_qgisinterface.cxx PROPERTIES COMPILE_FLAGS "-w")
+  SET_SOURCE_FILES_PROPERTIES(
+    ${CMAKE_BINARY_DIR}/src/gui/moc_qgisinterface.cxx
+    ${CMAKE_BINARY_DIR}/src/gui/moc_qgsgenericprojectionselector.cxx
+    ${CMAKE_BINARY_DIR}/src/gui/moc_qgsprojectionselector.cxx
+    PROPERTIES COMPILE_FLAGS "-w")
 ENDIF(MSVC)
 
 #############################################################

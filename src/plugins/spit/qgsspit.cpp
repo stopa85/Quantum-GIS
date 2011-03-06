@@ -423,6 +423,17 @@ void QgsSpit::dbConnect()
     }
   }
 
+  if ( conn )
+  {
+    PGresult *res = PQexec( conn, "SET application_name='Quantum GIS'" );
+    if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
+    {
+      PQclear( res );
+      res = PQexec( conn, "ROLLBACK" );
+    }
+    PQclear( res );
+  }
+
   schema_list.clear();
   schema_list << "public";
 
@@ -791,7 +802,7 @@ void QgsSpit::import()
       else if ( !canceled )
       { // if problem importing file occured
         pro.setValue( temp_progress + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
-        QString errTxt = error + "\n" + errorText;
+        QString errTxt = "<pre>" + error + "\n\n" + errorText + "</pre>";
         QMessageBox::warning( this, tr( "Import Shapefiles" ), errTxt );
         query = "ROLLBACK";
         res = PQexec( conn, query.toUtf8() );

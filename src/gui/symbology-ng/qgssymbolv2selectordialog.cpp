@@ -14,6 +14,7 @@
 #include <QPainter>
 #include <QStandardItemModel>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QKeyEvent>
 #include <QMenu>
 
@@ -35,13 +36,12 @@ QgsSymbolV2SelectorDialog::QgsSymbolV2SelectorDialog( QgsSymbolV2* symbol, QgsSt
   }
 
   connect( btnSymbolProperties, SIGNAL( clicked() ), this, SLOT( changeSymbolProperties() ) );
-  connect( lblPreview, SIGNAL( clicked() ), this, SLOT( changeSymbolProperties() ) );
   connect( btnStyleManager, SIGNAL( clicked() ), SLOT( openStyleManager() ) );
 
   QStandardItemModel* model = new QStandardItemModel( viewSymbols );
   viewSymbols->setModel( model );
   connect( viewSymbols, SIGNAL( clicked( const QModelIndex & ) ), this, SLOT( setSymbolFromStyle( const QModelIndex & ) ) );
-  lblSymbolName->setText("");
+  lblSymbolName->setText( "" );
   populateSymbolView();
   updateSymbolPreview();
   updateSymbolInfo();
@@ -98,7 +98,7 @@ void QgsSymbolV2SelectorDialog::populateSymbolView()
     }
     QStandardItem* item = new QStandardItem( names[i] );
     item->setData( names[i], Qt::UserRole ); //so we can show a label when it is clicked
-    item->setText(""); //set the text to nothing and show in label when clicked rather
+    item->setText( "" ); //set the text to nothing and show in label when clicked rather
     item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable );
     // create preview icon
     QIcon icon = QgsSymbolLayerV2Utils::symbolPreviewIcon( s, previewSize );
@@ -221,6 +221,19 @@ void QgsSymbolV2SelectorDialog::addSymbolToStyle()
                                         tr( "Please enter name for the symbol:" ) , QLineEdit::Normal, tr( "New symbol" ), &ok );
   if ( !ok || name.isEmpty() )
     return;
+
+  // check if there is no symbol with same name
+  if ( mStyle->symbolNames().contains( name ) )
+  {
+    int res = QMessageBox::warning( this, tr( "Save symbol" ),
+                                    tr( "Symbol with name '%1' already exists. Overwrite?" )
+                                    .arg( name ),
+                                    QMessageBox::Yes | QMessageBox::No );
+    if ( res != QMessageBox::Yes )
+    {
+      return;
+    }
+  }
 
   // add new symbol to style and re-populate the list
   mStyle->addSymbol( name, mSymbol->clone() );

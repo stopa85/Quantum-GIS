@@ -62,8 +62,13 @@ SaSourceSelect::SaSourceSelect( QWidget *parent, Qt::WFlags fl )
   mAddButton = new QPushButton( tr( "&Add" ) );
   buttonBox->addButton( mAddButton, QDialogButtonBox::ActionRole );
   connect( mAddButton, SIGNAL( clicked() ), this, SLOT( addTables() ) );
-
   mAddButton->setEnabled( false );
+
+  mBuildQueryButton = new QPushButton( tr( "&Build Query" ) );
+  buttonBox->addButton( mBuildQueryButton, QDialogButtonBox::ActionRole );
+  connect( mBuildQueryButton, SIGNAL( clicked() ), this, SLOT( buildQuery() ) );
+  mBuildQueryButton->setEnabled( false );
+
   populateConnectionList();
 
   mSearchModeComboBox->addItem( tr( "Wildcard" ) );
@@ -168,14 +173,14 @@ void SaSourceSelect::on_cmbConnections_activated( int )
   settings.setValue( "/SQLAnywhere/connections/selected", cmbConnections->currentText() );
 }
 
-void SaSourceSelect::on_btnBuildQuery_clicked()
+void SaSourceSelect::buildQuery()
 {
   setSql( mTablesTreeView->currentIndex() );
 }
 
 void SaSourceSelect::on_mTablesTreeView_clicked( const QModelIndex &index )
 {
-  btnBuildQuery->setEnabled( index.parent().isValid() );
+  mBuildQueryButton->setEnabled( index.parent().isValid() );
 }
 
 void SaSourceSelect::on_mTablesTreeView_doubleClicked( const QModelIndex &index )

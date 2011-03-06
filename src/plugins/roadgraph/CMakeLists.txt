@@ -19,6 +19,7 @@ SET (VRP_SRCS
 #SET ([pluginlcasename]_UIS [pluginlcasename]guibase.ui)
 
 SET (VRP_MOC_HDRS
+  graphdirector.h
   roadgraphplugin.h
   settingsdlg.h
   shortestpathwidget.h
@@ -30,7 +31,8 @@ SET (VRP_RCCS  roadgraph.qrc)
 INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${GEOS_INCLUDE_DIR}
-  ../../core 
+  ../../core
+  ../../core/spatialindex/
   ../../gui
   ..
   )

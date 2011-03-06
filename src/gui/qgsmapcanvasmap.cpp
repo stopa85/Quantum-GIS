@@ -44,6 +44,7 @@ QRectF QgsMapCanvasMap::boundingRect() const
 
 void QgsMapCanvasMap::resize( QSize size )
 {
+  QgsDebugMsg( QString( "resizing to %1x%2" ).arg( size.width() ).arg( size.height() ) );
   prepareGeometryChange(); // to keep QGraphicsScene indexes up to date on size change
 
   mPixmap = QPixmap( size );
@@ -60,11 +61,6 @@ void QgsMapCanvasMap::setPanningOffset( const QPoint& point )
 
 void QgsMapCanvasMap::render()
 {
-  // Rendering to a QImage gives incorrectly filled polygons in some
-  // cases (as at Qt4.1.4), but it is the only renderer that supports
-  // anti-aliasing, so we provide the means to swap between QImage and
-  // QPixmap.
-
   if ( mUseQImageToRender )
   {
     // use temporary image for rendering
@@ -98,6 +94,11 @@ void QgsMapCanvasMap::render()
     paint.begin( &mPixmap );
     // Clip our drawing to the QPixmap
     paint.setClipRect( mPixmap.rect() );
+
+    // antialiasing
+    if ( mAntiAliasing )
+      paint.setRenderHint( QPainter::Antialiasing );
+
     mCanvas->mapRenderer()->render( &paint );
     paint.end();
   }

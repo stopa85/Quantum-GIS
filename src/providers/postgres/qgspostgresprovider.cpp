@@ -284,6 +284,11 @@ QgsPostgresProvider::Conn *QgsPostgresProvider::Conn::connectDb( const QString &
 
   connections.insert( conninfo, conn );
 
+  if ( !conn->PQexecNR( "SET application_name='Quantum GIS'" ) )
+  {
+    conn->PQexecNR( "ROLLBACK" );
+  }
+
   /* Check to see if we have GEOS support and if not, warn the user about
      the problems they will see :) */
   QgsDebugMsg( "Checking for GEOS support" );
@@ -989,91 +994,108 @@ bool QgsPostgresProvider::hasSufficientPermsAndCapabilities()
       return false;
     }
 
-    if ( connectionRO->pgVersion() >= 80400 )
-    {
-      sql = QString( "SELECT "
-                     "has_table_privilege(%1,'DELETE'),"
-                     "has_any_column_privilege(%1,'UPDATE'),"
-                     "%2"
-                     "has_table_privilege(%1,'INSERT'),"
-                     "current_schema()" )
-            .arg( quotedValue( mQuery ) )
-            .arg( geometryColumn.isNull()
-                  ? QString( "'f'," )
-                  : QString( "has_column_privilege(%1,%2,'UPDATE')," )
-                  .arg( quotedValue( mQuery ) )
-                  .arg( quotedValue( geometryColumn ) )
-                );
-    }
-    else
-    {
-      sql = QString( "SELECT "
-                     "has_table_privilege(%1,'DELETE'),"
-                     "has_table_privilege(%1,'UPDATE'),"
-                     "has_table_privilege(%1,'UPDATE'),"
-                     "has_table_privilege(%1,'INSERT'),"
-                     "current_schema()" )
-            .arg( quotedValue( mQuery ) );
-    }
+    bool inRecovery = false;
 
-    testAccess = connectionRO->PQexec( sql );
-    if ( PQresultStatus( testAccess ) != PGRES_TUPLES_OK )
+    if ( connectionRO->pgVersion() >= 90000 )
     {
-      showMessageBox( tr( "Unable to access relation" ),
-                      tr( "Unable to determine table access privileges for the %1 relation.\nThe error message from the database was:\n%2.\nSQL: %3" )
-                      .arg( mQuery )
-                      .arg( QString::fromUtf8( PQresultErrorMessage( testAccess ) ) )
-                      .arg( sql ) );
-      return false;
+      testAccess = connectionRO->PQexec( "SELECT pg_is_in_recovery()" );
+      if ( PQresultStatus( testAccess ) != PGRES_TUPLES_OK || QString::fromUtf8( PQgetvalue( testAccess, 0, 0 ) ) == "t" )
+      {
+        showMessageBox( tr( "PostgreSQL in recovery" ),
+                        tr( "PostgreSQL is still in recovery after a database crash\n(or you are connected to a (read-only) slave).\nWrite accesses will be denied." ) );
+        inRecovery = true;
+      }
     }
 
     // postgres has fast access to features at id (thanks to primary key / unique index)
     // the latter flag is here just for compatibility
     enabledCapabilities = QgsVectorDataProvider::SelectAtId | QgsVectorDataProvider::SelectGeometryAtId;
 
-    if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 0 ) ) == "t" )
+    if ( !inRecovery )
     {
-      // DELETE
-      enabledCapabilities |= QgsVectorDataProvider::DeleteFeatures;
-    }
+      if ( connectionRO->pgVersion() >= 80400 )
+      {
+        sql = QString( "SELECT "
+                       "has_table_privilege(%1,'DELETE'),"
+                       "has_any_column_privilege(%1,'UPDATE'),"
+                       "%2"
+                       "has_table_privilege(%1,'INSERT'),"
+                       "current_schema()" )
+              .arg( quotedValue( mQuery ) )
+              .arg( geometryColumn.isNull()
+                    ? QString( "'f'," )
+                    : QString( "has_column_privilege(%1,%2,'UPDATE')," )
+                    .arg( quotedValue( mQuery ) )
+                    .arg( quotedValue( geometryColumn ) )
+                  );
+      }
+      else
+      {
+        sql = QString( "SELECT "
+                       "has_table_privilege(%1,'DELETE'),"
+                       "has_table_privilege(%1,'UPDATE'),"
+                       "has_table_privilege(%1,'UPDATE'),"
+                       "has_table_privilege(%1,'INSERT'),"
+                       "current_schema()" )
+              .arg( quotedValue( mQuery ) );
+      }
 
-    if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 1 ) ) == "t" )
-    {
-      // UPDATE
-      enabledCapabilities |= QgsVectorDataProvider::ChangeAttributeValues;
-    }
+      testAccess = connectionRO->PQexec( sql );
+      if ( PQresultStatus( testAccess ) != PGRES_TUPLES_OK )
+      {
+        showMessageBox( tr( "Unable to access relation" ),
+                        tr( "Unable to determine table access privileges for the %1 relation.\nThe error message from the database was:\n%2.\nSQL: %3" )
+                        .arg( mQuery )
+                        .arg( QString::fromUtf8( PQresultErrorMessage( testAccess ) ) )
+                        .arg( sql ) );
+        return false;
+      }
 
-    if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 2 ) ) == "t" )
-    {
-      // UPDATE
-      enabledCapabilities |= QgsVectorDataProvider::ChangeGeometries;
-    }
 
-    if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 3 ) ) == "t" )
-    {
-      // INSERT
-      enabledCapabilities |= QgsVectorDataProvider::AddFeatures;
-    }
+      if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 0 ) ) == "t" )
+      {
+        // DELETE
+        enabledCapabilities |= QgsVectorDataProvider::DeleteFeatures;
+      }
 
-    mCurrentSchema = QString::fromUtf8( PQgetvalue( testAccess, 0, 4 ) );
-    if ( mCurrentSchema == mSchemaName )
-    {
-      mUri.clearSchema();
-    }
+      if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 1 ) ) == "t" )
+      {
+        // UPDATE
+        enabledCapabilities |= QgsVectorDataProvider::ChangeAttributeValues;
+      }
 
-    if ( mSchemaName == "" )
-      mSchemaName = mCurrentSchema;
+      if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 2 ) ) == "t" )
+      {
+        // UPDATE
+        enabledCapabilities |= QgsVectorDataProvider::ChangeGeometries;
+      }
 
-    sql = QString( "SELECT 1 FROM pg_class,pg_namespace WHERE "
-                   "pg_class.relnamespace=pg_namespace.oid AND "
-                   "pg_get_userbyid(relowner)=current_user AND "
-                   "relname=%1 AND nspname=%2" )
-          .arg( quotedValue( mTableName ) )
-          .arg( quotedValue( mSchemaName ) );
-    testAccess = connectionRO->PQexec( sql );
-    if ( PQresultStatus( testAccess ) == PGRES_TUPLES_OK && PQntuples( testAccess ) == 1 )
-    {
-      enabledCapabilities |= QgsVectorDataProvider::AddAttributes | QgsVectorDataProvider::DeleteAttributes;
+      if ( QString::fromUtf8( PQgetvalue( testAccess, 0, 3 ) ) == "t" )
+      {
+        // INSERT
+        enabledCapabilities |= QgsVectorDataProvider::AddFeatures;
+      }
+
+      mCurrentSchema = QString::fromUtf8( PQgetvalue( testAccess, 0, 4 ) );
+      if ( mCurrentSchema == mSchemaName )
+      {
+        mUri.clearSchema();
+      }
+
+      if ( mSchemaName == "" )
+        mSchemaName = mCurrentSchema;
+
+      sql = QString( "SELECT 1 FROM pg_class,pg_namespace WHERE "
+                     "pg_class.relnamespace=pg_namespace.oid AND "
+                     "pg_get_userbyid(relowner)=current_user AND "
+                     "relname=%1 AND nspname=%2" )
+            .arg( quotedValue( mTableName ) )
+            .arg( quotedValue( mSchemaName ) );
+      testAccess = connectionRO->PQexec( sql );
+      if ( PQresultStatus( testAccess ) == PGRES_TUPLES_OK && PQntuples( testAccess ) == 1 )
+      {
+        enabledCapabilities |= QgsVectorDataProvider::AddAttributes | QgsVectorDataProvider::DeleteAttributes;
+      }
     }
   }
   else
@@ -2040,8 +2062,7 @@ bool QgsPostgresProvider::parseDomainCheckConstraint( QStringList& enumValues, c
       //(VALUE = ANY (ARRAY['a'::text, 'b'::text, 'c'::text, 'd'::text]))
       //normally, postgresql creates that if the contstraint has been specified as 'VALUE in ('a', 'b', 'c', 'd')
 
-      //todo: ANY must occure before ARRAY
-      int anyPos = checkDefinition.indexOf( "VALUE=ANY" );
+      int anyPos = checkDefinition.indexOf( QRegExp( "VALUE\\s*=\\s*ANY\\s*\\(\\s*ARRAY\\s*\\[" ) );
       int arrayPosition = checkDefinition.lastIndexOf( "ARRAY[" );
       int closingBracketPos = checkDefinition.indexOf( "]", arrayPosition + 6 );
 

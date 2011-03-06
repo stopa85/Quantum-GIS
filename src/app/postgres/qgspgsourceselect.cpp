@@ -30,6 +30,7 @@ email                : sherman at mrcc.com
 #include "qgsvectorlayer.h"
 #include "qgscredentials.h"
 
+#include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QSettings>
@@ -54,7 +55,14 @@ QgsPgSourceSelect::QgsPgSourceSelect( QWidget *parent, Qt::WFlags fl )
   buttonBox->addButton( mAddButton, QDialogButtonBox::ActionRole );
   connect( mAddButton, SIGNAL( clicked() ), this, SLOT( addTables() ) );
 
-  QPushButton *pb = new QPushButton( tr( "&Save" ) );
+  mBuildQueryButton = new QPushButton( tr( "&Build query" ) );
+  mBuildQueryButton->setToolTip( tr( "Build query" ) );
+  buttonBox->addButton( mBuildQueryButton, QDialogButtonBox::ActionRole );
+  connect( mBuildQueryButton, SIGNAL( clicked() ), this, SLOT( buildQuery() ) );
+  mBuildQueryButton->setDisabled( true );
+
+  QPushButton *pb;
+  pb = new QPushButton( tr( "&Save" ) );
   pb->setToolTip( tr( "Save connections" ) );
   buttonBox->addButton( pb, QDialogButtonBox::ActionRole );
   connect( pb, SIGNAL( clicked() ), this, SLOT( saveClicked() ) );
@@ -116,6 +124,8 @@ QgsPgSourceSelect::QgsPgSourceSelect( QWidget *parent, Qt::WFlags fl )
   mSearchModeComboBox->setVisible( false );
   mSearchModeLabel->setVisible( false );
   mSearchTableEdit->setVisible( false );
+
+  cbxAllowGeometrylessTables->setDisabled( true );
 }
 /** Autoconnected SLOTS **/
 // Slot for adding a new connection
@@ -137,14 +147,16 @@ void QgsPgSourceSelect::on_btnDelete_clicked()
   if ( QMessageBox::Ok != QMessageBox::information( this, tr( "Confirm Delete" ), msg, QMessageBox::Ok | QMessageBox::Cancel ) )
     return;
 
+  settings.remove( key + "/service" );
   settings.remove( key + "/host" );
+  settings.remove( key + "/port" );
   settings.remove( key + "/database" );
   settings.remove( key + "/username" );
   settings.remove( key + "/password" );
-  settings.remove( key + "/port" );
   settings.remove( key + "/sslmode" );
   settings.remove( key + "/publicOnly" );
   settings.remove( key + "/geometryColumnsOnly" );
+  settings.remove( key + "/allowGeometrylessTables" );
   settings.remove( key + "/estimatedMetadata" );
   settings.remove( key + "/saveUsername" );
   settings.remove( key + "/savePassword" );
@@ -156,13 +168,20 @@ void QgsPgSourceSelect::on_btnDelete_clicked()
 
 void QgsPgSourceSelect::saveClicked()
 {
-  QgsManageConnectionsDialog dlg( this, QgsManageConnectionsDialog::Save, QgsManageConnectionsDialog::PostGIS );
+  QgsManageConnectionsDialog dlg( this, QgsManageConnectionsDialog::Export, QgsManageConnectionsDialog::PostGIS );
   dlg.exec();
 }
 
 void QgsPgSourceSelect::loadClicked()
 {
-  QgsManageConnectionsDialog dlg( this, QgsManageConnectionsDialog::Load, QgsManageConnectionsDialog::PostGIS );
+  QString fileName = QFileDialog::getOpenFileName( this, tr( "Load connections" ), ".",
+                     tr( "XML files (*.xml *XML)" ) );
+  if ( fileName.isEmpty() )
+  {
+    return;
+  }
+
+  QgsManageConnectionsDialog dlg( this, QgsManageConnectionsDialog::Import, QgsManageConnectionsDialog::PostGIS, fileName );
   dlg.exec();
   populateConnectionList();
 }
@@ -185,16 +204,25 @@ void QgsPgSourceSelect::on_cmbConnections_activated( int )
   // Remember which database was selected.
   QSettings settings;
   settings.setValue( "/PostgreSQL/connections/selected", cmbConnections->currentText() );
+
+  cbxAllowGeometrylessTables->blockSignals( true );
+  cbxAllowGeometrylessTables->setChecked( settings.value( "/PostgreSQL/connections/" + cmbConnections->currentText() + "/allowGeometrylessTables", false ).toBool() );
+  cbxAllowGeometrylessTables->blockSignals( false );
 }
 
-void QgsPgSourceSelect::on_btnBuildQuery_clicked()
+void QgsPgSourceSelect::on_cbxAllowGeometrylessTables_stateChanged( int )
+{
+  on_btnConnect_clicked();
+}
+
+void QgsPgSourceSelect::buildQuery()
 {
   setSql( mTablesTreeView->currentIndex() );
 }
 
 void QgsPgSourceSelect::on_mTablesTreeView_clicked( const QModelIndex &index )
 {
-  btnBuildQuery->setEnabled( index.parent().isValid() );
+  mBuildQueryButton->setEnabled( index.parent().isValid() );
 }
 
 void QgsPgSourceSelect::on_mTablesTreeView_doubleClicked( const QModelIndex &index )
@@ -401,6 +429,8 @@ void QgsPgSourceSelect::addTables()
 
 void QgsPgSourceSelect::on_btnConnect_clicked()
 {
+  cbxAllowGeometrylessTables->setEnabled( true );
+
   if ( mColumnTypeThread )
   {
     mColumnTypeThread->stop();
@@ -415,21 +445,27 @@ void QgsPgSourceSelect::on_btnConnect_clicked()
 
   QString key = "/PostgreSQL/connections/" + cmbConnections->currentText();
 
-  QString database = settings.value( key + "/database" ).toString();
-  QString username = settings.value( key + "/username" ).toString();
-  QString password = settings.value( key + "/password" ).toString();
+  QString service                   = settings.value( key + "/service" ).toString();
+  QString host                      = settings.value( key + "/host" ).toString();
+  QString port                      = settings.value( key + "/port" ).toString();
+  QString database                  = settings.value( key + "/database" ).toString();
+  QString username                  = settings.value( key + "/username" ).toString();
+  QString password                  = settings.value( key + "/password" ).toString();
+  QgsDataSourceURI::SSLmode sslmode = ( QgsDataSourceURI::SSLmode ) settings.value( key + "/sslmode", QgsDataSourceURI::SSLprefer ).toInt();
 
   QgsDataSourceURI uri;
-  uri.setConnection( settings.value( key + "/host" ).toString(),
-                     settings.value( key + "/port" ).toString(),
-                     database,
-                     username,
-                     password,
-                     ( QgsDataSourceURI::SSLmode ) settings.value( key + "/sslmode", QgsDataSourceURI::SSLprefer ).toInt() );
+  if ( !service.isEmpty() )
+  {
+    uri.setConnection( service, database, username, password, sslmode );
+  }
+  else
+  {
+    uri.setConnection( host, port, database,  username, password, sslmode );
+  }
 
   bool searchPublicOnly = settings.value( key + "/publicOnly" ).toBool();
   bool searchGeometryColumnsOnly = settings.value( key + "/geometryColumnsOnly" ).toBool();
-  bool allowGeometrylessTables = settings.value( key + "/allowGeometrylessTables", false ).toBool();
+  bool allowGeometrylessTables = cbxAllowGeometrylessTables->isChecked();
   mUseEstimatedMetadata = settings.value( key + "/estimatedMetadata" ).toBool();
   // Need to escape the password to allow for single quotes and backslashes
 
@@ -443,7 +479,7 @@ void QgsPgSourceSelect::on_btnConnect_clicked()
 
   m_privConnInfo = m_connInfo;
 
-  pd = PQconnectdb( m_privConnInfo.toLocal8Bit() );  // use what is set based on locale; after connecting, use Utf8
+  pd = PQconnectdb( m_privConnInfo.toLocal8Bit() );   // use what is set based on locale; after connecting, use Utf8
   // check the connection status
   if ( PQstatus( pd ) != CONNECTION_OK )
   {
@@ -479,6 +515,16 @@ void QgsPgSourceSelect::on_btnConnect_clicked()
     // tell the DB that we want text encoded in UTF8
     PQsetClientEncoding( pd, QString( "UNICODE" ).toLocal8Bit() );
 
+    PGresult *res = PQexec( pd, "SET application_name='Quantum GIS'" );
+
+    if ( !res || PQresultStatus( res ) != PGRES_COMMAND_OK )
+    {
+      PQclear( res );
+      res = PQexec( pd, "ROLLBACK" );
+    }
+
+    PQclear( res );
+
     // get the list of suitable tables and columns and populate the UI
     geomCol details;
 
@@ -511,7 +557,9 @@ void QgsPgSourceSelect::on_btnConnect_clicked()
                               "Check your username and password and try again.\n\n"
                               "The database said:\n%3" )
                           .arg( settings.value( key + "/database" ).toString() )
-                          .arg( settings.value( key + "/host" ).toString() )
+                          .arg( !settings.value( key + "/service" ).toString().isEmpty()
+                                ? settings.value( key + "/service" ).toString()
+                                : settings.value( key + "/host" ).toString() )
                           .arg( QString::fromUtf8( PQerrorMessage( pd ) ) ) );
   }
 
@@ -936,6 +984,14 @@ void QgsGeomColumnTypeThread::getLayerTypes()
   if ( PQstatus( pd ) == CONNECTION_OK )
   {
     PQsetClientEncoding( pd, QString( "UNICODE" ).toLocal8Bit() );
+
+    PGresult *res = PQexec( pd, "SET application_name='Quantum GIS'" );
+    if ( !res || PQresultStatus( res ) != PGRES_COMMAND_OK )
+    {
+      PQclear( res );
+      res = PQexec( pd, "ROLLBACK" );
+    }
+    PQclear( res );
 
     for ( uint i = 0; i < schemas.size() && !mStopped; i++ )
     {

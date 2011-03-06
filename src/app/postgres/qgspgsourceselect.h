@@ -119,21 +119,22 @@ class QgsPgSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
   public slots:
     //! Determines the tables the user selected and closes the dialog
     void addTables();
+    void buildQuery();
 
     /*! Connects to the database using the stored connection parameters.
     * Once connected, available layers are displayed.
     */
     void on_btnConnect_clicked();
+    void on_cbxAllowGeometrylessTables_stateChanged( int );
     //! Opens the create connection dialog to build a new connection
     void on_btnNew_clicked();
     //! Opens a dialog to edit an existing connection
     void on_btnEdit_clicked();
-    void on_btnBuildQuery_clicked();
     //! Deletes the selected connection
     void on_btnDelete_clicked();
-    //! Saves the selected connections to the file
+    //! Saves the selected connections to file
     void saveClicked();
-    //! Loads the selected connections from the file
+    //! Loads the selected connections from file
     void loadClicked();
     void on_mSearchTableEdit_textChanged( const QString & text );
     void on_mSearchColumnComboBox_currentIndexChanged( const QString & text );
@@ -186,6 +187,7 @@ class QgsPgSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     QgsDbFilterProxyModel mProxyModel;
 
     QString layerURI( const QModelIndex &index );
+    QPushButton *mBuildQueryButton;
     QPushButton *mAddButton;
 };
 

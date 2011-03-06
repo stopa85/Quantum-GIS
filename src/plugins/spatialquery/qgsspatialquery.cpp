@@ -19,9 +19,8 @@
 
 #include <QMessageBox>
 
-#include <qgsvectordataprovider.h>
-#include <qgsfeature.h>
-
+#include "qgsvectordataprovider.h"
+#include "qgsfeature.h"
 #include "qgsgeometrycoordinatetransform.h"
 #include "qgsspatialquery.h"
 
@@ -324,7 +323,7 @@ void QgsSpatialQuery::populateIndexResultDisjoint(
     mLayerReference->featureAtId( *iterIdReference, featureReference );
     geomReference = featureReference.geometry();
 
-    if ( !( geomTarget->*op )( geomTarget ) )
+    if ( !( geomTarget->*op )( geomReference ) )
     {
       addIndex = false;
       break;

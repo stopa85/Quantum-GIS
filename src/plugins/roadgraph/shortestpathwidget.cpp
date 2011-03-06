@@ -222,8 +222,13 @@ void RgShortestPathWidget::setBackPoint( const QgsPoint& pt )
 bool RgShortestPathWidget::getPath( AdjacencyMatrix& matrix, QgsPoint& p1, QgsPoint& p2 )
 {
   if ( mFrontPointLineEdit->text().isNull() || mBackPointLineEdit->text().isNull() )
+  {
+    QMessageBox::critical( this, tr( "Point not selected" ), tr( "First, select start and stop points." ) );
     return false;
-  RgSimpleGraphBuilder builder( mPlugin->iface()->mapCanvas()->mapRenderer()->destinationSrs() );
+  }
+
+  RgSimpleGraphBuilder builder( mPlugin->iface()->mapCanvas()->mapRenderer()->destinationSrs(),
+                                mPlugin->topologyToleranceFactor() );
   {
     const RgGraphDirector *director = mPlugin->director();
     if ( director == NULL )
@@ -231,6 +236,9 @@ bool RgShortestPathWidget::getPath( AdjacencyMatrix& matrix, QgsPoint& p1, QgsPo
       QMessageBox::critical( this, tr( "Plugin isn't configured" ), tr( "Plugin isn't configured!" ) );
       return false;
     }
+    connect( director, SIGNAL( buildProgress( int, int ) ), mPlugin->iface()->mainWindow(), SLOT( showProgress( int, int ) ) );
+    connect( director, SIGNAL( buildMessage( QString ) ), mPlugin->iface()->mainWindow(), SLOT( showStatusMessage( QString ) ) );
+
     QVector< QgsPoint > points;
     QVector< QgsPoint > tiedPoint;
 
@@ -249,7 +257,7 @@ bool RgShortestPathWidget::getPath( AdjacencyMatrix& matrix, QgsPoint& p1, QgsPo
     QMessageBox::critical( this, tr( "Tie point failed" ), tr( "Start point doesn't tie to the road!" ) );
     return false;
   }
-  if ( p1 == QgsPoint( 0.0, 0.0 ) )
+  if ( p2 == QgsPoint( 0.0, 0.0 ) )
   {
     QMessageBox::critical( this, tr( "Tie point failed" ), tr( "Stop point doesn't tie to the road!" ) );
     return false;
@@ -263,7 +271,11 @@ bool RgShortestPathWidget::getPath( AdjacencyMatrix& matrix, QgsPoint& p1, QgsPo
   DijkstraFinder f( m, criterion );
 
   matrix = f.find( p1, p2 );
-
+  if ( matrix.find( p1 ) == matrix.end() )
+  {
+    QMessageBox::critical( this, tr( "Path not found" ), tr( "Path not found" ) );
+    return false;
+  }
   return true;
 }
 
@@ -309,6 +321,8 @@ void RgShortestPathWidget::clear()
   mBackPointLineEdit->setText( QString() );
   mrbBackPoint->reset( true );
   mrbPath->reset();
+  mPathCostLineEdit->setText( QString() );
+  mPathTimeLineEdit->setText( QString() );
 }
 
 void RgShortestPathWidget::exportPath()

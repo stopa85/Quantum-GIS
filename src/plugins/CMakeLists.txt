@@ -5,10 +5,8 @@ SUBDIRS (copyright_label
   scale_bar
   oracle_raster
   raster_terrain_analysis
-  quick_print
   coordinate_capture
   dxf2shp_converter
-  ogr_converter
   diagram_overlay
   evis
   point_displacement_renderer

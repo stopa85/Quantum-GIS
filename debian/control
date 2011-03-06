@@ -28,7 +28,9 @@ Build-Depends:
  python-qt4-dev (>=4.1.0),
  python-sip (>= 4.5.0),
  python-sip-dev (>= 4.5.0),
- subversion
+ subversion,
+ txt2tags,
+ doxygen
 Build-Conflicts: libqgis-dev, qgis-dev
 Standards-Version: 3.8.4
 XS-Python-Version: current
@@ -154,7 +156,7 @@ Description: collection of data providers to Quantum GIS
  This package contains the provider plugins for Quantum GIS.
 
 Package: qgis-providers-common
-Architecture: any
+Architecture: all
 Replaces: qgis-common (<= 1.6)
 Breaks: qgis-common (<= 1.6)
 Description: collection of data providers to Quantum GIS - architecture-independent files

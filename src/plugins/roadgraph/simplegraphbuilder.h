@@ -21,6 +21,7 @@
 //QT4 includes
 
 //QGIS includes
+#include <qgsspatialindex.h>
 
 //forward declarations
 class QgsDistanceArea;
@@ -37,13 +38,13 @@ class RgSimpleGraphBuilder : public RgGraphBuilder
     /**
      * default constructor
      */
-    RgSimpleGraphBuilder( const QgsCoordinateReferenceSystem& crs );
+    RgSimpleGraphBuilder( const QgsCoordinateReferenceSystem& crs, double topologyTolerance = 0.0 );
 
     /**
      * MANDATORY BUILDER PROPERTY DECLARATION
      */
-    void addVertex( const QgsPoint& pt );
-    void addArc( const QgsPoint& pt1, const QgsPoint& pt2, double cost, double speed );
+    QgsPoint addVertex( const QgsPoint& pt );
+    void addArc( const QgsPoint& pt1, const QgsPoint& pt2, double cost, double speed, int featureId );
 
     /**
      * return Adjacecncy matrix;
@@ -51,5 +52,9 @@ class RgSimpleGraphBuilder : public RgGraphBuilder
     AdjacencyMatrix adjacencyMatrix();
   private:
     AdjacencyMatrix mMatrix;
+
+    QgsSpatialIndex mPointIndex;
+
+    QMap< int, QgsPoint> mPointMap;
 };
 #endif //SIMPLEGRAPHBUILDER

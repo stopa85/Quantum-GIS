@@ -119,7 +119,6 @@
 #include "qgsformannotationitem.h"
 #include "qgsgenericprojectionselector.h"
 #include "qgsgpsinformationwidget.h"
-#include "qgshelpviewer.h"
 #include "qgslabelinggui.h"
 #include "qgslegend.h"
 #include "qgslegendlayer.h"
@@ -142,7 +141,7 @@
 #include "qgspluginmetadata.h"
 #include "qgspluginregistry.h"
 #include "qgspoint.h"
-#include "qgsprojectbadlayerguihandler.h"
+#include "qgshandlebadlayers.h"
 #include "qgsproject.h"
 #include "qgsprojectproperties.h"
 #include "qgsproviderregistry.h"
@@ -490,6 +489,15 @@ QgisApp::QgisApp( QSplashScreen *splash, bool restorePlugins, QWidget * parent, 
     QgsPluginRegistry::instance()->restoreSessionPlugins( QgsApplication::pluginPath() );
   }
 
+  // Also restore plugins from user specified plugin directories - added for 1.7
+  QSettings settings;
+  QString myPaths = settings.value( "plugins/searchPathsForPlugins", "" ).toString();
+  if ( !myPaths.isEmpty() )
+  {
+    QStringList myPathList = myPaths.split( "|" );
+    QgsPluginRegistry::instance()->restoreSessionPlugins( myPathList );
+  }
+
   mSplash->showMessage( tr( "Initializing file filters" ), Qt::AlignHCenter | Qt::AlignBottom );
   qApp->processEvents();
   // now build vector file filter
@@ -498,7 +506,7 @@ QgisApp::QgisApp( QSplashScreen *splash, bool restorePlugins, QWidget * parent, 
   QgsRasterLayer::buildSupportedRasterFileFilter( mRasterFileFilter );
 
   // set handler for missing layers (will be owned by QgsProject)
-  QgsProject::instance()->setBadLayerHandler( new QgsProjectBadLayerGuiHandler() );
+  QgsProject::instance()->setBadLayerHandler( new QgsHandleBadLayersHandler() );
 
 #if 0
   // Set the background color for toolbox and overview as they default to
@@ -541,7 +549,6 @@ QgisApp::QgisApp( QSplashScreen *splash, bool restorePlugins, QWidget * parent, 
   mMapCanvas->mapRenderer()->setLabelingEngine( mLBL );
 
   // Show a nice tip of the day
-  QSettings settings;
   if ( settings.value( "/qgis/showTips", 1 ).toBool() )
   {
     mSplash->hide();
@@ -550,7 +557,7 @@ QgisApp::QgisApp( QSplashScreen *splash, bool restorePlugins, QWidget * parent, 
   }
   else
   {
-    QgsDebugMsg( "Tips are disabled");
+    QgsDebugMsg( "Tips are disabled" );
   }
 
   //finally show all the application settings as initialised above
@@ -1118,6 +1125,12 @@ void QgisApp::createActions()
   connect( mActionRemoveLayer, SIGNAL( triggered() ), this, SLOT( removeLayer() ) );
   mActionRemoveLayer->setEnabled( false );
 
+  mActionSetLayerCRS = new QAction( getThemeIcon( "mActionSetLayerCRS.png" ), tr( "Set CRS of Layer(s)" ), this );
+  shortcuts->registerAction( mActionSetLayerCRS, tr( "Ctrl+Shift+C", "Set CRS of Layer(s)" ) );
+  mActionSetLayerCRS->setStatusTip( tr( "Set CRS of Layer(s)" ) );
+  connect( mActionSetLayerCRS, SIGNAL( triggered() ), this, SLOT( setLayerCRS() ) );
+  mActionSetLayerCRS->setEnabled( false );
+
   mActionTileScale = new QAction( getThemeIcon( "mActionTileScale.png" ), tr( "Tile scale slider" ), this );
   shortcuts->registerAction( mActionTileScale, tr( "", "Tile scale slider" ) );
   mActionTileScale->setStatusTip( tr( "Show tile scale slider" ) );
@@ -1242,6 +1255,14 @@ void QgisApp::createActions()
 #endif
   mActionHelpContents->setStatusTip( tr( "Help Documentation" ) );
   connect( mActionHelpContents, SIGNAL( triggered() ), this, SLOT( helpContents() ) );
+  mActionHelpContents->setEnabled( QFileInfo( QgsApplication::pkgDataPath() + "/doc/index.html" ).exists() );
+
+#ifdef WITH_APIDOC
+  mActionHelpAPI = new QAction( getThemeIcon( "mActionHelpAPI.png" ), tr( "API documentation" ), this );
+  connect( mActionHelpAPI, SIGNAL( triggered() ), this, SLOT( apiDocumentation() ) );
+  mActionHelpAPI->setEnabled( QFileInfo( QgsApplication::pkgDataPath() + "/doc/api/index.html" ).exists() );
+#endif
+
 
   mActionQgisHomePage = new QAction( getThemeIcon( "mActionQgisHomePage.png" ), tr( "QGIS Home Page" ), this );
 #ifndef Q_WS_MAC
@@ -1602,6 +1623,7 @@ void QgisApp::createMenus()
   mLayerMenu->addAction( mActionLayerSaveAs );
   mLayerMenu->addAction( mActionLayerSelectionSaveAs );
   mLayerMenu->addAction( mActionRemoveLayer );
+  mLayerMenu->addAction( mActionSetLayerCRS );
   mLayerMenu->addAction( mActionLayerProperties );
   mLayerMenu->addAction( mActionLayerSubsetString );
   mActionLayerSeparator2 = mLayerMenu->addSeparator();
@@ -1677,6 +1699,9 @@ void QgisApp::createMenus()
   mHelpMenu = menuBar()->addMenu( tr( "&Help" ) );
 
   mHelpMenu->addAction( mActionHelpContents );
+#ifdef WITH_APIDOC
+  mHelpMenu->addAction( mActionHelpAPI );
+#endif
   mActionHelpSeparator1 = mHelpMenu->addSeparator();
 
   mHelpMenu->addAction( mActionQgisHomePage );
@@ -1723,6 +1748,7 @@ void QgisApp::createToolBars()
   mLayerToolBar->addAction( mActionAddWmsLayer );
   mLayerToolBar->addAction( mActionNewVectorLayer );
   mLayerToolBar->addAction( mActionRemoveLayer );
+  mLayerToolBar->addAction( mActionSetLayerCRS );
   //commented out for QGIS 1.4 by Tim
   //mLayerToolBar->addAction( mActionAddToOverview );
   //mLayerToolBar->addAction( mActionShowAllLayers );
@@ -1891,9 +1917,12 @@ void QgisApp::createToolBars()
   mHelpToolBar = addToolBar( tr( "Help" ) );
   mHelpToolBar->setObjectName( "Help" );
   mHelpToolBar->addAction( mActionHelpContents );
+#ifdef WITH_APIDOC
+  mHelpToolBar->addAction( mActionHelpAPI );
+#endif
   mHelpToolBar->addAction( QWhatsThis::createAction() );
   mToolbarMenu->addAction( mHelpToolBar->toggleViewAction() );
-  
+
   //
   // Raster Toolbar
   mRasterToolBar = addToolBar( tr( "Raster" ) );
@@ -2050,18 +2079,18 @@ void QgisApp::setIconSizes( int size )
   //Set the icon size of for all the toolbars created in the future.
   setIconSize( QSize( size, size ) );
 
-    //Change all current icon sizes.
-    QList<QToolBar *> toolbars = findChildren<QToolBar *>();
-    foreach( QToolBar * toolbar, toolbars )
-    {
-      toolbar->setIconSize( QSize( size, size ) );
-    }
-    
-    QSet<QgsComposer*>::iterator composerIt = mPrintComposers.begin();
-    for ( ; composerIt != mPrintComposers.end(); ++composerIt )
-    {
-      ( *composerIt )->setIconSizes(size);
-    }
+  //Change all current icon sizes.
+  QList<QToolBar *> toolbars = findChildren<QToolBar *>();
+  foreach( QToolBar * toolbar, toolbars )
+  {
+    toolbar->setIconSize( QSize( size, size ) );
+  }
+
+  QSet<QgsComposer*>::iterator composerIt = mPrintComposers.begin();
+  for ( ; composerIt != mPrintComposers.end(); ++composerIt )
+  {
+    ( *composerIt )->setIconSizes( size );
+  }
 }
 
 void QgisApp::setTheme( QString theThemeName )
@@ -2101,6 +2130,7 @@ void QgisApp::setTheme( QString theThemeName )
   mActionAddPgLayer->setIcon( getThemeIcon( "/mActionAddLayer.png" ) );
   mActionAddSpatiaLiteLayer->setIcon( getThemeIcon( "/mActionAddSpatiaLiteLayer.png" ) );
   mActionRemoveLayer->setIcon( getThemeIcon( "/mActionRemoveLayer.png" ) );
+  mActionSetLayerCRS->setIcon( getThemeIcon( "/mActionSetLayerCRS.png" ) );
   mActionNewVectorLayer->setIcon( getThemeIcon( "/mActionNewVectorLayer.png" ) );
   mActionAddAllToOverview->setIcon( getThemeIcon( "/mActionAddAllToOverview.png" ) );
   mActionHideAllLayers->setIcon( getThemeIcon( "/mActionHideAllLayers.png" ) );
@@ -2113,6 +2143,9 @@ void QgisApp::setTheme( QString theThemeName )
   mActionOptions->setIcon( getThemeIcon( "/mActionOptions.png" ) );
   mActionConfigureShortcuts->setIcon( getThemeIcon( "/mActionOptions.png" ) );
   mActionHelpContents->setIcon( getThemeIcon( "/mActionHelpContents.png" ) );
+#ifdef WITH_APIDOC
+  mActionHelpAPI->setIcon( getThemeIcon( "/mActionHelpAPI.png" ) );
+#endif
   mActionLocalHistogramStretch->setIcon( getThemeIcon( "/mActionLocalHistogramStretch.png" ) );
   mActionQgisHomePage->setIcon( getThemeIcon( "/mActionQgisHomePage.png" ) );
   mActionAbout->setIcon( getThemeIcon( "/mActionHelpAbout.png" ) );
@@ -2367,7 +2400,8 @@ void QgisApp::createOverview()
 
   // moved here to set anti aliasing to both map canvas and overview
   QSettings mySettings;
-  mMapCanvas->enableAntiAliasing( mySettings.value( "/qgis/enable_anti_aliasing", false ).toBool() );
+  // Anti Aliasing enabled by default as of QGIS 1.7
+  mMapCanvas->enableAntiAliasing( mySettings.value( "/qgis/enable_anti_aliasing", true ).toBool() );
   mMapCanvas->useImageToRender( mySettings.value( "/qgis/use_qimage_to_render", false ).toBool() );
 
   int action = mySettings.value( "/qgis/wheel_action", 0 ).toInt();
@@ -2660,21 +2694,21 @@ void QgisApp::about()
                             .arg( QGis::QGIS_VERSION )
                             .arg( QGis::QGIS_SVN_VERSION );
 
-    versionString += tr( "\nThis copy of QGIS has been built with GDAL/OGR %1." ).arg( GDAL_RELEASE_NAME );
+    versionString += tr( "\nGDAL/OGR Version: %1." ).arg( GDAL_RELEASE_NAME );
 
 #ifdef HAVE_POSTGRESQL
-    versionString += tr( "\nThis copy of QGIS has been built with PostgreSQL support (%1)." ).arg( PG_VERSION );
+    versionString += tr( "\nPostgreSQL Client Version: %1." ).arg( PG_VERSION );
 #else
-    versionString += tr( "\nThis copy of QGIS has been built without PostgreSQL support." );
+    versionString += tr( "\nNo PostgreSQL support." );
 #endif
 
 #ifdef HAVE_SPATIALITE
-    versionString += tr( "\nThis copy of QGIS has been built with SpatiaLite support (%1)." ).arg( spatialite_version() );
+    versionString += tr( "\nSpatiaLite Version: %1." ).arg( spatialite_version() );
 #else
-    versionString += tr( "\nThis copy of QGIS has been built without SpatiaLite support." );
+    versionString += tr( "\nNo SpatiaLite support." );
 #endif
 
-    versionString += tr( "\nThis copy of QGIS has been built with QWT %1." ).arg( QWT_VERSION_STR );
+    versionString += tr( "\nQWT Version: %1." ).arg( QWT_VERSION_STR );
 
 #ifdef QGISDEBUG
     versionString += tr( "\nThis copy of QGIS writes debugging output." );
@@ -3248,7 +3282,28 @@ void QgisApp::fileNew( bool thePromptToSaveFlag )
   mMapCanvas->refresh();
   mMapCanvas->clearExtentHistory();
 
-  mMapCanvas->mapRenderer()->setProjectionsEnabled( false );
+  // enable OTF CRS transformation if necessary
+  if ( settings.value( "/Projections/otfTransformEnabled", 0 ).toBool() )
+  {
+    QgsMapRenderer* myRenderer = mMapCanvas->mapRenderer();
+    QString projString = settings.value( "/Projections/defaultOTFProjectionString", GEOPROJ4 ).toString();
+    QgsCoordinateReferenceSystem srs;
+    srs.createFromProj4( projString );
+    myRenderer->setProjectionsEnabled( true );
+    myRenderer->setDestinationSrs( srs );
+    // write the projections _proj string_ to project settings
+    prj->writeEntry( "SpatialRefSys", "/ProjectCRSProj4String", projString );
+    prj->dirty( false );
+    if ( srs.mapUnits() != QGis::UnknownUnit )
+    {
+      myRenderer->setMapUnits( srs.mapUnits() );
+    }
+    mOnTheFlyProjectionStatusButton->setIcon( getThemeIcon( "mIconProjectionEnabled.png" ) );
+  }
+  else
+  {
+    mMapCanvas->mapRenderer()->setProjectionsEnabled( false );
+  }
 
   // set the initial map tool
   mMapCanvas->setMapTool( mMapTools.mPan );
@@ -4078,7 +4133,7 @@ void QgisApp::saveAsVectorFileGeneral( bool saveOnlySelection )
       }
       else
       {
-        destCRS = vlayer->srs();
+        destCRS = vlayer->crs();
       }
     }
     else
@@ -4783,7 +4838,7 @@ void QgisApp::editCut( QgsMapLayer * layerContainingSelection )
     {
       QgsFeatureList features = selectionVectorLayer->selectedFeatures();
       clipboard()->replaceWithCopyOf( selectionVectorLayer->pendingFields(), features );
-      clipboard()->setCRS( selectionVectorLayer->srs() );
+      clipboard()->setCRS( selectionVectorLayer->crs() );
       selectionVectorLayer->beginEditCommand( tr( "Features cut" ) );
       selectionVectorLayer->deleteSelectedFeatures();
       selectionVectorLayer->endEditCommand();
@@ -4810,7 +4865,7 @@ void QgisApp::editCopy( QgsMapLayer * layerContainingSelection )
     {
       QgsFeatureList features = selectionVectorLayer->selectedFeatures();
       clipboard()->replaceWithCopyOf( selectionVectorLayer->pendingFields(), features );
-      clipboard()->setCRS( selectionVectorLayer->srs() );
+      clipboard()->setCRS( selectionVectorLayer->crs() );
     }
   }
 }
@@ -4836,7 +4891,7 @@ void QgisApp::editPaste( QgsMapLayer *destinationLayer )
       QgsFeatureList features;
       if ( mMapCanvas->mapRenderer()->hasCrsTransformEnabled() )
       {
-        features = clipboard()->transformedCopyOf( pasteVectorLayer->srs() );
+        features = clipboard()->transformedCopyOf( pasteVectorLayer->crs() );
       }
       else
       {
@@ -5204,6 +5259,34 @@ void QgisApp::removeLayer()
   mMapCanvas->refresh();
 }
 
+void QgisApp::setLayerCRS()
+{
+  if ( mMapCanvas && mMapCanvas->isDrawing() )
+  {
+    return;
+  }
+
+  if ( !mMapLegend )
+  {
+    return;
+  }
+
+  QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector( this );
+  mySelector->setMessage();
+  if ( mySelector->exec() )
+  {
+    QgsCoordinateReferenceSystem crs( mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::InternalCrsId );
+    mMapLegend->setCRSForSelectedLayers( crs );
+    mMapCanvas->refresh();
+  }
+  else
+  {
+    QApplication::restoreOverrideCursor();
+  }
+
+  delete mySelector;
+}
+
 void QgisApp::showGpsTool()
 {
   if ( !mpGpsWidget )
@@ -5498,6 +5581,29 @@ void QgisApp::options()
     int action = mySettings.value( "/qgis/wheel_action", 0 ).toInt();
     double zoomFactor = mySettings.value( "/qgis/zoom_factor", 2 ).toDouble();
     mMapCanvas->setWheelAction(( QgsMapCanvas::WheelAction ) action, zoomFactor );
+
+    //apply OTF CRS transformation if necessary
+    if ( mySettings.value( "/Projections/otfTransformEnabled", 0 ).toBool() )
+    {
+      QgsMapRenderer* myRenderer = mMapCanvas->mapRenderer();
+      QString projString = mySettings.value( "/Projections/defaultOTFProjectionString", GEOPROJ4 ).toString();
+      QgsCoordinateReferenceSystem srs;
+      srs.createFromProj4( projString );
+      myRenderer->setProjectionsEnabled( true );
+      myRenderer->setDestinationSrs( srs );
+      // write the projections _proj string_ to project settings
+      QgsProject::instance()->writeEntry( "SpatialRefSys", "/ProjectCRSProj4String", projString );
+      if ( srs.mapUnits() != QGis::UnknownUnit )
+      {
+        myRenderer->setMapUnits( srs.mapUnits() );
+      }
+    }
+    else
+    {
+      QgsMapRenderer* myRenderer = mMapCanvas->mapRenderer();
+      myRenderer->setProjectionsEnabled( false );
+    }
+    mMapCanvas->refresh();
   }
 
   delete optionsDialog;
@@ -5525,11 +5631,11 @@ void QgisApp::localHistogramStretch()
   }
   if ( rlayer->drawingStyle() == QgsRasterLayer::SingleBandGray ||
        rlayer->drawingStyle() == QgsRasterLayer::MultiBandSingleBandGray
-    )
+     )
   {
     rlayer->setContrastEnhancementAlgorithm( "StretchToMinimumMaximum" );
     rlayer->setMinimumMaximumUsingLastExtent();
-    rlayer->setCacheImage(NULL);
+    rlayer->setCacheImage( NULL );
     //refreshLayerSymbology( rlayer->getLayerID() );
     mMapCanvas->refresh();
     return;
@@ -5537,10 +5643,10 @@ void QgisApp::localHistogramStretch()
   else
   {
     QMessageBox::information( this,
-      tr( "No Valid Raster Layer Selected" ),
-      tr( "To perform a local histogram stretch, you need to have a grayscale "
-        "(multiband single layer, or singleband grayscale) raster layer "
-        "selected." ) );
+                              tr( "No Valid Raster Layer Selected" ),
+                              tr( "To perform a local histogram stretch, you need to have a grayscale "
+                                  "(multiband single layer, or singleband grayscale) raster layer "
+                                  "selected." ) );
     return;
   }
 }
@@ -5548,6 +5654,11 @@ void QgisApp::localHistogramStretch()
 void QgisApp::helpContents()
 {
   openURL( "index.html" );
+}
+
+void QgisApp::apiDocumentation()
+{
+  openURL( "api/index.html" );
 }
 
 void QgisApp::helpQgisHomePage()
@@ -6231,6 +6342,7 @@ void QgisApp::selectionChanged( QgsMapLayer *layer )
 void QgisApp::legendLayerSelectionChanged( void )
 {
   mActionRemoveLayer->setEnabled( mMapLegend && mMapLegend->selectedLayers().size() > 0 );
+  mActionSetLayerCRS->setEnabled( mMapLegend && mMapLegend->selectedLayers().size() > 0 );
 }
 
 void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )

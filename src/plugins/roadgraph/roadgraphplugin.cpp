@@ -77,6 +77,7 @@ RoadGraphPlugin::RoadGraphPlugin( QgisInterface * theQgisInterface ):
   mSettings = new RgLineVectorLayerSettings();
   mTimeUnitName = "h";
   mDistanceUnitName = "km";
+  mTopologyToleranceFactor = 0.0;
 }
 
 RoadGraphPlugin::~RoadGraphPlugin()
@@ -122,7 +123,10 @@ void RoadGraphPlugin::initGui()
 
   connect( mQGisIface->mapCanvas(), SIGNAL( renderComplete( QPainter* ) ), this, SLOT( render( QPainter* ) ) );
   connect( mQGisIface, SIGNAL( projectRead() ), this, SLOT( projectRead() ) );
-  connect( mQGisIface , SIGNAL( newProjectCreated() ), this, SLOT( newProject() ) );
+  connect( mQGisIface, SIGNAL( newProjectCreated() ), this, SLOT( newProject() ) );
+  connect( mQGisIface, SIGNAL( projectRead() ), mQShortestPathDock, SLOT( clear() ) );
+  connect( mQGisIface, SIGNAL( newProjectCreated() ), mQShortestPathDock, SLOT( clear() ) );
+
   // load settings
   projectRead();
 } // RoadGraphPlugin::initGui()
@@ -133,6 +137,7 @@ void RoadGraphPlugin::unload()
   // remove the GUI
   mQGisIface->removePluginMenu( tr( "Road graph" ), mQSettingsAction );
   mQGisIface->removePluginMenu( tr( "Road graph" ), mQShowDirectionAction );
+  mQGisIface->removePluginMenu( tr( "Road graph" ), mInfoAction );
 
   mQGisIface->removeToolBarIcon( mQShowDirectionAction );
 
@@ -174,17 +179,19 @@ void RoadGraphPlugin::property()
 
   dlg.setTimeUnitName( mTimeUnitName );
   dlg.setDistanceUnitName( mDistanceUnitName );
+  dlg.setTopologyTolerance( mTopologyToleranceFactor );
 
   if ( !dlg.exec() )
     return;
 
   mTimeUnitName = dlg.timeUnitName();
   mDistanceUnitName = dlg.distanceUnitName();
+  mTopologyToleranceFactor = dlg.topologyTolerance();
 
   mSettings->write( QgsProject::instance() );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginTimeUnit", mTimeUnitName );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginDistanceUnit", mDistanceUnitName );
-
+  QgsProject::instance()->writeEntry( "roadgraphplugin", "/topologyToleranceFactor", mTopologyToleranceFactor );
   setGuiElementsToDefault();
 } //RoadGraphPlugin::property()
 
@@ -244,6 +251,8 @@ void RoadGraphPlugin::projectRead()
   mSettings->read( QgsProject::instance() );
   mTimeUnitName = QgsProject::instance()->readEntry( "roadgraphplugin", "/pluginTimeUnit", "h" );
   mDistanceUnitName = QgsProject::instance()->readEntry( "roadgraphplugin", "/pluginDistanceUnit", "km" );
+  mTopologyToleranceFactor =
+    QgsProject::instance()->readDoubleEntry( "roadgraphplugin", "/topologyToleranceFactor", 0.0 );
   setGuiElementsToDefault();
 }// RoadGraphplguin::projectRead()
 
@@ -344,6 +353,10 @@ QString RoadGraphPlugin::distanceUnitName()
   return mDistanceUnitName;
 }
 
+double RoadGraphPlugin::topologyToleranceFactor()
+{
+  return mTopologyToleranceFactor;
+}
 //////////////////////////////////////////////////////////////////////////
 //
 //

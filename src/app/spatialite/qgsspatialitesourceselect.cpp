@@ -52,6 +52,11 @@ QgsSpatiaLiteSourceSelect::QgsSpatiaLiteSourceSelect( QgisApp * app, Qt::WFlags 
   connect( mAddButton, SIGNAL( clicked() ), this, SLOT( addClicked() ) );
   mAddButton->setEnabled( false );
 
+  mBuildQueryButton = new QPushButton( tr( "&Build Query" ) );
+  buttonBox->addButton( mBuildQueryButton, QDialogButtonBox::ActionRole );
+  connect( mBuildQueryButton, SIGNAL( clicked() ), this, SLOT( buildQuery() ) );
+  mBuildQueryButton->setEnabled( false );
+
   populateConnectionList();
 
   mSearchModeComboBox->addItem( tr( "Wildcard" ) );
@@ -84,6 +89,7 @@ QgsSpatiaLiteSourceSelect::QgsSpatiaLiteSourceSelect( QgisApp * app, Qt::WFlags 
   mSearchModeComboBox->setVisible( false );
   mSearchModeLabel->setVisible( false );
   mSearchTableEdit->setVisible( false );
+  cbxAllowGeometrylessTables->setVisible( false );
 }
 
 // Slot for performing action when the Add button is clicked
@@ -100,14 +106,14 @@ void QgsSpatiaLiteSourceSelect::on_cmbConnections_activated( int )
   dbChanged();
 }
 
-void QgsSpatiaLiteSourceSelect::on_btnBuildQuery_clicked()
+void QgsSpatiaLiteSourceSelect::buildQuery()
 {
   setSql( mTablesTreeView->currentIndex() );
 }
 
 void QgsSpatiaLiteSourceSelect::on_mTablesTreeView_clicked( const QModelIndex &index )
 {
-  btnBuildQuery->setEnabled( index.parent().isValid() );
+  mBuildQueryButton->setEnabled( index.parent().isValid() );
 }
 
 void QgsSpatiaLiteSourceSelect::on_mTablesTreeView_doubleClicked( const QModelIndex &index )

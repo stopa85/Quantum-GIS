@@ -30,9 +30,8 @@ QgsGeometryCoordinateTransform::~QgsGeometryCoordinateTransform()
 void QgsGeometryCoordinateTransform::setCoordinateTransform( QgsVectorLayer* lyrTarget, QgsVectorLayer* lyrReference )
 {
   // Transform Forward: Target to Reference
-  // * Use srs() to use old versions QGis - will be deprecited in 2.0 (after use crs())
-  QgsCoordinateReferenceSystem srsTarget = lyrTarget->srs();
-  QgsCoordinateReferenceSystem srsReference = lyrReference->srs();
+  QgsCoordinateReferenceSystem srsTarget = lyrTarget->crs();
+  QgsCoordinateReferenceSystem srsReference = lyrReference->crs();
 
   mCoordTransform = new QgsCoordinateTransform( srsTarget, srsReference );
 

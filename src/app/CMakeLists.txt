@@ -25,7 +25,6 @@ SET(QGIS_APP_SRCS
   qgsfieldcalculator.cpp
   qgsnewvectorlayerdialog.cpp
   qgsgraduatedsymboldialog.cpp
-  qgshelpviewer.cpp
   qgsidentifyresults.cpp
   qgsfeatureaction.cpp
   qgslabeldialog.cpp
@@ -92,6 +91,8 @@ SET(QGIS_APP_SRCS
   qgsuniquevaluedialog.cpp
   qgsvectorlayerproperties.cpp
   qgsquerybuilder.cpp
+  qgshighlight.cpp
+  qgshandlebadlayers.cpp
 
   qgsmanageconnectionsdialog.cpp
 
@@ -164,7 +165,6 @@ SET (QGIS_APP_MOC_HDRS
   qgsfieldcalculator.h
   qgsformannotationdialog.h
   qgsgraduatedsymboldialog.h
-  qgshelpviewer.h
   qgsidentifyresults.h
   qgslabeldialog.h
   qgslabelengineconfigdialog.h
@@ -219,6 +219,7 @@ SET (QGIS_APP_MOC_HDRS
   qgsuniquevaluedialog.h
   qgsvectorlayerproperties.h
   qgswmssourceselect.h
+  qgshandlebadlayers.h
 
   composer/qgsattributeselectiondialog.h
   composer/qgscomposer.h

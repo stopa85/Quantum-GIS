@@ -211,7 +211,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../python/plugins/fTools/tools/frmGeometry.ui" line="16"/>
         <source>Extract Nodes</source>
-        <translation>Estrai nodi</translation>
+        <translation>Estrai vertici</translation>
     </message>
     <message>
         <location filename="../python/plugins/fTools/tools/frmGeometry.ui" line="27"/>
@@ -1183,7 +1183,7 @@ Alexander Bruy
 **Se hai fornito del codice a fTools e non sei stato menzionato in questo elenco, contattami ed aggiungerò il tuo nome.
 
 RICONOSCIMENTI:
-Le seguenti persone (che ne siano coscenti o meno) hanno fornito idee, aiuto, test, codice e una guida per questo progetto. Li ringrazio tutti.
+Le seguenti persone (che ne siano coscienti o meno) hanno fornito idee, aiuto, test, codice e una guida per questo progetto. Li ringrazio tutti.
 Hawthorn Beyer
 Borys Jurgiel
 Tim Sutton
@@ -1195,7 +1195,7 @@ Colin Robertson
 Agustin Lobo
 Jurgen E. Fischer
 Gli sviluppatori di QGis e le varie comunità utenti
-Gente su #qgis at freenode.net
+Le persone su #qgis at freenode.net
 Tutti quelli che hanno fornito bugs/correzioni/suggerimenti/commenti/etc.
 </translation>
     </message>
@@ -3271,7 +3271,7 @@ Il valore &apos;grigio&apos; (a partire da GDAL 1.7.0) consente di espandere un 
     </message>
     <message>
         <source>Extract nodes</source>
-        <translation>Estrai nodi</translation>
+        <translation>Estrai vertici</translation>
     </message>
     <message>
         <source>Polygons to lines</source>
@@ -5531,118 +5531,118 @@ Vuoi specificare il percorso (GISBASE) dove è installato GRASS?</translation>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="795"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1309"/>
         <source>Arc/Info ASCII Coverage</source>
-        <translation type="unfinished"></translation>
+        <translation>Coverage ASCII Arc/Info</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="802"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1313"/>
         <source>Atlas BNA</source>
-        <translation type="unfinished"></translation>
+        <translation>Atlas BNA</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="809"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1317"/>
         <source>Comma Separated Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Testo delimitato</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="816"/>
         <source>ESRI Shapefile</source>
-        <translation type="unfinished">ESRI shapefile</translation>
+        <translation>ESRI shapefile</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="823"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1338"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1340"/>
         <source>FMEObjects Gateway</source>
-        <translation type="unfinished"></translation>
+        <translation>FMEObjects Gateway</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="830"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1345"/>
         <source>GeoJSON</source>
-        <translation type="unfinished"></translation>
+        <translation>GeoJSON</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="837"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1349"/>
         <source>GeoRSS</source>
-        <translation type="unfinished"></translation>
+        <translation>GeoRSS</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="844"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1353"/>
         <source>Geography Markup Language (GML)</source>
-        <translation type="unfinished"></translation>
+        <translation>Geography Markup Language (GML)</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="851"/>
         <source>Generic Mapping Tools (GMT)</source>
-        <translation type="unfinished"></translation>
+        <translation>Generic Mapping Tools (GMT)</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="858"/>
         <source>GPS eXchange Format</source>
-        <translation type="unfinished"></translation>
+        <translation>GPS eXchange Format (GPX)</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="865"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1373"/>
         <source>INTERLIS 1</source>
-        <translation type="unfinished"></translation>
+        <translation>INTERLIS 1</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="872"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1377"/>
         <source>INTERLIS 2</source>
-        <translation type="unfinished"></translation>
+        <translation>INTERLIS 2</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="879"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1385"/>
         <source>Keyhole Markup Language (KML)</source>
-        <translation type="unfinished"></translation>
+        <translation>Keyhole Markup Language (KML)</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="886"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1389"/>
         <source>Mapinfo File</source>
-        <translation type="unfinished"></translation>
+        <translation>Mapinfo</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="893"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1393"/>
         <source>Microstation DGN</source>
-        <translation type="unfinished"></translation>
+        <translation>Microstation DGN</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="900"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1417"/>
         <source>S-57 Base file</source>
-        <translation type="unfinished"></translation>
+        <translation>S-57 Base file</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="907"/>
         <source>Spatial Data Transfer Standard (SDTS)</source>
-        <translation type="unfinished"></translation>
+        <translation>Spatial Data Transfer Standard (SDTS)</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="914"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1427"/>
         <source>SQLite</source>
-        <translation type="unfinished"></translation>
+        <translation>SQLite</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="921"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1454"/>
         <source>AutoCAD DXF</source>
-        <translation type="unfinished"></translation>
+        <translation>AutoCAD DXF</translation>
     </message>
     <message>
         <location filename="../src/core/qgsvectorfilewriter.cpp" line="928"/>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1450"/>
         <source>Geoconcept</source>
-        <translation type="unfinished"></translation>
+        <translation>Geoconcept</translation>
     </message>
     <message>
         <source>Invalid feature geometry</source>
@@ -5913,7 +5913,7 @@ Stai vedendo questo messaggio perché probabilmente non hai settato la variabile
     <message>
         <location filename="../src/plugins/sqlanywhere/sqlanywhere.cpp" line="49"/>
         <source>SQL Anywhere plugin</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin SQL Anywhere</translation>
     </message>
     <message>
         <location filename="../src/plugins/sqlanywhere/sqlanywhere.cpp" line="50"/>
@@ -5923,7 +5923,7 @@ Stai vedendo questo messaggio perché probabilmente non hai settato la variabile
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1305"/>
         <source>Arc/Info Binary Coverage</source>
-        <translation type="unfinished"></translation>
+        <translation>Coverage binaria Arc/Info</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1319"/>
@@ -5939,22 +5939,22 @@ Stai vedendo questo messaggio perché probabilmente non hai settato la variabile
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1332"/>
         <source>ESRI ArcSDE</source>
-        <translation type="unfinished"></translation>
+        <translation>ESRI ArcSDE</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1336"/>
         <source>ESRI Shapefiles</source>
-        <translation type="unfinished"></translation>
+        <translation>ESRI shapefile</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1357"/>
         <source>GMT</source>
-        <translation type="unfinished"></translation>
+        <translation>GMT</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1361"/>
         <source>GPX</source>
-        <translation type="unfinished"></translation>
+        <translation>GPX</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1365"/>
@@ -5964,27 +5964,27 @@ Stai vedendo questo messaggio perché probabilmente non hai settato la variabile
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1369"/>
         <source>Informix DataBlade</source>
-        <translation type="unfinished"></translation>
+        <translation>Informix DataBlade</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1381"/>
         <source>INGRES</source>
-        <translation type="unfinished"></translation>
+        <translation>INGRES</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1397"/>
         <source>MySQL</source>
-        <translation type="unfinished"></translation>
+        <translation>MySQL</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1401"/>
         <source>Oracle Spatial</source>
-        <translation type="unfinished"></translation>
+        <translation>Oracle Spatial</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1405"/>
         <source>ODBC</source>
-        <translation type="unfinished"></translation>
+        <translation>ODBC</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1409"/>
@@ -5994,7 +5994,7 @@ Stai vedendo questo messaggio perché probabilmente non hai settato la variabile
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1413"/>
         <source>PostgreSQL</source>
-        <translation type="unfinished"></translation>
+        <translation>PostgreSQL</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1422"/>
@@ -6004,12 +6004,12 @@ Stai vedendo questo messaggio perché probabilmente non hai settato la variabile
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1432"/>
         <source>UK. NTF2</source>
-        <translation type="unfinished"></translation>
+        <translation>UK. NTF2</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1436"/>
         <source>U.S. Census TIGER/Line</source>
-        <translation type="unfinished"></translation>
+        <translation>U.S. Census TIGER/Line</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1440"/>
@@ -6019,12 +6019,12 @@ Stai vedendo questo messaggio perché probabilmente non hai settato la variabile
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1445"/>
         <source>X-Plane/Flightgear</source>
-        <translation type="unfinished"></translation>
+        <translation>X-Plane/Flightgear</translation>
     </message>
     <message>
         <location filename="../src/providers/ogr/qgsogrprovider.cpp" line="1467"/>
         <source>All files</source>
-        <translation type="unfinished">Tutti i file</translation>
+        <translation>Tutti i file</translation>
     </message>
 </context>
 <context>
@@ -10861,7 +10861,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="491"/>
         <source>Undo</source>
-        <translation type="unfinished">Annulla</translation>
+        <translation>Annulla</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="494"/>
@@ -10871,12 +10871,12 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="497"/>
         <source>Ctrl+Z</source>
-        <translation type="unfinished">Ctrl+Z</translation>
+        <translation>Ctrl+Z</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="506"/>
         <source>Redo</source>
-        <translation type="unfinished">Ripristina</translation>
+        <translation>Ripristina</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="509"/>
@@ -10886,7 +10886,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="512"/>
         <source>Ctrl+Shift+Z</source>
-        <translation type="unfinished">Ctrl+Shift+Z</translation>
+        <translation>Ctrl+Shift+Z</translation>
     </message>
 </context>
 <context>
@@ -10902,7 +10902,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/app/composer/qgscomposeritemwidget.cpp" line="55"/>
         <source>Frame color changed</source>
-        <translation type="unfinished"></translation>
+        <translation>Colore del riquadro cambiato</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposeritemwidget.cpp" line="78"/>
@@ -11458,7 +11458,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/app/composer/qgscomposermapwidget.cpp" line="85"/>
         <source>Change item width</source>
-        <translation type="unfinished"></translation>
+        <translation>Cambia larghezza oggetto</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposermapwidget.cpp" line="105"/>
@@ -11743,7 +11743,7 @@ Should the existing classes be deleted before classification?</source>
         <location filename="../src/app/composer/qgscomposerpicturewidget.cpp" line="113"/>
         <location filename="../src/app/composer/qgscomposerpicturewidget.cpp" line="175"/>
         <source>Picture changed</source>
-        <translation type="unfinished"></translation>
+        <translation>Immagine cambiata</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposerpicturewidget.cpp" line="130"/>
@@ -12368,7 +12368,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/gui/qgscomposerview.cpp" line="208"/>
         <source>Move item content</source>
-        <translation type="unfinished">Sposta contenuto elemento</translation>
+        <translation>Sposta contenuto elemento</translation>
     </message>
     <message>
         <location filename="../src/gui/qgscomposerview.cpp" line="401"/>
@@ -13525,7 +13525,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextpluginguibase.ui" line="296"/>
         <source>X Y fields</source>
-        <translation type="unfinished"></translation>
+        <translation>Campi X Y</translation>
     </message>
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextpluginguibase.ui" line="306"/>
@@ -13571,7 +13571,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextpluginguibase.ui" line="384"/>
         <source>WKT field</source>
-        <translation type="unfinished"></translation>
+        <translation>Campo WKT</translation>
     </message>
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextpluginguibase.ui" line="435"/>
@@ -14699,7 +14699,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpsplugin.cpp" line="175"/>
         <source>Unable to create a GPX file with the given name. Try again with another name or in another directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile creare il file GPX con il nome utilizzato. Riprovare con un altro nome o salvare in un&apos;altra cartella.</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpsplugin.cpp" line="218"/>
@@ -22793,7 +22793,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsoptionsbase.ui" line="225"/>
         <source>Icon size</source>
-        <translation type="unfinished"></translation>
+        <translation>Dimensioni delle icone</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsoptionsbase.ui" line="254"/>
@@ -22838,7 +22838,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsoptionsbase.ui" line="361"/>
         <source>Representation for NULL values</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostra i valori NULL come</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsoptionsbase.ui" line="398"/>
@@ -25401,42 +25401,42 @@ Proceed?</source>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="368"/>
         <source>WMS</source>
-        <translation type="unfinished">WMS</translation>
+        <translation>WMS</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="374"/>
         <source>Service Capabilitities</source>
-        <translation type="unfinished"></translation>
+        <translation>Service Capabilitities</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="386"/>
         <source>Title</source>
-        <translation type="unfinished">Titolo</translation>
+        <translation>Titolo</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="399"/>
         <source>Person</source>
-        <translation type="unfinished"></translation>
+        <translation>Persona</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="412"/>
         <source>Phone</source>
-        <translation type="unfinished"></translation>
+        <translation>Telefono</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="428"/>
         <source>Abstract</source>
-        <translation type="unfinished">Riassunto</translation>
+        <translation>Riassunto</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="438"/>
         <source>E-Mail</source>
-        <translation type="unfinished"></translation>
+        <translation>E-Mail</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="448"/>
         <source>Organization</source>
-        <translation type="unfinished"></translation>
+        <translation>Organizzazione</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="464"/>
@@ -25446,27 +25446,27 @@ Proceed?</source>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="476"/>
         <source>Min. X</source>
-        <translation type="unfinished"></translation>
+        <translation>X Min</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="493"/>
         <source>Min. Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y Min</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="510"/>
         <source>Max. X</source>
-        <translation type="unfinished"></translation>
+        <translation>X Max</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="527"/>
         <source>Max. Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y Max</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="544"/>
         <source>Use Current Canvas Extent</source>
-        <translation type="unfinished"></translation>
+        <translation>Imposta alla estensione della mappa</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="567"/>
@@ -25476,12 +25476,12 @@ Proceed?</source>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="582"/>
         <source>Add</source>
-        <translation type="unfinished">Aggiungi</translation>
+        <translation>Aggiungi</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="589"/>
         <source>Remove</source>
-        <translation type="unfinished">Rimuovi</translation>
+        <translation>Rimuovi</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="596"/>
@@ -25761,7 +25761,9 @@ Because of this the projection selector will not work...</source>
         <source>
 The data provider said:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>
+La sorgente dati riporta:
+%1</translation>
     </message>
     <message>
         <source>An error occurred when executing the query</source>
@@ -32773,12 +32775,12 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/exportdlg.cpp" line="38"/>
         <source>Select destination layer</source>
-        <translation type="unfinished"></translation>
+        <translation>Scegli un layer di destinazione</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/exportdlg.cpp" line="50"/>
         <source>New temporary layer</source>
-        <translation type="unfinished"></translation>
+        <translation>Nuovo layer temporaneo</translation>
     </message>
 </context>
 <context>
@@ -32796,7 +32798,7 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="57"/>
         <source>Direction field</source>
-        <translation type="unfinished"></translation>
+        <translation>Campo per la direzione</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="64"/>
@@ -32814,12 +32816,12 @@ URL provata: %1</translation>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="76"/>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="94"/>
         <source>Both direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrambe le direzioni</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="82"/>
         <source>Speed field</source>
-        <translation type="unfinished"></translation>
+        <translation>Campo per la velocità</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="89"/>
@@ -32839,7 +32841,7 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="106"/>
         <source>Line lengths</source>
-        <translation type="unfinished"></translation>
+        <translation>Lunghezza delle linee</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="111"/>
@@ -32870,7 +32872,7 @@ URL provata: %1</translation>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="206"/>
         <location filename="../src/plugins/roadgraph/linevectorlayerwidget.cpp" line="207"/>
         <source>Always use default</source>
-        <translation type="unfinished"></translation>
+        <translation>Usa sempre il predefinito</translation>
     </message>
 </context>
 <context>
@@ -32878,37 +32880,37 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/settingsdlg.cpp" line="32"/>
         <source>Road graph plugin settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Impostazioni del plugin grafo strade</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/settingsdlg.cpp" line="36"/>
         <source>Time unit</source>
-        <translation type="unfinished"></translation>
+        <translation>Unità di tempo</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/settingsdlg.cpp" line="43"/>
         <source>Distance unit</source>
-        <translation type="unfinished"></translation>
+        <translation>Unità di distanza</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/settingsdlg.cpp" line="66"/>
         <source>second</source>
-        <translation type="unfinished"></translation>
+        <translation>secondi</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/settingsdlg.cpp" line="67"/>
         <source>hour</source>
-        <translation type="unfinished"></translation>
+        <translation>ora</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/settingsdlg.cpp" line="68"/>
         <source>meter</source>
-        <translation type="unfinished"></translation>
+        <translation>metro</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/settingsdlg.cpp" line="69"/>
         <source>kilometer</source>
-        <translation type="unfinished"></translation>
+        <translation>chilometro</translation>
     </message>
 </context>
 <context>
@@ -32916,17 +32918,17 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="54"/>
         <source>Shortest path</source>
-        <translation type="unfinished"></translation>
+        <translation>Via più breve</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="65"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Partenza</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="77"/>
         <source>Stop</source>
-        <translation type="unfinished">Interrompi</translation>
+        <translation>Interrompi</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="90"/>
@@ -32943,7 +32945,7 @@ URL provata: %1</translation>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="93"/>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="107"/>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tempo</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="115"/>
@@ -32979,12 +32981,12 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="249"/>
         <source>Start point doesn&apos;t tie to the road!</source>
-        <translation type="unfinished"></translation>
+        <translation>Il punto di partenza non è sulla strada!</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/shortestpathwidget.cpp" line="254"/>
         <source>Stop point doesn&apos;t tie to the road!</source>
-        <translation type="unfinished"></translation>
+        <translation>Il punto di arrivo non è sulla strada!</translation>
     </message>
 </context>
 <context>
@@ -32992,12 +32994,12 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="98"/>
         <source>Road graph settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Impostazioni del grafo strade</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="99"/>
         <source>Show road&apos;s direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostra la direzione della strada</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="100"/>
@@ -33026,7 +33028,7 @@ URL provata: %1</translation>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="134"/>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="135"/>
         <source>Road graph</source>
-        <translation type="unfinished"></translation>
+        <translation>Grafo strade</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="196"/>
@@ -33041,12 +33043,12 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="205"/>
         <source>&lt;b&gt;Developers:&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Sviluppatori:&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="207"/>
         <source>&lt;b&gt;Homepage:&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Homepage:&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/roadgraph/roadgraphplugin.cpp" line="235"/>
@@ -33079,7 +33081,7 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/sqlanywhere/sadbtablemodel.cpp" line="42"/>
         <source>Line Interpretation</source>
-        <translation type="unfinished"></translation>
+        <translation>Interpretazione della linea</translation>
     </message>
     <message>
         <location filename="../src/plugins/sqlanywhere/sadbtablemodel.cpp" line="43"/>
@@ -33107,7 +33109,7 @@ URL provata: %1</translation>
     <message>
         <location filename="../src/plugins/sqlanywhere/sanewconnection.cpp" line="127"/>
         <source>Failed to load interface</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile caricare l&apos;interfaccia</translation>
     </message>
     <message>
         <location filename="../src/plugins/sqlanywhere/sanewconnection.cpp" line="154"/>
@@ -33126,7 +33128,10 @@ URL provata: %1</translation>
 
 SQL Anywhere error code: %1
 Description: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Connessione non riuscita. Controlla le impostazioni e riprova. 
+
+Codice di errore SQL Anywhere: %1
+Descrizione: %2</translation>
     </message>
 </context>
 <context>
@@ -33169,7 +33174,7 @@ Description: %2</source>
     <message>
         <location filename="../src/plugins/sqlanywhere/sanewconnectionbase.ui" line="115"/>
         <source>Connection Parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>Parametri di connessione</translation>
     </message>
     <message>
         <location filename="../src/plugins/sqlanywhere/sanewconnectionbase.ui" line="125"/>
@@ -33397,7 +33402,7 @@ Description: %2</source>
         <location filename="../src/plugins/sqlanywhere/sasourceselect.cpp" line="77"/>
         <location filename="../src/plugins/sqlanywhere/sasourceselect.cpp" line="220"/>
         <source>Line Interpretation</source>
-        <translation type="unfinished"></translation>
+        <translation>Interpretazione della linea</translation>
     </message>
     <message>
         <location filename="../src/plugins/sqlanywhere/sasourceselect.cpp" line="78"/>
@@ -33434,7 +33439,7 @@ Description: %2</source>
     <message>
         <location filename="../src/plugins/sqlanywhere/sasourceselect.cpp" line="352"/>
         <source>Failed to load interface</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile caricare l&apos;interfaccia</translation>
     </message>
     <message>
         <location filename="../src/plugins/sqlanywhere/sasourceselect.cpp" line="409"/>
@@ -33462,7 +33467,7 @@ Description: %3</source>
     <message>
         <location filename="../src/plugins/sqlanywhere/sasourceselect.cpp" line="566"/>
         <source>found</source>
-        <translation type="unfinished"></translation>
+        <translation>trovato</translation>
     </message>
     <message>
         <location filename="../src/plugins/sqlanywhere/sasourceselect.cpp" line="566"/>
@@ -35133,7 +35138,7 @@ Il plugin non sarà abilitato.</translation>
     </message>
     <message>
         <source>Extract nodes</source>
-        <translation>Estrai nodi</translation>
+        <translation>Estrai vertici</translation>
     </message>
     <message>
         <source>Simplify geometries</source>

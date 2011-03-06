@@ -23,6 +23,8 @@
 #include "qgisgui.h"
 #include "qgscontexthelp.h"
 
+#include <qgscoordinatereferencesystem.h>
+
 
 /**
  * \class QgsOptions
@@ -50,8 +52,8 @@ class QgsOptions : public QDialog, private Ui::QgsOptionsBase
   public slots:
     //! Slot called when user chooses to change the project wide projection.
     void on_pbnSelectProjection_clicked();
-    void on_chkAntiAliasing_stateChanged();
-    void on_chkUseQPixmap_stateChanged();
+    //! Slot called when user chooses to change the default 'on the fly' projection.
+    void on_pbnSelectOtfProjection_clicked();
     void saveOptions();
     //! Slot to change the theme this is handled when the user
     // activates or highlights a theme name in the drop-down list
@@ -91,6 +93,18 @@ class QgsOptions : public QDialog, private Ui::QgsOptionsBase
     void on_mRemoveUrlPushButton_clicked();
 
     /* Let the user add a path to the list of search paths
+     * used for finding user Plugin libs.
+     * @note added in QGIS 1.7
+     */
+    void on_mBtnAddPluginPath_clicked();
+
+    /* Let the user remove a path to the list of search paths
+     * used for finding Plugin libs.
+     * @note added in QGIS 1.7
+     */
+    void on_mBtnRemovePluginPath_clicked();
+
+    /* Let the user add a path to the list of search paths
      * used for finding SVG files.
      * @note added in QGIS 1.4
      */
@@ -115,12 +129,9 @@ class QgsOptions : public QDialog, private Ui::QgsOptionsBase
     QString getEllipsoidName( QString theEllipsoidAcronym );
 
   private:
-    //
     QStringList i18nList();
-
-    //!Default proj4 string used for new layers added that have no projection
-    QString mGlobalProj4String;
-
+    QgsCoordinateReferenceSystem mDefaultCrs;
+    QgsCoordinateReferenceSystem mGlobalCrs;
 };
 
 #endif // #ifndef QGSOPTIONS_H

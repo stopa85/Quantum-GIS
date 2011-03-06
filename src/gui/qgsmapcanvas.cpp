@@ -78,8 +78,10 @@ class QgsMapCanvas::CanvasProperties
 
 
 QgsMapCanvas::QgsMapCanvas( QWidget * parent, const char *name )
-    : QGraphicsView( parent ),
-    mCanvasProperties( new CanvasProperties )
+    : QGraphicsView( parent )
+    , mCanvasProperties( new CanvasProperties )
+    , mNewSize( QSize() )
+    , mPainting( false )
 {
   mScene = new QGraphicsScene();
   setScene( mScene );
@@ -423,7 +425,7 @@ void QgsMapCanvas::saveAsImage( QString theFileName, QPixmap * theQPixmap, QStri
   else //use the map view
   {
     QPixmap *pixmap = dynamic_cast<QPixmap *>( &mMap->paintDevice() );
-    if( !pixmap )
+    if ( !pixmap )
       return;
 
     pixmap->save( theFileName, theFormat.toLocal8Bit().data() );
@@ -943,13 +945,7 @@ void QgsMapCanvas::paintEvent( QPaintEvent *e )
 {
   if ( mNewSize.isValid() )
   {
-    static bool isAlreadyIn = false;
-    static QSize lastSize = QSize();
-
-    lastSize = mNewSize;
-    mNewSize = QSize();
-
-    if ( isAlreadyIn || mDrawing )
+    if ( mPainting || mDrawing )
     {
       //cancel current render progress
       if ( mMapRenderer )
@@ -962,18 +958,18 @@ void QgsMapCanvas::paintEvent( QPaintEvent *e )
       }
       return;
     }
-    isAlreadyIn = true;
 
-    while ( lastSize.isValid() )
+    mPainting = true;
+
+    while ( mNewSize.isValid() )
     {
-      int width = lastSize.width();
-      int height = lastSize.height();
-      lastSize = QSize();
+      QSize lastSize = mNewSize;
+      mNewSize = QSize();
 
       //set map size before scene size helps keep scene indexes updated properly
       // this was the cause of rubberband artifacts
-      mMap->resize( QSize( width, height ) );
-      mScene->setSceneRect( QRectF( 0, 0, width, height ) );
+      mMap->resize( lastSize );
+      mScene->setSceneRect( QRectF( 0, 0, lastSize.width(), lastSize.height() ) );
 
       // notify canvas items of change
       updateCanvasItemPositions();
@@ -984,7 +980,8 @@ void QgsMapCanvas::paintEvent( QPaintEvent *e )
 
       emit extentsChanged();
     }
-    isAlreadyIn = false;
+
+    mPainting = false;
   }
 
   QGraphicsView::paintEvent( e );
@@ -1237,7 +1234,7 @@ bool QgsMapCanvas::isFrozen()
 QPixmap& QgsMapCanvas::canvasPixmap()
 {
   QPixmap *pixmap = dynamic_cast<QPixmap *>( &canvasPaintDevice() );
-  if( pixmap )
+  if ( pixmap )
   {
     return *pixmap;
   }
@@ -1247,7 +1244,7 @@ QPixmap& QgsMapCanvas::canvasPixmap()
   static QPixmap staticPixmap;
 
   QImage *image = dynamic_cast<QImage *>( &mMap->paintDevice() );
-  if( image )
+  if ( image )
   {
     staticPixmap = QPixmap::fromImage( *image );
   }

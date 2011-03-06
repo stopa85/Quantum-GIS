@@ -228,6 +228,12 @@ void QgsMapRenderer::render( QPainter* painter )
     return;
   }
 
+  if ( mSize.width() == 1 && mSize.height() == 1 )
+  {
+    QgsDebugMsg( "size 1x1... not rendering" );
+    return;
+  }
+
   QPaintDevice* thePaintDevice = painter->device();
   if ( !thePaintDevice )
   {
@@ -235,13 +241,13 @@ void QgsMapRenderer::render( QPainter* painter )
   }
 
   // wait
-  if( mDrawing )
+  if ( mDrawing )
   {
     QgsDebugMsg( "already rendering" );
     QCoreApplication::processEvents();
   }
 
-  if( mDrawing )
+  if ( mDrawing )
   {
     QgsDebugMsg( "still rendering - skipping" );
     return;
@@ -379,9 +385,9 @@ void QgsMapRenderer::render( QPainter* painter )
       {
         r1 = mExtent;
         split = splitLayersExtent( ml, r1, r2 );
-        ct = new QgsCoordinateTransform( ml->srs(), *mDestCRS );
+        ct = new QgsCoordinateTransform( ml->crs(), *mDestCRS );
         mRenderContext.setExtent( r1 );
-        if( !r1.isFinite() || !r2.isFinite() ) //there was a problem transforming the extent. Skip the layer
+        if ( !r1.isFinite() || !r2.isFinite() ) //there was a problem transforming the extent. Skip the layer
         {
           continue;
         }
@@ -453,7 +459,8 @@ void QgsMapRenderer::render( QPainter* painter )
             mypImage->fill( 0 );
             ml->setCacheImage( mypImage ); //no need to delete the old one, maplayer does it for you
             QPainter * mypPainter = new QPainter( ml->cacheImage() );
-            if ( mySettings.value( "/qgis/enable_anti_aliasing", false ).toBool() )
+            // Changed to enable anti aliasing by default in QGIS 1.7
+            if ( mySettings.value( "/qgis/enable_anti_aliasing", true ).toBool() )
             {
               mypPainter->setRenderHint( QPainter::Antialiasing );
             }
@@ -559,7 +566,7 @@ void QgsMapRenderer::render( QPainter* painter )
           {
             QgsRectangle r1 = mExtent;
             split = splitLayersExtent( ml, r1, r2 );
-            ct = new QgsCoordinateTransform( ml->srs(), *mDestCRS );
+            ct = new QgsCoordinateTransform( ml->crs(), *mDestCRS );
             mRenderContext.setExtent( r1 );
           }
           else
@@ -684,7 +691,7 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRectangle& extent
   {
     try
     {
-      QgsCoordinateTransform tr( layer->srs(), *mDestCRS );
+      QgsCoordinateTransform tr( layer->crs(), *mDestCRS );
 
 #ifdef QGISDEBUG
       // QgsLogger::debug<QgsRectangle>("Getting extent of canvas in layers CS. Canvas is ", extent, __FILE__, __FUNCTION__, __LINE__);
@@ -740,7 +747,7 @@ QgsRectangle QgsMapRenderer::layerExtentToOutputExtent( QgsMapLayer* theLayer, Q
   {
     try
     {
-      QgsCoordinateTransform tr( theLayer->srs(), *mDestCRS );
+      QgsCoordinateTransform tr( theLayer->crs(), *mDestCRS );
       extent = tr.transformBoundingBox( extent );
     }
     catch ( QgsCsException &cse )
@@ -763,7 +770,7 @@ QgsPoint QgsMapRenderer::layerToMapCoordinates( QgsMapLayer* theLayer, QgsPoint 
   {
     try
     {
-      QgsCoordinateTransform tr( theLayer->srs(), *mDestCRS );
+      QgsCoordinateTransform tr( theLayer->crs(), *mDestCRS );
       point = tr.transform( point, QgsCoordinateTransform::ForwardTransform );
     }
     catch ( QgsCsException &cse )
@@ -785,7 +792,7 @@ QgsPoint QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsPoint 
   {
     try
     {
-      QgsCoordinateTransform tr( theLayer->srs(), *mDestCRS );
+      QgsCoordinateTransform tr( theLayer->crs(), *mDestCRS );
       point = tr.transform( point, QgsCoordinateTransform::ReverseTransform );
     }
     catch ( QgsCsException &cse )
@@ -807,7 +814,7 @@ QgsRectangle QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsRe
   {
     try
     {
-      QgsCoordinateTransform tr( theLayer->srs(), *mDestCRS );
+      QgsCoordinateTransform tr( theLayer->crs(), *mDestCRS );
       rect = tr.transform( rect, QgsCoordinateTransform::ReverseTransform );
     }
     catch ( QgsCsException &cse )

@@ -17,6 +17,8 @@
 /* $Id$ */
 
 #include <QSettings>
+#include <QPushButton>
+
 #include "qgstipgui.h"
 #include "qgsapplication.h"
 #include <qgstip.h>
@@ -41,21 +43,68 @@ QgsTipGui::~QgsTipGui()
 void QgsTipGui::init()
 {
 
-  // set the 60x60 icon pixmap
-  QPixmap icon( QgsApplication::iconsPath() + "qgis-icon-60x60.png" );
-  qgisIcon->setPixmap( icon );
   QgsTipFactory myFactory;
   QgsTip myTip = myFactory.getTip();
-  lblTitle->setText(myTip.title());
-  txtTip->setHtml(myTip.content());
+  mTipPosition = myFactory.position( myTip );
 
+  showTip( myTip );
+
+  QPushButton *pb;
+  pb = new QPushButton( tr( "&Previous" ) );
+  connect( pb, SIGNAL( clicked() ), this, SLOT( prevClicked() ) );
+  buttonBox->addButton( pb, QDialogButtonBox::ActionRole );
+
+  pb = new QPushButton( tr( "&Next" ) );
+  connect( pb, SIGNAL( clicked() ), this, SLOT( nextClicked() ) );
+  buttonBox->addButton( pb, QDialogButtonBox::ActionRole );
 }
 
-void QgsTipGui::on_cbxDisableTips_toggled(bool theFlag)
+void QgsTipGui::showTip( QgsTip myTip )
+{
+  // TODO - This html construction can be simplified using QStringBuilder
+  //        once Qt 4.6 is the minimum required version for building QGIS.
+  //
+  QString content = "<img src='"
+                    + QgsApplication::iconsPath()
+                    + "qgis-icon-60x60.png"
+                    + "' style='float:left;'>"
+                    + "<h2>"
+                    + myTip.title()
+                    + "</h2><br clear='all'/>"
+                    + myTip.content();
+
+  txtTip->setHtml( content );
+}
+
+void QgsTipGui::on_cbxDisableTips_toggled( bool theFlag )
 {
   QSettings settings;
-  //note the ! below as when the cbx is checked (true) we want to 
+  //note the ! below as when the cbx is checked (true) we want to
   //change the setting to false
   settings.setValue( "/qgis/showTips", !theFlag );
   hide();
+}
+
+void QgsTipGui::nextClicked()
+{
+  mTipPosition += 1;
+  QgsTipFactory myFactory;
+  if ( mTipPosition >= myFactory.count() )
+  {
+    mTipPosition = 0;
+  }
+  QgsTip myTip = myFactory.getTip( mTipPosition );
+  showTip( myTip );
+}
+
+void QgsTipGui::prevClicked()
+{
+  mTipPosition -= 1;
+  QgsTipFactory myFactory;
+  if ( mTipPosition < 0 )
+  {
+    mTipPosition = myFactory.count() - 1;
+  }
+  QgsTip myTip = myFactory.getTip( mTipPosition );
+  showTip( myTip );
 }

@@ -209,9 +209,9 @@ void QgsSLDParser::layersAndStylesCapabilities( QDomElement& parentElement, QDom
         }
 
         //append geographic bbox and the CRS elements
-        QList<int> epsgNumbers = createCRSListForLayer( theMapLayer );
-        appendCRSElementsToLayer( layerElement, doc, epsgNumbers );
-        appendExGeographicBoundingBox( layerElement, doc, theMapLayer->extent(), theMapLayer->srs() );
+        QStringList crsNumbers = createCRSListForLayer( theMapLayer );
+        appendCRSElementsToLayer( layerElement, doc, crsNumbers );
+        appendExGeographicBoundingBox( layerElement, doc, theMapLayer->extent(), theMapLayer->crs() );
 
         //iterate over all <UserStyle> nodes within a user layer
         QDomNodeList userStyleList = layerNodeList.item( i ).toElement().elementsByTagName( "UserStyle" );
@@ -1519,7 +1519,7 @@ void QgsSLDParser::setCrsForLayer( const QDomElement& layerElem, QgsMapLayer* ml
     {
       //set spatial ref sys
       QgsCoordinateReferenceSystem srs;
-      srs.createFromEpsg( epsgnr );
+      srs.createFromOgcWmsCrs( QString( "EPSG:%1" ).arg( epsgnr ) );
       ml->setCrs( srs );
     }
   }
