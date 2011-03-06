@@ -2297,7 +2297,12 @@ double QgsRasterLayer::rasterUnitsPerPixel()
 // We can only use one of the mGeoTransform[], so go with the
 // horisontal one.
 
-  return qAbs( mGeoTransform[1] );
+  //return qAbs( mGeoTransform[1] );
+  if ( mDataProvider->capabilities() & QgsRasterDataProvider::ExactResolution && mDataProvider->xSize() > 0 )
+  {
+    return mDataProvider->extent().width() / mDataProvider->xSize();
+  }
+  return 1;
 }
 
 

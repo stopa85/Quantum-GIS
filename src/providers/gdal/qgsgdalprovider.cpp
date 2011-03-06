@@ -928,6 +928,7 @@ bool QgsGdalProvider::identify( const QgsPoint& thePoint, QMap<QString, QString>
 int QgsGdalProvider::capabilities() const
 {
   int capability = QgsRasterDataProvider::Identify 
+                | QgsRasterDataProvider::ExactResolution
                 | QgsRasterDataProvider::EstimatedMinimumMaximum
                 | QgsRasterDataProvider::BuildPyramids
                 | QgsRasterDataProvider::Histogram
