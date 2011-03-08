@@ -180,16 +180,17 @@ void QgsSingleSymbolDialog::refreshMarkers()
   //set outline / line style
   //
   cboOutlineStyle->addItem( QIcon( QgsSymbologyUtils::char2LinePixmap( "SolidLine" ) ), "", "SolidLine" );
+  cboOutlineStyle->addItem( QIcon( QgsSymbologyUtils::char2LinePixmap( "NoPen" ) ), tr( "None" ), "NoPen" );
   cboOutlineStyle->addItem( QIcon( QgsSymbologyUtils::char2LinePixmap( "DashLine" ) ), "", "DashLine" );
   cboOutlineStyle->addItem( QIcon( QgsSymbologyUtils::char2LinePixmap( "DotLine" ) ), "", "DotLine" );
   cboOutlineStyle->addItem( QIcon( QgsSymbologyUtils::char2LinePixmap( "DashDotLine" ) ), "" , "DashDotLine" );
   cboOutlineStyle->addItem( QIcon( QgsSymbologyUtils::char2LinePixmap( "DashDotDotLine" ) ), "", "DashDotDotLine" );
-  cboOutlineStyle->addItem( QIcon( QgsSymbologyUtils::char2LinePixmap( "NoPen" ) ), tr( "None" ), "NoPen" );
 
   //
   //set pattern icons and state
   //
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "SolidPattern" ) ), "", "SolidPattern" );
+  cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "NoBrush" ) ), tr( "None" ), "NoBrush" );
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "HorPattern" ) ), "", "HorPattern" );
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "VerPattern" ) ), "", "VerPattern" );
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "CrossPattern" ) ), "", "CrossPattern" );
@@ -203,7 +204,6 @@ void QgsSingleSymbolDialog::refreshMarkers()
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "Dense5Pattern" ) ), "", "Dense5Pattern" );
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "Dense6Pattern" ) ), "", "Dense6Pattern" );
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "Dense7Pattern" ) ), "", "Dense7Pattern" );
-  cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "NoBrush" ) ), tr( "None" ), "NoBrush" );
   cboFillStyle->addItem( QIcon( QgsSymbologyUtils::char2PatternPixmap( "TexturePattern" ) ), tr( "Texture" ), "TexturePattern" );
 
   if ( mVectorLayer && mVectorLayer->geometryType() != QGis::Point )
@@ -252,7 +252,12 @@ QgsSingleSymbolDialog::~QgsSingleSymbolDialog()
 
 void QgsSingleSymbolDialog::selectOutlineColor()
 {
+#if defined(Q_WS_MAC) && QT_VERSION >= 0x040500 && defined(QT_MAC_USE_COCOA)
+  // Native Mac dialog works only for Qt Carbon
+  QColor c = QColorDialog::getColor( btnOutlineColor->color(), this, "", QColorDialog::DontUseNativeDialog );
+#else
   QColor c = QColorDialog::getColor( btnOutlineColor->color(), this );
+#endif
 
   if ( c.isValid() )
   {
@@ -265,7 +270,12 @@ void QgsSingleSymbolDialog::selectOutlineColor()
 
 void QgsSingleSymbolDialog::selectFillColor()
 {
+#if defined(Q_WS_MAC) && QT_VERSION >= 0x040500 && defined(QT_MAC_USE_COCOA)
+  // Native Mac dialog works only for Qt Carbon
+  QColor c = QColorDialog::getColor( btnFillColor->color(), this, "", QColorDialog::DontUseNativeDialog );
+#else
   QColor c = QColorDialog::getColor( btnFillColor->color(), this );
+#endif
 
   if ( c.isValid() )
   {
