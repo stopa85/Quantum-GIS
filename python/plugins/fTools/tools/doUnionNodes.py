@@ -157,6 +157,39 @@ def geomVertexCount( geometry ):
   else:
     return None
 
+def QgsPointCmp( p1, p2 ):
+  if p1[0].x() < p2[0].x():
+    return -1
+  elif p1[0].x() > p2[0].x():
+    return 1
+  else:
+    if p1[0].y() < p2[0].y():
+      return -1
+    elif p1[0].y() > p2[0].y():
+      return 1
+  return 0
+
+def binarySearch( a, v ):
+  minimum = 0;
+  maximum = len(a)-1
+  while True:
+    avg = minimum + (maximum-minimum)/2
+    if avg == maximum or avg == minimum:
+      if QgsPointCmp(a[minimum],[v])==0:
+        return minimum
+      elif QgsPointCmp(a[maximum],[v])==0:
+        return maximum
+      else:
+        return -1
+
+    if QgsPointCmp(a[avg],[v])==0:
+      return avg
+    elif QgsPointCmp(a[avg],[v])>0:
+      maximum = avg
+    elif QgsPointCmp(a[avg],[v])<0:
+      minimum = avg
+  return -1
+
 class GeneralizationThread( QThread ):
   def __init__( self, inputLayer, useSelection, tolerance, writeShape, shapePath, shapeEncoding ):
     QThread.__init__( self, QThread.currentThread() )
@@ -171,6 +204,104 @@ class GeneralizationThread( QThread ):
 
     self.mutex = QMutex()
     self.stopMe = 0
+    
+    self.points = []
+    self.indx   = QgsSpatialIndex()
+    self.diction = []
+
+  def extractNodesFromGeometry( self, geom ):
+    points = []
+    t = geom.type()
+    polylines = []
+    if t == 1:
+      polylines = [ geom.asPolyline() ]
+    elif t == 2:
+      t = geom.asPolygon()
+      for v in t:
+        polylines.append( v[:-1] )
+    
+    for polyline in polylines:
+      for p in polyline:
+        points.append([ p, [ p ] ])
+    return points
+ 
+  def extractNodes( self ):
+    points = []
+    if self.useSelection:
+      selection = self.inputLayer.selectedFeatures()
+      for f in selection:
+        featGeometry = QgsGeometry( f.geometry() )
+        points += self.extractNodesFromGeometry( featGeometry )
+    else:
+      self.inputLayer.select()
+      f = QgsFeature()
+      while self.inputLayer.nextFeature( f ):
+        featGeometry = QgsGeometry( f.geometry() )
+        points += self.extractNodesFromGeometry( featGeometry )
+
+    return points
+
+  def makeNewGeometry( self, featGeometry ):
+    t = featGeometry.type()
+    polylines = [];
+    if t == 1:
+      polylines = [ featGeometry.asPolyline() ]
+    elif t == 2:
+      polylines = featGeometry.asPolygon()
+    new_polylines = []
+    for polyline in polylines:
+      new_polyline = []
+      for point in polyline:
+        b = binarySearch( self.diction, point )
+        if b == -1:
+          new_polyline.append( point )
+        else:
+          new_polyline.append( self.points[ self.diction[b][1] ][0] )
+      
+      new_polylines.append( new_polyline )
+    new_geometry = None
+    if t == 1:
+      new_geometry = QgsGeometry.fromPolyline( new_polylines[0] )
+    elif t == 2:
+      new_geometry = QgsGeometry.fromPolygon( new_polylines )
+    return new_geometry
+  
+  
+  def addPoints( self, points ):
+    i = 0;
+    while i < len(points):
+      p = points[i][0]
+      res = self.indx.nearestNeighbor( p, 1 )
+      pointId = None
+      if len(res) != 0:
+        pointId = res[0]
+      
+      if pointId != None and self.points[pointId][0].sqrDist( p ) < self.tolerance:
+        k1 = len( self.points[pointId][1] )
+        p1 = self.points[pointId][0]
+        p2 = QgsPoint( (k1*p1.x()+p.x())/(k1+1) , (k1*p1.y()+p.y())/(k1+1) )
+        self.points[pointId][0] = p2;
+        self.points[pointId][1] += [ p ]
+
+        #update self.indx
+        f = QgsFeature()
+        f.setFeatureId( pointId )
+        f.setGeometry( QgsGeometry.fromPoint( p1 ) )
+        self.indx.deleteFeature( f )
+        f.setGeometry( QgsGeometry.fromPoint( p2 ) )
+        self.indx.insertFeature( f )
+       
+      else:
+        pointId = len(self.points)
+        self.points.append( [ p, [p] ] )
+        
+        #insert self.indx
+        f = QgsFeature()
+        f.setFeatureId( pointId )
+        f.setGeometry( QgsGeometry.fromPoint( p ) )
+        self.indx.insertFeature( f )
+      
+      i = i + 1
 
   def run( self ):
     self.mutex.lock()
@@ -178,103 +309,57 @@ class GeneralizationThread( QThread ):
     self.mutex.unlock()
 
     interrupted = False
-
+    
     shapeFileWriter = None
-
-    points = [];
+    
+    self.points = []
     if self.useSelection:
       selection = self.inputLayer.selectedFeatures()
-      self.emit( SIGNAL( "rangeCalculated( PyQt_PyObject )" ), len( selection ) )
+      self.emit( SIGNAL("rangeCalculated( PyQt_PyObject )"), len( selection )*2 )
       for f in selection:
         featGeometry = QgsGeometry( f.geometry() )
-        t = featGeometry.type()
-        polylines = []
-        if t == 1:
-          polylines = [ featGeometry.asPolyline() ]
-        elif t == 2:
-          t = featGeometry.asPolygon(); 
-          for v in t:
-            polylines.append( v[:-1] )
+        self.addPoints( self.extractNodesFromGeometry( featGeometry ) )
+        self.emit( SIGNAL( "featureProcessed()" ) )
+        
+    else:
+      self.inputLayer.select()
+      self.emit( SIGNAL("rangeCalculated( PyQt_PyObject )"), self.inputLayer.featureCount() )
+      f = QgsFeature()
+      while self.inputLayer.nextFeature( f ):     
+        featGeometry = QgsGeometry( f.geometry() )
+        self.addPoints( self.extractNodesFromGeometry( featGeometry ) )
+        self.emit( SIGNAL( "featureProcessed()" ) )
 
+    i=0
+    while i<len(self.points):
+      for p in self.points[i][1]:
+        self.diction.append( [ p, i ] )
+      i=i+1
 
-        for polyline in polylines:
-          for p in polyline:
-            points.append([ p,[ p, 1 ] ]);
-
-    while True:
-      i = 0
-      minI = None
-      minJ = None
-      minDist = self.tolerance
-      while i < len(points):
-        j=i+1;
-        while j < len(points):
-          print i, j
-          p1 = points[i][1][0]
-          p2 = points[j][1][0]
-          if p1.sqrDist( p2 ) < minDist and p1 != p2:
-            minDist = p1.sqrDist( p2 )
-            minI = i
-            minJ = j
-          
-          j = j + 1;
-        i = i + 1
-      
-      if minJ != None:
-        k1 = points[minI][1][1]
-        k2 = points[minJ][1][1]
-        p1 = points[minI][1][0]
-        p2 = points[minJ][1][0]
-        p3 = QgsPoint( ( k1*p1.x()+k2*p2.x() ) / (k1+k2), ( k1*p1.y()+k2*p2.y() ) / (k1+k2) )
-        points[minI][1][0] = p3
-        points[minJ][1][0] = p3
-        points[minI][1][1] = k1+k2
-        points[minJ][1][1] = k1+k2
-      else:
-        break; 
+    self.diction = sorted( self.diction, cmp=QgsPointCmp )
    
+    if not self.inputLayer.isEditable():
+      self.inputLayer.startEditing()
+      self.inputLayer.beginEditCommand( QString( "Simplify line(s)" ) )
+ 
+    if self.useSelection:
+      selection = self.inputLayer.selectedFeatures()
+      for f in selection:
+        featGeometry = QgsGeometry( f.geometry() )
+        new_geom = self.makeNewGeometry( featGeometry )
+        self.inputLayer.changeGeometry( f.id(), new_geom )
+        self.emit( SIGNAL( "featureProcessed()" ) )
 
-    if not self.writeShape:
-      if not self.inputLayer.isEditable():
-        self.inputLayer.startEditing()
-        self.inputLayer.beginEditCommand( QString( "Simplify line(s)" ) )
-      
-      if self.useSelection:
-        selection = self.inputLayer.selectedFeatures()
-        self.emit( SIGNAL( "rangeCalculated( PyQt_PyObject )" ), len( selection ) )
-        for f in selection:
-          featureId = f.id()
-          featGeometry = QgsGeometry( f.geometry() )
-          t = featGeometry.type()
-          polylines = [];
-          if t == 1:
-            polylines = [ featGeometry.asPolyline() ]
-          elif t == 2:
-            polylines = featGeometry.asPolygon()
-          
-          new_polylines = []
-          for polyline in polylines:
-            new_polyline = []
-            for point in polyline:
-              i = 0
-              b = False
-              while i < len(points):
-                if point == points[i][0]:
-                  b=True
-                  new_polyline.append( points[i][1][0] )
-                  break
-                i = i + 1      
-              if not b:
-                new_polyline.append( point )
-            new_polylines.append( new_polyline )
-          
-          new_geometry = None
-          if t == 1:
-            new_geometry = QgsGeometry.fromPolyline( new_polylines[0] )
-          elif t == 2:
-            new_geometry = QgsGeometry.fromPolygon( new_polylines )
-
-          self.inputLayer.changeGeometry( featureId, new_geometry )
+    else:
+      self.inputLayer.select()
+      f = QgsFeature()
+      while self.inputLayer.nextFeature( f ):
+        featGeometry = QgsGeometry( f.geometry() )
+        new_geom = self.makeNewGeometry( featGeometry )
+        featureId = f.id()
+        self.inputLayer.changeGeometry( f.id(), new_geom )
+        self.emit( SIGNAL( "featureProcessed()" ) )
+    
 
     if self.inputLayer.isEditable():
       self.inputLayer.endEditCommand()

@@ -53,7 +53,7 @@
      <item>
       <widget class="QDoubleSpinBox" name="toleranceSpin">
        <property name="decimals">
-        <number>6</number>
+        <number>8</number>
        </property>
        <property name="minimum">
         <double>0.000000000000000</double>
@@ -62,7 +62,7 @@
         <double>10000000.000000000000000</double>
        </property>
        <property name="value">
-        <double>0.000100000000000</double>
+        <double>0.000001000000000</double>
        </property>
       </widget>
      </item>
