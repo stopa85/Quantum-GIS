@@ -20,7 +20,7 @@
 //QGIS includes
 
 // Road-graph plugin includes
-#include "qgsgraphdirector.h"
+#include "qgsvectorgraphdirector.h"
 
 //forward declarations
 class QgsGraphBuilderInterface;
@@ -31,7 +31,7 @@ class QgsVectorLayer;
 * \class QgsLineVectorLayerDirector
 * \brief Determine making the graph from vector line layer
 */
-class ANALYSIS_EXPORT QgsLineVectorLayerDirector : public QgsGraphDirector
+class ANALYSIS_EXPORT QgsLineVectorLayerDirector : public QgsVectorGraphDirector
 {
   public:
     /**

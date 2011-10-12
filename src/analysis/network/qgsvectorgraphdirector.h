@@ -1,5 +1,5 @@
 /***************************************************************************
-  qgsgraphdirector.h
+  qgsvectorgraphdirector.h
   --------------------------------------
   Date                 : 2010-10-18
   Copyright            : (C) 2010 by Yakushev Sergey
@@ -12,8 +12,8 @@
 *   (at your option) any later version.                                    *
 *                                                                          *
 ***************************************************************************/
-#ifndef QGSGRAPHDIRECTORH
-#define QGSGRAPHDIRECTORH
+#ifndef QGSVECTORGRAPHDIRECTORH
+#define QGSVECTORGRAPHDIRECTORH
 
 //QT4 includes
 #include <QObject>
@@ -22,26 +22,26 @@
 
 //QGIS includes
 #include <qgspoint.h>
+#include "qgsarcproperter.h"
+#include "qgsgraphdirector.h"
 
 //forward declarations
 class QgsGraphBuilderInterface;
 
 /**
  * \ingroup networkanalysis
- * \class QgsGraphDirector
- * \brief Determine making the graph. QgsGraphBuilder and QgsGraphDirector is a builder patter.
+ * \class QgsVectorGraphDirector
+ * \brief Determine making the graph form vector layer. QgsVectorGraphDirector class can use 
+ * QgsArcProperter class as propety strategy. QgsGraphBuilder and QgsGraphDirector 
+ * is a builder patter.
  */
-class ANALYSIS_EXPORT QgsGraphDirector : public QObject
+class ANALYSIS_EXPORT QgsVectorGraphDirector : public QgsGraphDirector
 {
     Q_OBJECT
 
-  signals:
-    void buildProgress( int, int ) const;
-    void buildMessage( QString ) const;
-
   public:
     //! Destructor
-    virtual ~QgsGraphDirector() { };
+    virtual ~QgsVectorGraphDirector() { };
 
     /**
      * Make a graph using RgGraphBuilder
@@ -63,10 +63,17 @@ class ANALYSIS_EXPORT QgsGraphDirector : public QObject
       Q_UNUSED( tiedPoints );
     }
 
+    void addProperter( QgsArcProperter* prop )
+    {
+      mProperterList.push_back( prop );
+    }
+
     /**
      * return Director name
      */
     virtual QString name() const = 0;
 
+  protected:
+    QList<QgsArcProperter*> mProperterList;
 };
-#endif //QGSGRAPHDIRECTORH
+#endif //QGSVECTORGRAPHDIRECTORH

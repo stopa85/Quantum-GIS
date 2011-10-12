@@ -9,12 +9,15 @@ SET(QGIS_NETWORK_ANALYSIS_SRCS
   qgsdistancearcproperter.cpp
   qgslinevectorlayerdirector.cpp
   qgsgraphanalyzer.cpp
+  qgsrasterlayerdirector.cpp
 )
 
 INCLUDE_DIRECTORIES(BEFORE raster)
 
 SET(QGIS_NETWORK_ANALYSIS_MOC_HDRS
   qgsgraphdirector.h
+  qgsvectorgraphdirector.h
+  qgsrasterlayerdirector.h
 )
 
 QT4_WRAP_CPP(QGIS_NETWORK_ANALYSIS_MOC_SRCS ${QGIS_NETWORK_ANALYSIS_MOC_HDRS})
