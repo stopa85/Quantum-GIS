@@ -16,6 +16,7 @@
 #define ROADGRAPH_SETTINGS
 
 //QT4 includes
+#include <QString>
 
 //QGIS includes
 
@@ -24,9 +25,8 @@ class QWidget;
 class QgsProject;
 
 /**
-* \class RgGraphDirector
-* \brief Determine making the graph
-* contained the settings
+* \class RgSettings
+* \brief Settings object for store director type and directors settings
 */
 class RgSettings
 {
@@ -55,5 +55,9 @@ class RgSettings
      * Load settings from widget
      */
     virtual void setFromGui( QWidget * ) = 0;
+    /**
+     * get director name
+     */
+    virtual QString name() = 0;
 };
 #endif //ROADGRAPH_SETTIGNS

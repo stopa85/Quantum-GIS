@@ -143,3 +143,8 @@ void RgLineVectorLayerSettings::setFromGui( QWidget *myGui )
     mSpeedUnitName = "km/h";
   }
 }
+
+QString RgLineVectorLayerSettings::name()
+{
+  return QString( "line vector layer" );
+}

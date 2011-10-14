@@ -60,6 +60,7 @@ class RgLineVectorLayerSettings: public RgSettings
     bool test();
     QWidget *getGui( QWidget* Parent );
     void    setFromGui( QWidget* );
+    QString name();
   public:
 
     /**
