@@ -21,9 +21,9 @@
 //QGIS includes
 
 //forward declarations
+class QgsGraphDirector;
 class QWidget;
 class QgsProject;
-
 /**
 * \class RgSettings
 * \brief Settings object for store director type and directors settings
@@ -59,5 +59,9 @@ class RgSettings
      * get director name
      */
     virtual QString name() = 0;
+    /**
+     * get director
+     */
+    virtual QgsGraphDirector* director() = 0;
 };
 #endif //ROADGRAPH_SETTIGNS

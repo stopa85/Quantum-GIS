@@ -173,10 +173,10 @@ void RoadGraphPlugin::property()
   if ( !dlg.exec() )
     return;
 
+  mSettings = dlg.settings();
   mTimeUnitName = dlg.timeUnitName();
   mDistanceUnitName = dlg.distanceUnitName();
   mTopologyToleranceFactor = dlg.topologyTolerance();
-
   mSettings->write( QgsProject::instance() );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginTimeUnit", mTimeUnitName );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginDistanceUnit", mDistanceUnitName );
@@ -252,40 +252,7 @@ QgisInterface* RoadGraphPlugin::iface()
 
 const QgsGraphDirector* RoadGraphPlugin::director() const
 {
-  QString layerId;
-  QgsVectorLayer *layer = NULL;
-  QMap< QString, QgsMapLayer* > mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
-  QMap< QString, QgsMapLayer* >::const_iterator it;
-  for ( it = mapLayers.begin(); it != mapLayers.end(); ++it )
-  {
-    if ( it.value()->name() != mSettings->mLayer )
-      continue;
-    layer = dynamic_cast< QgsVectorLayer* >( it.value() );
-    break;
-  }
-  if ( layer == NULL )
-    return NULL;
-  if ( layer->geometryType() == QGis::Line )
-  {
-    QgsVectorDataProvider *provider = dynamic_cast< QgsVectorDataProvider* >( layer->dataProvider() );
-    if ( provider == NULL )
-      return NULL;
-    SpeedUnit speedUnit = SpeedUnit::byName( mSettings->mSpeedUnitName );
-
-    QgsLineVectorLayerDirector * director =
-      new QgsLineVectorLayerDirector( layer,
-                                      provider->fieldNameIndex( mSettings->mDirection ),
-                                      mSettings->mFirstPointToLastPointDirectionVal,
-                                      mSettings->mLastPointToFirstPointDirectionVal,
-                                      mSettings->mBothDirectionVal,
-                                      mSettings->mDefaultDirection
-                                    );
-    director->addProperter( new QgsDistanceArcProperter() );
-    director->addProperter( new RgSpeedProperter( provider->fieldNameIndex( mSettings->mSpeed ),
-                            mSettings->mDefaultSpeed, speedUnit.multipler() ) );
-    return director;
-  }
-  return NULL;
+  return mSettings->director();
 }
 
 QString RoadGraphPlugin::timeUnitName()

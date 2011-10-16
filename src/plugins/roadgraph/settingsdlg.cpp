@@ -26,6 +26,7 @@
 #include "rasterlayersettings.h"
 
 //standard includes
+#include <iostream>
 
 RgSettingsDlg::RgSettingsDlg( RgSettings *settings, QWidget* parent, Qt::WFlags fl )
     : QDialog( parent, fl )
@@ -84,17 +85,31 @@ RgSettingsDlg::RgSettingsDlg( RgSettings *settings, QWidget* parent, Qt::WFlags 
   mcbGraphDirector->addItem( tr( "Line vector layer director" ), QVariant( "line vector layer" ) );
   mcbGraphDirector->addItem( tr( "Raster layer director" ), QVariant( "raster layer" ) );
   connect( mcbGraphDirector, SIGNAL( currentIndexChanged(int) ), this, SLOT(on_mcbGraphDirector_selectItem()) );
+  
   // fill NULL value
-  mSettingsMap[ "line vector" ];
-  mSettingsMap[ "raster layer" ];
+  mSettingsMap[ "line vector layer" ].first = NULL;
+  mSettingsMap[ "line vector layer" ].second = NULL;
+  mSettingsMap[ "raster layer" ].first = NULL;
+  mSettingsMap[ "raster layer" ].second = NULL;
+  // fill real value
   mSettingsMap[ mSettings->name() ].first = mSettings;
   mSettingsMap[ mSettings->name() ].second = mSettingsWidget;
 
+  int idx = mcbGraphDirector->findData( QVariant( mSettings->name() ) );
+  if ( idx > -1 )
+    mcbGraphDirector->setCurrentIndex( idx );
 } // RgSettingsDlg::RgSettingsDlg()
 
 RgSettingsDlg::~RgSettingsDlg()
 {
-
+  QMap< QString, QPair< RgSettings*, QWidget* > >::iterator it;
+  for ( it = mSettingsMap.begin(); it != mSettingsMap.end(); ++it )
+  {
+    if ( it.value().first != mSettings && it.value().first != NULL )
+      delete it.value().first;
+    if ( it.value().second != NULL )
+      delete it.value().second;
+  }
 }
 
 void RgSettingsDlg::on_mcbGraphDirector_selectItem()
@@ -173,4 +188,9 @@ void RgSettingsDlg::setTopologyTolerance( double f )
 double RgSettingsDlg::topologyTolerance()
 {
   return msbTopologyTolerance->value();
+}
+
+RgSettings* RgSettingsDlg::settings()
+{
+  return mSettings;
 }

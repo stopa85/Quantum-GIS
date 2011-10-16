@@ -16,9 +16,19 @@
 
 #include "linevectorlayersettings.h"
 #include "linevectorlayerwidget.h"
+#include "speedproperter.h"
+#include "units.h"
 
 // Qgis includes
 #include <qgsproject.h>
+#include <qgsgraphdirector.h>
+
+#include <qgsmaplayerregistry.h>
+#include <qgsvectorlayer.h>
+#include <qgsvectordataprovider.h>
+
+#include <qgsdistancearcproperter.h>
+#include <qgslinevectorlayerdirector.h>
 
 // QT includes
 #include <QLineEdit>
@@ -147,4 +157,42 @@ void RgLineVectorLayerSettings::setFromGui( QWidget *myGui )
 QString RgLineVectorLayerSettings::name()
 {
   return QString( "line vector layer" );
+}
+
+QgsGraphDirector* RgLineVectorLayerSettings::director()
+{
+  QString layerId;
+  QgsVectorLayer *layer = NULL;
+  QMap< QString, QgsMapLayer* > mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
+  QMap< QString, QgsMapLayer* >::const_iterator it;
+  for ( it = mapLayers.begin(); it != mapLayers.end(); ++it )
+  {
+    if ( it.value()->name() != mLayer )
+      continue;
+    layer = dynamic_cast< QgsVectorLayer* >( it.value() );
+    break;
+  }
+  if ( layer == NULL )
+    return NULL;
+  if ( layer->geometryType() == QGis::Line )
+  {
+    QgsVectorDataProvider *provider = dynamic_cast< QgsVectorDataProvider* >( layer->dataProvider() );
+    if ( provider == NULL )
+      return NULL;
+    SpeedUnit speedUnit = SpeedUnit::byName( mSpeedUnitName );
+
+    QgsLineVectorLayerDirector * director =
+      new QgsLineVectorLayerDirector( layer,
+                                      provider->fieldNameIndex( mDirection ),
+                                      mFirstPointToLastPointDirectionVal,
+                                      mLastPointToFirstPointDirectionVal,
+                                      mBothDirectionVal,
+                                      mDefaultDirection
+                                    );
+    director->addProperter( new QgsDistanceArcProperter() );
+    director->addProperter( new RgSpeedProperter( provider->fieldNameIndex( mSpeed ),
+                            mDefaultSpeed, speedUnit.multipler() ) );
+    return director;
+  }
+  return NULL;
 }

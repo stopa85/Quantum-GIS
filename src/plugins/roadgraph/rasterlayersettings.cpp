@@ -19,6 +19,7 @@
 
 // Qgis includes
 #include <qgsproject.h>
+#include <qgsgraphdirector.h>
 
 // QT includes
 #include <QComboBox>
@@ -61,4 +62,8 @@ void RgRasterLayerSettings::setFromGui( QWidget *myGui )
 QString RgRasterLayerSettings::name()
 {
   return QString( "raster layer" );
+}
+QgsGraphDirector* RgRasterLayerSettings::director()
+{
+  return NULL;
 }

@@ -54,6 +54,8 @@ class RgSettingsDlg : public QDialog
     void setTopologyTolerance( double f );
 
     double topologyTolerance();
+
+    RgSettings* settings();
   private:
     static const int context_id = 0;
 

@@ -23,6 +23,7 @@
 
 // forward declaration Qgis-classes
 class QWidget;
+class QgsGraphDirector;
 
 /**
 @author Sergey Yakushev
@@ -61,6 +62,7 @@ class RgLineVectorLayerSettings: public RgSettings
     QWidget *getGui( QWidget* Parent );
     void    setFromGui( QWidget* );
     QString name();
+    QgsGraphDirector* director();
   public:
 
     /**
