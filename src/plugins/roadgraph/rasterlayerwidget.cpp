@@ -30,7 +30,6 @@
 
 //standard includes
 
-
 RgRasterLayerSettingsWidget::RgRasterLayerSettingsWidget( RgRasterLayerSettings *s, QWidget* parent )
     : QWidget( parent )
 {
@@ -56,24 +55,25 @@ RgRasterLayerSettingsWidget::RgRasterLayerSettingsWidget( RgRasterLayerSettings 
   mcbSpeed = new QComboBox( frame );
   h->addWidget( l );
   h->addWidget( mcbSpeed );
-  mcbUnitOfSpeed = new QComboBox( this );
-  h->addWidget( mcbUnitOfSpeed );
+  mcbSpeedUnitName = new QComboBox( this );
+  h->addWidget( mcbSpeedUnitName );
 
-  mcbUnitOfSpeed->insertItem( 0, tr( "km/h" ) );
-  mcbUnitOfSpeed->insertItem( 0, tr( "m/s" ) );
+  mcbSpeedUnitName->insertItem( 0, tr( "km/h" ) );
+  mcbSpeedUnitName->insertItem( 0, tr( "m/s" ) );
 
   v->addLayout( h );
+  connect( mcbLayers, SIGNAL( currentIndexChanged( int ) ), 
+    this, SLOT( on_mcbLayers_selectItem() ) );
 
   // fill list of layers
   QMap<QString, QgsMapLayer*> mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
   QMap<QString, QgsMapLayer*>::iterator layer_it = mapLayers.begin();
-
   for ( ; layer_it != mapLayers.end(); ++layer_it )
   {
-    QgsRasterLayer* vl = dynamic_cast<QgsRasterLayer*>( layer_it.value() );
-    if ( !vl )
+    QgsRasterLayer* rl = dynamic_cast<QgsRasterLayer*>( layer_it.value() );
+    if ( !rl )
       continue;
-    mcbLayers->insertItem( 0, vl->name() );
+    mcbLayers->insertItem( 0, rl->name() );
   }
 
   //sets current settings
@@ -82,6 +82,18 @@ RgRasterLayerSettingsWidget::RgRasterLayerSettingsWidget( RgRasterLayerSettings 
   if ( idx != -1 )
   {
     mcbLayers->setCurrentIndex( idx );
+  }
+
+  idx = mcbSpeedUnitName->findData( s->mSpeedUnitName );
+  if ( idx != -1 )
+  {
+    mcbSpeedUnitName->setCurrentIndex( idx );
+  }
+  
+  idx = mcbSpeed->findData( s->mSpeedBand );
+  if ( idx != -1 )
+  {
+    mcbSpeed->setCurrentIndex( idx );
   }
 
 } // RgLineVectorLayerSettingsWidget::RgLineVectorLayerSettingsWidget()
@@ -93,11 +105,11 @@ QgsRasterLayer* RgRasterLayerSettingsWidget::selectedLayer()
 
   for ( ; layer_it != mapLayers.end(); ++layer_it )
   {
-    QgsRasterLayer* vl = dynamic_cast<QgsRasterLayer*>( layer_it.value() );
-    if ( !vl )
+    QgsRasterLayer* rl = dynamic_cast<QgsRasterLayer*>( layer_it.value() );
+    if ( !rl )
       continue;
-    if ( vl->name() == mcbLayers->currentText() )
-      return vl;
+    if ( rl->name() == mcbLayers->currentText() )
+      return rl;
   }
 
   return NULL;
@@ -105,5 +117,24 @@ QgsRasterLayer* RgRasterLayerSettingsWidget::selectedLayer()
 
 void RgRasterLayerSettingsWidget::on_mcbLayers_selectItem()
 {
+  mcbSpeed->clear();
+  QgsRasterLayer* rl = selectedLayer();
+  if ( rl == NULL )
+    return;
+  QgsRasterDataProvider *provider = rl->dataProvider();
+  if ( provider == NULL )
+    return;
 
+  int i = 0;
+  for ( i = 0; i < provider->bandCount(); ++i )
+  {
+    int dataType = provider->dataType( i+1 );
+    if (dataType == QgsRasterDataProvider::UnknownDataType ||
+        dataType == QgsRasterDataProvider::ARGBDataType || 
+        dataType == QgsRasterDataProvider::TypeCount )
+    {
+      continue;
+    }
+    mcbSpeed->insertItem( 0, tr( "band #" ) + QString("%1").arg(i), QVariant( i ) );
+  }
 } // RgDSettingsDlg::on_mcbLayers_selectItem()

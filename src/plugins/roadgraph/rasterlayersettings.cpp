@@ -41,12 +41,16 @@ bool RgRasterLayerSettings::test()
 
 void RgRasterLayerSettings::read( const QgsProject *project )
 {
-
+  mLayer          = project->readEntry( "roadgraphplugin", "/layer" );
+  mSpeedBand      = project->readNumEntry( "roadgraphplugin", "/speedBand" );
+  mSpeedUnitName  = project->readEntry( "roadgraphplugin", "/speedUnitName" );
 } // RgLineVectorLayerSettings::read( const QgsProject *project )
 
 void RgRasterLayerSettings::write( QgsProject *project )
 {
-
+  project->writeEntry( "roadgraphplugin", "/layer", mLayer );
+  project->writeEntry( "roadgraphplugin", "/speedBand", mSpeedBand );
+  project->writeEntry( "roadgraphplugin", "/speedUnitName", mSpeedUnitName );
 } // RgLineVectorLayerSettings::write( QgsProject *project )
 
 QWidget* RgRasterLayerSettings::getGui( QWidget *parent )
@@ -57,6 +61,14 @@ QWidget* RgRasterLayerSettings::getGui( QWidget *parent )
 
 void RgRasterLayerSettings::setFromGui( QWidget *myGui )
 {
+  RgRasterLayerSettingsWidget* widget = dynamic_cast<RgRasterLayerSettingsWidget*>( myGui );
+  if ( widget == NULL )
+    return;
+  mLayer = widget->mcbLayers->currentText();
+  
+  mSpeedBand  = widget->mcbSpeed->itemData( widget->mcbSpeed->currentIndex() ).toInt();
+
+  mSpeedUnitName = widget->mcbSpeed->itemData( widget->mcbSpeed->currentIndex() ).toString();
 }
 
 QString RgRasterLayerSettings::name()

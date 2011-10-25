@@ -62,5 +62,15 @@ class RgRasterLayerSettings: public RgSettings
      * contained Layer name
      */
     QString mLayer;
+
+    /**
+     * A speed band number
+     */
+    int mSpeedBand;
+
+    /**
+     * A unit of speed name
+     */
+    QString mSpeedUnitName;
 };
 #endif

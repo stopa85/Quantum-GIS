@@ -58,6 +58,6 @@ class RgRasterLayerSettingsWidget : public QWidget
     /**
      * list of speed unit
      */
-    QComboBox *mcbUnitOfSpeed;
+    QComboBox *mcbSpeedUnitName;
 };
 #endif
