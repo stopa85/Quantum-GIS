@@ -18,8 +18,10 @@
 #include "rasterlayerwidget.h"
 
 // Qgis includes
+#include <qgsrasterlayer.h>
 #include <qgsproject.h>
-#include <qgsgraphdirector.h>
+#include <qgsmaplayerregistry.h>
+#include <qgsrasterlayerdirector.h>
 
 // QT includes
 #include <QComboBox>
@@ -73,9 +75,24 @@ void RgRasterLayerSettings::setFromGui( QWidget *myGui )
 
 QString RgRasterLayerSettings::name()
 {
+
   return QString( "raster layer" );
 }
+
 QgsGraphDirector* RgRasterLayerSettings::director()
 {
-  return NULL;
+  QgsRasterLayer *layer = NULL;
+  QMap< QString, QgsMapLayer* > mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
+  QMap< QString, QgsMapLayer* >::const_iterator it;
+  for ( it = mapLayers.begin(); it != mapLayers.end(); ++it )
+  {
+    if ( it.value()->name() != mLayer )
+      continue;
+    layer = dynamic_cast< QgsRasterLayer* >( it.value() );
+    break;
+  }
+  if ( layer == NULL )
+    return NULL;
+
+  return new QgsRasterLayerDirector( layer );
 }

@@ -65,9 +65,9 @@ class ANALYSIS_EXPORT QgsRasterLayerDirector : public QgsGraphDirector
     /**
      * return Director name
      */
-    virtual QString name() const = 0;
+    virtual QString name() const;
 
   private:
-    QgsRasterLayer *mRasterLayer;
+    QgsRasterLayer *mLayer;
 };
 #endif //QGSRASTERGRAPHDIRECTORH
