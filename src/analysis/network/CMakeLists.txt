@@ -10,6 +10,7 @@ SET(QGIS_NETWORK_ANALYSIS_SRCS
   qgslinevectorlayerdirector.cpp
   qgsgraphanalyzer.cpp
   qgsrasterlayerdirector.cpp
+  qgsrasterdistancearcprop.cpp
 )
 
 INCLUDE_DIRECTORIES(BEFORE raster)

@@ -18,7 +18,6 @@
 //QT4 includes
 #include <QObject>
 #include <QVector>
-#include <QList>
 
 //QGIS includes
 #include "qgsgraphdirector.h"
@@ -27,7 +26,7 @@
 //forward declarations
 class QgsGraphBuilderInterface;
 class QgsRasterLayer;
-
+class QgsRasterArcProperter;
 /**
  * \ingroup networkanalysis
  * \class QgsRasterLayerDirector
@@ -57,17 +56,19 @@ class ANALYSIS_EXPORT QgsRasterLayerDirector : public QgsGraphDirector
                             const QVector< QgsPoint > &additionalPoints,
                             QVector< QgsPoint > &tiedPoints ) const;
 
-/*    void addProperter( QgsArcProperter* prop )
-    {
-      mProperterList.push_back( prop );
-    }*/
-
     /**
      * return Director name
      */
     virtual QString name() const;
 
+    void addNumericProperter( const QgsRasterArcProperter* );
+  
+  private:
+    QVector< QVariant > identify( int widthIt, int heightIt ) const;
+
   private:
     QgsRasterLayer *mLayer;
+
+    QVector< const QgsRasterArcProperter* > mNumericProperter;
 };
 #endif //QGSRASTERGRAPHDIRECTORH

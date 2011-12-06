@@ -22,6 +22,7 @@
 #include <qgsproject.h>
 #include <qgsmaplayerregistry.h>
 #include <qgsrasterlayerdirector.h>
+#include <qgsrasterdistancearcprop.h>
 
 // QT includes
 #include <QComboBox>
@@ -94,5 +95,10 @@ QgsGraphDirector* RgRasterLayerSettings::director()
   if ( layer == NULL )
     return NULL;
 
-  return new QgsRasterLayerDirector( layer );
+  QgsRasterLayerDirector *director = new QgsRasterLayerDirector( layer );
+  director->addNumericProperter( new QgsRasterDistanceArcProperter() );
+  // cath for speed properter
+  director->addNumericProperter( new QgsRasterDistanceArcProperter() );
+
+  return director;
 }
