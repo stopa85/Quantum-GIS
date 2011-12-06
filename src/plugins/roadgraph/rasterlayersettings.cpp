@@ -16,6 +16,8 @@
 
 #include "rasterlayersettings.h"
 #include "rasterlayerwidget.h"
+#include "rasterspeedprop.h"
+#include "units.h"
 
 // Qgis includes
 #include <qgsrasterlayer.h>
@@ -98,7 +100,8 @@ QgsGraphDirector* RgRasterLayerSettings::director()
   QgsRasterLayerDirector *director = new QgsRasterLayerDirector( layer );
   director->addNumericProperter( new QgsRasterDistanceArcProperter() );
   // cath for speed properter
-  director->addNumericProperter( new QgsRasterDistanceArcProperter() );
+  SpeedUnit u = SpeedUnit::byName( mSpeedUnitName );
+  director->addNumericProperter( new RgRasterSpeedProperter( mSpeedBand, 1, u.multipler() ) );
 
   return director;
 }

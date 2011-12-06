@@ -13,6 +13,7 @@ SET (VRP_SRCS
   rasterlayerwidget.cpp
   exportdlg.cpp
   speedproperter.cpp
+  rasterspeedprop.cpp
 )
 
 #SET ([pluginlcasename]_UIS [pluginlcasename]guibase.ui)
