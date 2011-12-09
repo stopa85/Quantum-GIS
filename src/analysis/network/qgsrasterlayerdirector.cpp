@@ -72,12 +72,27 @@ QVector< QVariant > QgsRasterLayerDirector::identify( int widthIt, int heightIt 
   return v;
 }
 
+void QgsRasterLayerDirector::addArc( QgsGraphBuilderInterface* builder, int x1, int y1, const QgsPoint& pt1, int x2, int y2, const QVector< QVariant>& pixel1 ) const
+{ 
+  QgsPoint pt2( mLayerExtent.xMinimum() + (mLayerExtent.width()*x2)/mLayer->width() + mPlusWidth,
+	        mLayerExtent.yMinimum() + (mLayerExtent.height()*y2)/mLayer->height() + mPlusHeight );
+
+  QVector< QVariant > pixel2 = identify( x2, y2 );	
+  QVector< QVariant > prop;
+  double distance = builder->distanceArea()->measureLine( pt1, pt2 );
+  QVector< const QgsRasterArcProperter* >::const_iterator it;
+  for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
+  {
+    prop.push_back( (*it)->property( distance, pixel1, pixel2 ) );
+  }
+  
+  builder->addArc( mLayer->width()*y1 + x1, pt1, mLayer->width()*y2 + x2, pt2, prop );
+}
+
 void QgsRasterLayerDirector::makeGraph( QgsGraphBuilderInterface *builder, const QVector< QgsPoint >& additionalPoints,
     QVector< QgsPoint >& tiedPoint ) const
 
 {
-  QgsRasterDataProvider *provider = mLayer->dataProvider();
-
   tiedPoint = QVector< QgsPoint > ( additionalPoints.size(), QgsPoint( 0.0, 0.0 ) );
 
   QVector< double > pointsDist( additionalPoints.size(), std::numeric_limits<double>::infinity() );
@@ -93,24 +108,22 @@ void QgsRasterLayerDirector::makeGraph( QgsGraphBuilderInterface *builder, const
     ct.setDestCRS( mLayer->crs() );
   }
 
-  QgsRectangle extent = mLayer->extent();
+  mLayerExtent = ct.transformBoundingBox( mLayer->extent() );
+  
   int widthIt=0;
   int heightIt=0;
-  double plusWidth 	= extent.width() / mLayer->width()/2.0;
-  double plusHeight 	= extent.height()/ mLayer->height()/2.0;
-
-  QVector< QgsPoint > vertex;
-  vertex.reserve( mLayer->width()*mLayer->height() );
+  double mPlusWidth 	= mLayerExtent.width() / mLayer->width()/2.0;
+  double mPlusHeight 	= mLayerExtent.height()/ mLayer->height()/2.0;
 
   for( heightIt = 0; heightIt != mLayer->height(); ++heightIt )
   {
     for ( widthIt = 0; widthIt != mLayer->width(); ++widthIt )
     {
 
-      QgsPoint pt( extent.xMinimum() + (extent.width()*widthIt)/mLayer->width() + plusWidth, 
-	  extent.yMinimum() + (extent.height()*heightIt)/mLayer->height() + plusHeight );
-      pt = ct.transform( pt );
-      vertex.push_back( pt );
+      QgsPoint pt( mLayerExtent.xMinimum() + (mLayerExtent.width()*widthIt)/mLayer->width() + mPlusWidth, 
+	  mLayerExtent.yMinimum() + (mLayerExtent.height()*heightIt)/mLayer->height() + mPlusHeight );
+      
+      builder->addVertex( mLayer->width()*heightIt + widthIt, pt );
  
       int i;
       for ( i = 0; i < pointsDist.size(); ++i )
@@ -125,236 +138,62 @@ void QgsRasterLayerDirector::makeGraph( QgsGraphBuilderInterface *builder, const
     }
   }
   
-  double sqrt2 = 1.4142;
-
-  QVector< QVector< QVariant > > arc;
   for( heightIt = 0; heightIt != mLayer->height(); ++heightIt )
   {
     for ( widthIt = 0; widthIt != mLayer->width(); ++widthIt )
     {
+      QgsPoint pt1( mLayerExtent.xMinimum() + ( mLayerExtent.width() * widthIt ) / mLayer->width() + mPlusWidth,
+	  mLayerExtent.yMinimum() + ( mLayerExtent.height() * heightIt ) / mLayer->height() + mPlusHeight );
       
       QVector< QVariant > pixel1 = identify( widthIt, heightIt );
       //1
       if ( widthIt != 0 && heightIt != 0 )
       {
- 	int x = widthIt - 1;
-	int y = heightIt - 1;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
+ 	addArc( builder, widthIt, heightIt, pt1, widthIt - 1, heightIt - 1, pixel1 );
       }
 
       //2
       if ( heightIt != 0 )
       {
- 	int x = widthIt;
-	int y = heightIt - 1;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
+        addArc( builder, widthIt, heightIt, pt1, widthIt, heightIt - 1, pixel1 );
       }
 
       //3
       if ( widthIt != mLayer->width() - 1 && heightIt != 0 )
       {
- 	int x = widthIt + 1;
-	int y = heightIt - 1;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
+        addArc( builder, widthIt, heightIt, pt1, widthIt + 1, heightIt - 1, pixel1 );
       }
 
       //4
       if ( widthIt != 0 )
       {
-	int x = widthIt - 1;
-	int y = heightIt;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
-
+        addArc( builder, widthIt, heightIt, pt1, widthIt - 1, heightIt, pixel1 );
       }
 
       //5
       if ( widthIt != mLayer->width() - 1 )
       {
-	int x = widthIt + 1;
-	int y = heightIt;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
+        addArc( builder, widthIt, heightIt, pt1, widthIt + 1, heightIt, pixel1 );
       }
 
       //6
       if ( widthIt != 0 && heightIt != mLayer->height() - 1 )
       {
-	int x = widthIt - 1;
-	int y = heightIt + 1;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back ( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
-
+        addArc( builder, widthIt, heightIt, pt1, widthIt - 1, heightIt + 1, pixel1 );
       }
 
       //7
       if ( heightIt != mLayer->height() - 1 )
       {
-	int x = widthIt;
-	int y = heightIt + 1;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back ( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
+        addArc( builder, widthIt, heightIt, pt1, widthIt, heightIt + 1, pixel1 );
       }
 
       //8
       if ( widthIt != mLayer->width() - 1 && heightIt != mLayer->height() - 1 )
       {
-	int x = widthIt + 1;
-	int y = heightIt + 1;
- 	QVector< QVariant > pixel2 = identify( x, y );
-	
-	QVector< QVariant > a(5);	
-	a[0] = sqrt2;// pixel length
-	a[1] = x;
-	a[2] = y;
-	a[3] = widthIt;
-	a[4] = heightIt;
-
-	double distance = builder->distanceArea()->measureLine(
-	                vertex[ mLayer->width()*heightIt + widthIt  ],
-			vertex[ mLayer->width()*y + x ] );
-	QVector< const QgsRasterArcProperter* >::const_iterator it;
-	for ( it = mNumericProperter.begin(); it != mNumericProperter.end(); ++it )
-	{
-	  a.push_back( (*it)->property( distance, pixel1, pixel2 ) );
-	}
-	arc.push_back( a );
+        addArc( builder, widthIt, heightIt, pt1, widthIt + 1, heightIt + 1, pixel1 );
       }
     }
   }
 
-  int i;
-  for ( i = 0; i < vertex.size(); ++i )
-  {
-    builder->addVertex( i, vertex[i] );
-  }
-  for ( i = 0; i < arc.size(); ++ i )
-  {
-    QVector< QVariant > prop;
-
-    int j = 0;
-    for ( j = 0; j < mNumericProperter.size(); ++j )
-    {
-      prop.push_back( arc[i][j+5] );
-    }
-    
-    int i1 = mLayer->width()*arc[i][4].toInt()+arc[i][3].toInt();
-    int i2 = mLayer->width()*arc[i][2].toInt()+arc[i][1].toInt();
-    builder->addArc( i2, vertex[i2], i1, vertex[i1], prop );
-  }
 } // makeGraph( QgsGraphBuilderInterface *builder, const QVector< QgsPoint >& additionalPoints, QVector< QgsPoint >& tiedPoint )

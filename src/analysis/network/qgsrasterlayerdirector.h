@@ -22,6 +22,7 @@
 //QGIS includes
 #include "qgsgraphdirector.h"
 #include <qgspoint.h>
+#include <qgsrectangle.h>
 
 //forward declarations
 class QgsGraphBuilderInterface;
@@ -70,5 +71,11 @@ class ANALYSIS_EXPORT QgsRasterLayerDirector : public QgsGraphDirector
     QgsRasterLayer *mLayer;
 
     QVector< const QgsRasterArcProperter* > mNumericProperter;
+
+    mutable QgsRectangle mLayerExtent; // in builders CRS
+    mutable double mPlusWidth;
+    mutable double mPlusHeight;
+
+    void addArc( QgsGraphBuilderInterface *builder, int x1, int y1, const QgsPoint& pt1, int x2, int y2, const QVector< QVariant >& pixelPropertyValues ) const;
 };
 #endif //QGSRASTERGRAPHDIRECTORH
