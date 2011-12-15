@@ -23,6 +23,7 @@
 
 // forward-declaration
 class QgsGraph;
+class QgsMemoryGraph;
 
 /** \ingroup networkanalysis
  * The QGis class provides graph analysis functions
@@ -40,7 +41,7 @@ class ANALYSIS_EXPORT QgsGraphAnalyzer
      * @param cost array of cost paths
      * @param treeResult return shortest path tree
      */
-    static void shortestpath( const QgsGraph* source, int startVertexIdx, int criterionNum, const QVector<int>& destPointCost, QVector<double>& cost, QgsGraph* treeResult );
+    static void shortestpath( const QgsGraph* source, int startVertexIdx, int criterionNum, const QVector<int>& destPointCost, QVector<double>& cost, QgsMemoryGraph* treeResult );
 
     /**
      * return shortest path tree with root-node in startVertexIdx

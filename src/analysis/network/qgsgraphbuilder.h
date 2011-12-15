@@ -26,6 +26,7 @@
 class QgsDistanceArea;
 class QgsCoordinateTransform;
 class QgsGraph;
+class QgsMemoryGraph;
 
 /**
 * \ingroup networkanalysis
@@ -57,6 +58,6 @@ class ANALYSIS_EXPORT QgsGraphBuilder : public QgsGraphBuilderInterface
 
   private:
 
-    QgsGraph *mGraph;
+    QgsMemoryGraph *mGraph;
 };
 #endif //QGSGRAPHBUILDERH

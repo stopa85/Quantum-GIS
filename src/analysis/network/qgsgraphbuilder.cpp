@@ -15,7 +15,7 @@
  */
 
 #include "qgsgraphbuilder.h"
-#include "qgsgraph.h"
+#include "qgsmemorygraph.h"
 
 // Qgis includes
 #include <qgsfeature.h>
@@ -24,7 +24,7 @@
 QgsGraphBuilder::QgsGraphBuilder( const QgsCoordinateReferenceSystem& crs, bool otfEnabled, double topologyTolerance, const QString& ellipsoidID ) :
     QgsGraphBuilderInterface( crs, otfEnabled, topologyTolerance, ellipsoidID )
 {
-  mGraph = new QgsGraph();
+  mGraph = new QgsMemoryGraph();
 }
 
 QgsGraphBuilder::~QgsGraphBuilder()

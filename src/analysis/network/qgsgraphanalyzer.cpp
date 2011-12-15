@@ -23,10 +23,10 @@
 #include <QPair>
 
 //QGIS-uncludes
-#include "qgsgraph.h"
+#include "qgsmemorygraph.h"
 #include "qgsgraphanalyzer.h"
 
-void QgsGraphAnalyzer::shortestpath( const QgsGraph* source, int startPointIdx, int criterionNum, const QVector<int>& destPointCost, QVector<double>& cost, QgsGraph* treeResult )
+void QgsGraphAnalyzer::shortestpath( const QgsGraph* source, int startPointIdx, int criterionNum, const QVector<int>& destPointCost, QVector<double>& cost, QgsMemoryGraph* treeResult )
 {
 
   // QMultiMap< cost, vertexIdx > not_begin
@@ -56,17 +56,17 @@ void QgsGraphAnalyzer::shortestpath( const QgsGraph* source, int startPointIdx, 
     not_begin.erase( it );
 
     // edge index list
-    QgsGraphArcIdList l = source->vertex( curVertex ).outArc();
+    QgsGraphArcIdList l = source->vertex( curVertex ).mOutArc;
     QgsGraphArcIdList::iterator arcIt;
     for ( arcIt = l.begin(); arcIt != l.end(); ++arcIt )
     {
-      const QgsGraphArc& arc = source->arc( *arcIt );
-      double cost = arc.property( criterionNum ).toDouble() + curCost;
+      const QgsGraphArc arc = source->arc( *arcIt );
+      double cost = arc.mProperties[ criterionNum ].toDouble() + curCost;
 
-      if ( cost < result[ arc.inVertex()].first )
+      if ( cost < result[ arc.mIn ].first )
       {
-        result[ arc.inVertex()] = QPair< double, int >( cost, *arcIt );
-        not_begin.insert( cost, arc.inVertex() );
+        result[ arc.mIn ] = QPair< double, int >( cost, *arcIt );
+        not_begin.insert( cost, arc.mIn );
       }
     }
   }
@@ -81,7 +81,7 @@ void QgsGraphAnalyzer::shortestpath( const QgsGraph* source, int startPointIdx, 
     {
       if ( result[ i ].first < std::numeric_limits<double>::infinity() )
       {
-        source2result[ i ] = treeResult->addVertex( source->vertex( i ).point() );
+        source2result[ i ] = treeResult->addVertex( source->vertex( i ).mCoordinate );
       }
     }
     for ( i = 0; i < source->vertexCount(); ++i )
@@ -90,8 +90,8 @@ void QgsGraphAnalyzer::shortestpath( const QgsGraph* source, int startPointIdx, 
       {
         const QgsGraphArc& arc = source->arc( result[i].second );
 
-        treeResult->addArc( source2result[ arc.outVertex()], source2result[ i ],
-                            arc.properties() );
+        treeResult->addArc( source2result[ arc.mOut ], source2result[ i ],
+                            arc.mProperties );
       }
     }
   }
@@ -105,7 +105,7 @@ void QgsGraphAnalyzer::shortestpath( const QgsGraph* source, int startPointIdx, 
 
 QgsGraph* QgsGraphAnalyzer::shortestTree( const QgsGraph* source, int startVertexIdx, int criterionNum )
 {
-  QgsGraph *g = new QgsGraph;
+  QgsMemoryGraph *g = new QgsMemoryGraph;
   QVector<int> v;
   QVector<double> vv;
   QgsGraphAnalyzer::shortestpath( source, startVertexIdx, criterionNum, v, vv, g );
