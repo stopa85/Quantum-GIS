@@ -40,7 +40,7 @@
 
 #include <qgsgraphdirector.h>
 #include <qgsgraphbuilder.h>
-#include <qgsgraph.h>
+#include <qgsmemorygraph.h>
 #include <qgsgraphanalyzer.h>
 
 // roadgraph plugin includes
@@ -230,7 +230,7 @@ void RgShortestPathWidget::setBackPoint( const QgsPoint& pt )
   mrbBackPoint->show();
 }
 
-bool RgShortestPathWidget::getPath( QgsGraph* shortestTree, QgsPoint& p1, QgsPoint& p2 )
+bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, QgsPoint& p2 )
 {
   if ( mFrontPointLineEdit->text().isNull() || mBackPointLineEdit->text().isNull() )
   {
@@ -302,7 +302,7 @@ bool RgShortestPathWidget::getPath( QgsGraph* shortestTree, QgsPoint& p1, QgsPoi
 void RgShortestPathWidget::findingPath()
 {
   QgsPoint p1, p2;
-  QgsGraph path;
+  QgsMemoryGraph path;
 
   if ( !getPath( &path, p1, p2 ) )
     return;
@@ -316,17 +316,17 @@ void RgShortestPathWidget::findingPath()
   QList< QgsPoint > p;
   while ( startVertexIdx != stopVertexIdx )
   {
-    QgsGraphArcIdList l = path.vertex( stopVertexIdx ).inArc();
+    const QgsGraphArcIdList l = path.vertex( stopVertexIdx ).mInArc;
     if ( l.empty() )
       break;
     const QgsGraphArc& e = path.arc( l.front() );
 
-    cost += e.property( 0 ).toDouble();
-    time += e.property( 1 ).toDouble();
+    cost += e.mProperties[ 0 ].toDouble();
+    time += e.mProperties[ 1 ].toDouble();
 
-    p.push_front( path.vertex( e.inVertex() ).point() );
+    p.push_front( path.vertex( e.mIn ).mCoordinate );
 
-    stopVertexIdx = e.outVertex();
+    stopVertexIdx = e.mOut;
   }
   p.push_front( p1 );
   QList< QgsPoint>::iterator it;
@@ -362,7 +362,7 @@ void RgShortestPathWidget::exportPath()
     return;
 
   QgsPoint p1, p2;
-  QgsGraph path;
+  QgsMemoryGraph path;
   if ( !getPath( &path, p1, p2 ) )
     return;
 
@@ -379,12 +379,12 @@ void RgShortestPathWidget::exportPath()
   QgsPolyline p;
   while ( startVertexIdx != stopVertexIdx )
   {
-    QgsGraphArcIdList l = path.vertex( stopVertexIdx ).inArc();
+    QgsGraphArcIdList l = path.vertex( stopVertexIdx ).mInArc;
     if ( l.empty() )
       break;
     const QgsGraphArc& e = path.arc( l.front() );
-    p.push_front( path.vertex( e.inVertex() ).point() );
-    stopVertexIdx = e.outVertex();
+    p.push_front( path.vertex( e.mIn ).mCoordinate );
+    stopVertexIdx = e.mOut;
   }
   p.push_front( p1 );
 

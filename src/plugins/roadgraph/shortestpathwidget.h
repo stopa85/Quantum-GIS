@@ -32,7 +32,7 @@ class QgsMapCanvas;
 
 class RoadGraphPlugin;
 
-class QgsGraph;
+class QgsMemoryGraph;
 
 /**
 @author Sergey Yakushev
@@ -105,7 +105,7 @@ class RgShortestPathWidget : public QDockWidget
     /**
      * retrun path as a graph
      */
-    bool getPath( QgsGraph *, QgsPoint& p1, QgsPoint& p2 );
+    bool getPath( QgsMemoryGraph *, QgsPoint& p1, QgsPoint& p2 );
 
     /**
      * This line edit show front points coordinates
