@@ -4,11 +4,12 @@
 # sources
 
 SET(QGIS_NETWORK_ANALYSIS_SRCS
-  qgsgraph.cpp
   qgsgraphbuilder.cpp
   qgsdistancearcproperter.cpp
   qgslinevectorlayerdirector.cpp
   qgsgraphanalyzer.cpp
+  qgsmemorygraph.cpp
+  qgsrastergraph.cpp
 )
 
 INCLUDE_DIRECTORIES(BEFORE raster)
