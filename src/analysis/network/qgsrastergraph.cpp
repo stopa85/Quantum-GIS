@@ -40,8 +40,8 @@ QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer )
 
   } */
 
-  mWidth = 3;
-  mHeight = 3;
+  mWidth = 10;
+  mHeight = 10;
   mExtent = QgsRectangle(0.0,0.0,1,1);
 
 }
@@ -100,16 +100,16 @@ const QgsGraphVertex QgsRasterGraph::vertex( int idx ) const
   {
     if ( x == 0 )
     {
-      for (i = 0; i < 5; ++i )
-        v.mOutArc.push_back( 12 + (mWidth - 2) * 5 * 2 + i );
+      for (i = 0; i < 5; ++i ) 
+        v.mOutArc.push_back( 12 + (mWidth - 2) * 5 * 2 + (y - 1) * 5 + i );
     }else if ( x == mWidth - 1 )
     {
       for (i = 0; i < 5; ++i )
-        v.mOutArc.push_back( 12 + (mWidth - 2) * 5 * 2 + (mHeight - 2) * 5 + i );
+        v.mOutArc.push_back( 12 + (mWidth - 2) * 5 * 2 + (mHeight - 2) * 5 + (y - 1) * 5  + i );
     }else
     {
       for (i = 0; i < 8; ++i )
-        v.mOutArc.push_back( 12 + (mWidth - 2) * 5 * 2 + (mHeight - 2) * 5 * 2 + i );
+        v.mOutArc.push_back( 12 + (mWidth - 2) * 5 * 2 + (mHeight - 2) * 5 * 2 + (x-1)*8 + (y-1)*(mWidth-2)*8 + i );
     }
   }
   return v;
@@ -236,11 +236,14 @@ const QgsGraphArc QgsRasterGraph::arc( int idx ) const
   }else
   {
     arc.mOut = (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) / 8;
-    arc.mOut = mWidth + 1 + arc.mOut / ( mWidth - 1 ) + arc.mOut % (mWidth - 1);
-    if ( (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) % 8 == 0 )
+    int x = arc.mOut % (mWidth - 2);
+    int y = arc.mOut / (mHeight - 2);
+    
+    arc.mOut = mWidth*(y+1) + 1 + x;
+    if ( (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) % 8 == 4 )
     {
       arc.mIn = arc.mOut - mWidth;
-    }else if ( (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) % 8 == 4 )
+    }else if ( (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) % 8 == 0 )
     {
       arc.mIn = arc.mOut + mWidth;
     }else if ( (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) % 8 < 4 )
