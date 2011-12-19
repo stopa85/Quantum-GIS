@@ -40,10 +40,9 @@ QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer )
 
   } */
 
-  mWidth = 10;
-  mHeight = 10;
-  mExtent = QgsRectangle(0.0,0.0,1,1);
-
+  mWidth = layer->width();
+  mHeight = layer->height();
+  mExtent = layer->extent();
 }
 
 const QgsGraphVertex QgsRasterGraph::vertex( int idx ) const
