@@ -8,7 +8,9 @@ SET (VRP_SRCS
   units.cpp
   shortestpathwidget.cpp
   linevectorlayersettings.cpp
+  rasterlayersettings.cpp
   linevectorlayerwidget.cpp
+  rasterlayerwidget.cpp
   exportdlg.cpp
   speedproperter.cpp
 )
@@ -20,6 +22,7 @@ SET (VRP_MOC_HDRS
   settingsdlg.h
   shortestpathwidget.h
   linevectorlayerwidget.h
+  rasterlayerwidget.h
   exportdlg.h
 )
 SET (VRP_RCCS  roadgraph.qrc)
@@ -27,9 +30,11 @@ SET (VRP_RCCS  roadgraph.qrc)
 INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${GEOS_INCLUDE_DIR}
+  ${GDAL_INCLUDE_DIR}
   ../../core
   ../../gui
   ../../analysis/network
+  ../../core/raster
   ..
   )
 

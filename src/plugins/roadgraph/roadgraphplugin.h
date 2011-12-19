@@ -32,7 +32,7 @@ class QDockWidget;
 //forward declarations RoadGraph plugins classes
 class QgsGraphDirector;
 class RgShortestPathWidget;
-class RgLineVectorLayerSettings;
+class RgSettings;
 
 /**
 * \class RoadGraphPlugin
@@ -143,7 +143,7 @@ class RoadGraphPlugin: public QObject, public QgisPlugin
      * My graph settings.
      * @note. Should be used RgSettings
      */
-    RgLineVectorLayerSettings *mSettings;
+    RgSettings *mSettings;
 
     /**
      *  time unit for results presentation

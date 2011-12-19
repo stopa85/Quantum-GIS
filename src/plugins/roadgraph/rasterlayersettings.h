@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2010 by Sergey Yakushev                                 *
- *   yakushevs <at> list.ru                                                     *
+ *   Copyright (C) 2011 by Sergey Yakushev                                 *
+ *   yakushevs <at> gmail.com                                              *
  *                                                                         *
  *   This is file define Road graph plugins settings                       *
  *                                                                         *
@@ -9,8 +9,8 @@
  *   the Free Software Foundation; either version 2 of the License, or     *
  *   (at your option) any later version.                                   *
  ***************************************************************************/
-#ifndef ROADGRAPH_LINEVECTOR_SETTINGS
-#define ROADGRAPH_LINEVECTOR_SETTINGS
+#ifndef ROADGRAPH_RASTER_SETTINGS
+#define ROADGRAPH_RASTER_SETTINGS
 
 #include "settings.h"
 
@@ -29,29 +29,22 @@ class QgsGraphDirector;
 @author Sergey Yakushev
 */
 /**
- * \class RgSettings
- * \brief This class contained settings for RgLineVectorLayerDirector
+ * \class RgRasterSettings
+ * \brief This class contained settings for QgsRasterLayerDirector
  */
 
-class RgLineVectorLayerSettings: public RgSettings
+class RgRasterLayerSettings: public RgSettings
 {
-  public:
-    /**
-     * \enum  DirectionType
-     * \brief DirectionType enumeration discribe
-     */
-    enum DirectionType {  FirstPointToLastPoint = 1, LastPointToFirstPoint = 2, Both = 3 };
-
   public:
     /**
      * default constructor.
      */
-    RgLineVectorLayerSettings();
+    RgRasterLayerSettings();
 
     /**
      * destructor
      */
-    ~RgLineVectorLayerSettings();
+    ~RgRasterLayerSettings();
   public:
     /*
      * MANDATORY SETTINGS PROPERTY DECLARATIONS
@@ -71,42 +64,12 @@ class RgLineVectorLayerSettings: public RgSettings
     QString mLayer;
 
     /**
-     * contained direction field name
+     * A speed band number
      */
-    QString mDirection;
+    int mSpeedBand;
 
     /**
-     * mDirection field value as first point to last point value
-     */
-    QString mFirstPointToLastPointDirectionVal;
-
-    /**
-     * mDirection field value as last point to first point value
-     */
-    QString mLastPointToFirstPointDirectionVal;
-
-    /**
-     * mDirection field value as both direction
-     */
-    QString mBothDirectionVal;
-
-    /**
-     * contained Default direction
-     */
-    DirectionType mDefaultDirection;
-
-    /**
-     * contained speed filed name
-     */
-    QString mSpeed;
-
-    /**
-     * сontained default speed value;
-     */
-    double mDefaultSpeed;
-
-    /*
-     * name of speed unit
+     * A unit of speed name
      */
     QString mSpeedUnitName;
 };

@@ -18,28 +18,15 @@
 #include <qgsapplication.h>
 #include <qgisinterface.h>
 #include <qgisgui.h>
-#include <qgsmapcanvas.h>
 #include <qgsproject.h>
-#include <qgsmaptoolemitpoint.h>
-#include <qgsmaprenderer.h>
-
-#include <qgsmaplayerregistry.h>
-#include <qgsvectorlayer.h>
-#include <qgsvectordataprovider.h>
-
-#include <qgslinevectorlayerdirector.h>
-#include <qgsgraphbuilder.h>
-#include <qgsgraph.h>
-#include <qgsdistancearcproperter.h>
 
 // Road grap plugin includes
 #include "roadgraphplugin.h"
 #include "shortestpathwidget.h"
 #include "settingsdlg.h"
-#include "speedproperter.h"
-#include "units.h"
 
 #include "linevectorlayersettings.h"
+#include "rasterlayersettings.h"
 
 //
 // Qt4 Related Includes
@@ -53,6 +40,7 @@
 #include <QDockWidget>
 #include <QVBoxLayout>
 #include <QDebug>
+#include <QSettings>
 
 // standard includes
 
@@ -78,7 +66,7 @@ RoadGraphPlugin::RoadGraphPlugin( QgisInterface * theQgisInterface ):
 {
 
   mQShortestPathDock = NULL;
-  mSettings = new RgLineVectorLayerSettings();
+  mSettings = NULL;
   mTimeUnitName = "h";
   mDistanceUnitName = "km";
   mTopologyToleranceFactor = 0.0;
@@ -151,11 +139,6 @@ void RoadGraphPlugin::help()
   //implement me!
 } // RoadGraphPlugin::help()
 
-void RoadGraphPlugin::onShowDirection()
-{
-  mQGisIface->mapCanvas()->refresh();
-} // RoadGraphPlugin::onShowDirection()
-
 
 void RoadGraphPlugin::newProject()
 {
@@ -173,11 +156,14 @@ void RoadGraphPlugin::property()
   if ( !dlg.exec() )
     return;
 
+  mSettings = dlg.settings();
   mTimeUnitName = dlg.timeUnitName();
   mDistanceUnitName = dlg.distanceUnitName();
   mTopologyToleranceFactor = dlg.topologyTolerance();
-
+  
+  QgsProject::instance()->writeEntry( "roadgraphplugin", "/settingsName", mSettings->name() );
   mSettings->write( QgsProject::instance() );
+  
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginTimeUnit", mTimeUnitName );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/pluginDistanceUnit", mDistanceUnitName );
   QgsProject::instance()->writeEntry( "roadgraphplugin", "/topologyToleranceFactor", mTopologyToleranceFactor );
@@ -237,7 +223,26 @@ void RoadGraphPlugin::about()
 
 void RoadGraphPlugin::projectRead()
 {
+  QString settingsName = QgsProject::instance()->readEntry( "roadgraphplugin", "/settingsName" );
+  if ( mSettings != NULL )
+  {
+    delete mSettings;
+    mSettings = NULL;
+  }
+
+  if ( settingsName == QString( "line vector layer" ) )
+  {
+    mSettings = new RgLineVectorLayerSettings();
+  }else if ( settingsName == QString( "raster layer" ) )
+  {
+    mSettings = new RgRasterLayerSettings();
+  }else /* by default. For backfard compatible */
+  {
+    mSettings = new RgLineVectorLayerSettings();
+  }
+
   mSettings->read( QgsProject::instance() );
+  
   mTimeUnitName = QgsProject::instance()->readEntry( "roadgraphplugin", "/pluginTimeUnit", "h" );
   mDistanceUnitName = QgsProject::instance()->readEntry( "roadgraphplugin", "/pluginDistanceUnit", "km" );
   mTopologyToleranceFactor =
@@ -252,40 +257,7 @@ QgisInterface* RoadGraphPlugin::iface()
 
 const QgsGraphDirector* RoadGraphPlugin::director() const
 {
-  QString layerId;
-  QgsVectorLayer *layer = NULL;
-  QMap< QString, QgsMapLayer* > mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
-  QMap< QString, QgsMapLayer* >::const_iterator it;
-  for ( it = mapLayers.begin(); it != mapLayers.end(); ++it )
-  {
-    if ( it.value()->name() != mSettings->mLayer )
-      continue;
-    layer = dynamic_cast< QgsVectorLayer* >( it.value() );
-    break;
-  }
-  if ( layer == NULL )
-    return NULL;
-  if ( layer->geometryType() == QGis::Line )
-  {
-    QgsVectorDataProvider *provider = dynamic_cast< QgsVectorDataProvider* >( layer->dataProvider() );
-    if ( provider == NULL )
-      return NULL;
-    SpeedUnit speedUnit = SpeedUnit::byName( mSettings->mSpeedUnitName );
-
-    QgsLineVectorLayerDirector * director =
-      new QgsLineVectorLayerDirector( layer,
-                                      provider->fieldNameIndex( mSettings->mDirection ),
-                                      mSettings->mFirstPointToLastPointDirectionVal,
-                                      mSettings->mLastPointToFirstPointDirectionVal,
-                                      mSettings->mBothDirectionVal,
-                                      mSettings->mDefaultDirection
-                                    );
-    director->addProperter( new QgsDistanceArcProperter() );
-    director->addProperter( new RgSpeedProperter( provider->fieldNameIndex( mSettings->mSpeed ),
-                            mSettings->mDefaultSpeed, speedUnit.multipler() ) );
-    return director;
-  }
-  return NULL;
+  return mSettings->director();
 }
 
 QString RoadGraphPlugin::timeUnitName()

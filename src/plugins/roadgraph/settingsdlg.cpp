@@ -22,14 +22,16 @@
 
 // Qgis includes
 #include "settings.h"
+#include "linevectorlayersettings.h"
+#include "rasterlayersettings.h"
 
 //standard includes
+#include <iostream>
 
 RgSettingsDlg::RgSettingsDlg( RgSettings *settings, QWidget* parent, Qt::WFlags fl )
     : QDialog( parent, fl )
     , mSettings( settings )
 {
-
   // create base widgets;
   setWindowTitle( tr( "Road graph plugin settings" ) );
   QVBoxLayout *v = new QVBoxLayout( this );
@@ -57,8 +59,17 @@ RgSettingsDlg::RgSettingsDlg( RgSettings *settings, QWidget* parent, Qt::WFlags 
   h->addWidget( msbTopologyTolerance );
   v->addLayout( h );
 
+  h = new QHBoxLayout();
+  l = new QLabel( tr( "Graph director type" ), this );
+  h->addWidget( l );
+  mcbGraphDirector = new QComboBox( this );
+  h->addWidget( mcbGraphDirector );
+  v->addLayout( h );
+
+  mSettingsLayout = new QHBoxLayout();
   mSettingsWidget = mSettings->getGui( this );
-  v->addWidget( mSettingsWidget );
+  mSettingsLayout->addWidget( mSettingsWidget );
+  v->addLayout( mSettingsLayout );
 
   QDialogButtonBox *bb = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Help, Qt::Horizontal, this );
   connect( bb, SIGNAL( accepted() ), this, SLOT( on_buttonBox_accepted() ) );
@@ -71,10 +82,58 @@ RgSettingsDlg::RgSettingsDlg( RgSettings *settings, QWidget* parent, Qt::WFlags 
   mcbPluginsDistanceUnit->addItem( tr( "meter" ), QVariant( "m" ) );
   mcbPluginsDistanceUnit->addItem( tr( "kilometer" ), QVariant( "km" ) );
 
+  mcbGraphDirector->addItem( tr( "Line vector layer director" ), QVariant( "line vector layer" ) );
+  mcbGraphDirector->addItem( tr( "Raster layer director" ), QVariant( "raster layer" ) );
+  connect( mcbGraphDirector, SIGNAL( currentIndexChanged(int) ), this, SLOT(on_mcbGraphDirector_selectItem()) );
+  
+  // fill NULL value
+  mSettingsMap[ "line vector layer" ].first = NULL;
+  mSettingsMap[ "line vector layer" ].second = NULL;
+  mSettingsMap[ "raster layer" ].first = NULL;
+  mSettingsMap[ "raster layer" ].second = NULL;
+  // fill real value
+  mSettingsMap[ mSettings->name() ].first = mSettings;
+  mSettingsMap[ mSettings->name() ].second = mSettingsWidget;
+
+  int idx = mcbGraphDirector->findData( QVariant( mSettings->name() ) );
+  if ( idx > -1 )
+    mcbGraphDirector->setCurrentIndex( idx );
 } // RgSettingsDlg::RgSettingsDlg()
 
 RgSettingsDlg::~RgSettingsDlg()
 {
+  QMap< QString, QPair< RgSettings*, QWidget* > >::iterator it;
+  for ( it = mSettingsMap.begin(); it != mSettingsMap.end(); ++it )
+  {
+    if ( it.value().first != mSettings && it.value().first != NULL )
+      delete it.value().first;
+    if ( it.value().second != NULL )
+      delete it.value().second;
+  }
+}
+
+void RgSettingsDlg::on_mcbGraphDirector_selectItem()
+{
+  QString directorName = mcbGraphDirector->itemData( mcbGraphDirector->currentIndex() ).toString();
+  QMap< QString, QPair< RgSettings*, QWidget* > >::iterator it = mSettingsMap.find( directorName );
+  if ( it.value().first == NULL )
+  {
+    if ( directorName == "line vector layer" )
+    {
+      it.value().first = new RgLineVectorLayerSettings();
+    }else if ( directorName == "raster layer" ) 
+    {
+      it.value().first = new RgRasterLayerSettings();
+    }
+    it.value().second = it.value().first->getGui( this );
+  }
+  if ( mSettingsWidget != NULL )
+    mSettingsWidget->hide();
+  
+  mSettings = it.value().first;
+  mSettingsWidget = it.value().second;
+  mSettingsLayout->addWidget( mSettingsWidget );
+  mSettingsWidget->show();
 }
 
 void RgSettingsDlg::on_buttonBox_accepted()
@@ -129,4 +188,9 @@ void RgSettingsDlg::setTopologyTolerance( double f )
 double RgSettingsDlg::topologyTolerance()
 {
   return msbTopologyTolerance->value();
+}
+
+RgSettings* RgSettingsDlg::settings()
+{
+  return mSettings;
 }

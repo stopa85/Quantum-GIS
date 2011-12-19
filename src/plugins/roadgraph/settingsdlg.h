@@ -15,11 +15,14 @@
 #ifndef ROADGRAPH_SETTINGSDLG_H
 #define ROADGRAPH_SETTINGSDLG_H
 
+// QT includes
 #include <QDialog>
+#include <QMap>
 
 // forward declaration QT-classes
 class QComboBox;
 class QDoubleSpinBox;
+class QHBoxLayout;
 
 // forward declaration Qgis-classes
 
@@ -51,6 +54,8 @@ class RgSettingsDlg : public QDialog
     void setTopologyTolerance( double f );
 
     double topologyTolerance();
+
+    RgSettings* settings();
   private:
     static const int context_id = 0;
 
@@ -59,16 +64,27 @@ class RgSettingsDlg : public QDialog
     void on_buttonBox_rejected();
     void on_buttonBox_helpRequested();
 
+    void on_mcbGraphDirector_selectItem();
   private:
     // futurame by used
     QComboBox *mcbGraphDirector;
+    
+    /**
+     * map of settings
+     */
+    QMap< QString, QPair<RgSettings*, QWidget*> > mSettingsMap;
 
     /**
      * current graph settings object
      */
     RgSettings *mSettings;
-
+    
+    /**
+     * current settings widget
+     */
     QWidget *mSettingsWidget;
+    
+    QHBoxLayout *mSettingsLayout;
 
     /**
      * plugin distance unit
