@@ -62,8 +62,10 @@ class RgLineVectorLayerSettings: public RgSettings
     QWidget *getGui( QWidget* Parent );
     void    setFromGui( QWidget* );
     QString name();
-    QgsGraphDirector* director();
+  
   public:
+    
+    QgsGraphDirector* director();
 
     /**
      * contained Layer name

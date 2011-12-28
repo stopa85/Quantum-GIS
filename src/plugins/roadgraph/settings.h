@@ -59,9 +59,5 @@ class RgSettings
      * get director name
      */
     virtual QString name() = 0;
-    /**
-     * get director
-     */
-    virtual QgsGraphDirector* director() = 0;
 };
 #endif //ROADGRAPH_SETTIGNS
