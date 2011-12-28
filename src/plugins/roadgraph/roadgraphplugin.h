@@ -17,6 +17,7 @@
 
 //QT4 includes
 #include <QObject>
+#include <QVector>
 
 //QGIS includes
 #include <qgisplugin.h>
@@ -30,7 +31,7 @@ class QgisInterface;
 class QDockWidget;
 
 //forward declarations RoadGraph plugins classes
-class QgsGraphDirector;
+class QgsGraph;
 class RgShortestPathWidget;
 class RgSettings;
 
@@ -59,7 +60,7 @@ class RoadGraphPlugin: public QObject, public QgisPlugin
     /**
      * return pointer to graph director
      */
-    const QgsGraphDirector* director() const;
+    QgsGraph* graph( const QVector< QgsPoint >& additionalsPoint, QVector< QgsPoint >& tiedPoint ) const;
 
     /**
      * get time unit name

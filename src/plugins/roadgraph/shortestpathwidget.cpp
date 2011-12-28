@@ -38,8 +38,6 @@
 #include <qgsapplication.h>
 #include <qgsvectorlayer.h>
 
-#include <qgsgraphdirector.h>
-#include <qgsgraphbuilder.h>
 #include <qgsmemorygraph.h>
 #include <qgsgraphanalyzer.h>
 
@@ -238,33 +236,22 @@ bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, 
     return false;
   }
 
-  QgsGraphBuilder builder(
-    mPlugin->iface()->mapCanvas()->mapRenderer()->destinationCrs(),
-    mPlugin->iface()->mapCanvas()->mapRenderer()->hasCrsTransformEnabled(),
-    mPlugin->topologyToleranceFactor() );
+  QVector< QgsPoint > points;
+  QVector< QgsPoint > tiedPoint;
+
+  points.push_back( mFrontPoint );
+  points.push_back( mBackPoint );
+
+  QgsGraph *graph = mPlugin->graph(points, tiedPoint);
+  
+  if ( graph == NULL )
   {
-    const QgsGraphDirector *director = mPlugin->director();
-    if ( director == NULL )
-    {
-      QMessageBox::critical( this, tr( "Plugin isn't configured" ), tr( "Plugin isn't configured!" ) );
-      return false;
-    }
-    connect( director, SIGNAL( buildProgress( int, int ) ), mPlugin->iface()->mainWindow(), SLOT( showProgress( int, int ) ) );
-    connect( director, SIGNAL( buildMessage( QString ) ), mPlugin->iface()->mainWindow(), SLOT( showStatusMessage( QString ) ) );
-
-    QVector< QgsPoint > points;
-    QVector< QgsPoint > tiedPoint;
-
-    points.push_back( mFrontPoint );
-    points.push_back( mBackPoint );
-    director->makeGraph( &builder, points, tiedPoint );
-
-    p1 = tiedPoint[ 0 ];
-    p2 = tiedPoint[ 1 ];
-    // not need
-    delete director;
+    QMessageBox::critical( this, tr( "Plugin isn't configured" ), tr( "Plugin isn't configured!" ) );
+    return false;
   }
 
+  p1 = tiedPoint[ 0 ];
+  p2 = tiedPoint[ 1 ];
   if ( p1 == QgsPoint( 0.0, 0.0 ) )
   {
     QMessageBox::critical( this, tr( "Tie point failed" ), tr( "Start point doesn't tie to the road!" ) );
@@ -276,8 +263,6 @@ bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, 
     return false;
   }
 
-  QgsGraph *graph = builder.graph();
-
   QVector< int > pointIdx( 0, 0 );
   QVector< double > pointCost( 0, 0.0 );
 
@@ -288,7 +273,6 @@ bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, 
     criterionNum = 1;
 
   QgsGraphAnalyzer::shortestpath( graph, startVertexIdx, criterionNum, pointIdx, pointCost, shortestTree );
-
   delete graph;
 
   if ( shortestTree->findVertex( p2 ) == -1 )

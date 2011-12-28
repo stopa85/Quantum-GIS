@@ -22,6 +22,9 @@
 #include <qgsrasterlayer.h>
 #include <qgsproject.h>
 #include <qgsmaplayerregistry.h>
+#include <qgsrastergraph.h>
+#include <qgscoordinatereferencesystem.h>
+#include <qgsdistancearea.h>
 
 // QT includes
 #include <QComboBox>
@@ -75,11 +78,34 @@ void RgRasterLayerSettings::setFromGui( QWidget *myGui )
 
 QString RgRasterLayerSettings::name()
 {
-
   return QString( "raster layer" );
 }
 
-QgsGraphDirector* RgRasterLayerSettings::director()
+QgsGraph* RgRasterLayerSettings::graph( const QgsCoordinateReferenceSystem& crs, bool crsTransformEnabled, const QVector< QgsPoint >& additionalPoint, QVector< QgsPoint >& tiedPoint )
 {
-  return NULL;
+  QgsRasterLayer *layer = NULL;
+  QMap< QString, QgsMapLayer* > mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
+  QMap< QString, QgsMapLayer* >::const_iterator it;
+  for ( it = mapLayers.begin(); it != mapLayers.end(); ++it )
+  {
+    if ( it.value()->name() != mLayer )
+      continue;
+    layer = dynamic_cast< QgsRasterLayer* >( it.value() );
+    break;
+  }
+  if ( layer == NULL )
+    return NULL;
+  
+  QgsRasterGraph *graph = new QgsRasterGraph( layer, crsTransformEnabled, crs );
+
+  tiedPoint = QVector< QgsPoint >( additionalPoint.size(), QgsPoint(0.0,0.0) );
+  QVector< double > distance( additionalPoint.size(), std::numeric_limits<double>::infinity() );
+
+  for ( int j = 0; j < tiedPoint.size(); ++j )
+  {
+    int vertexId = graph->findVertex( additionalPoint[j] );
+    if ( vertexId != -1 )
+      tiedPoint[j] = graph->vertex( vertexId ).mCoordinate;
+  }
+  return graph;
 }

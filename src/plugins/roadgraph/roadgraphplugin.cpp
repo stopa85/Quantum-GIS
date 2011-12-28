@@ -19,6 +19,11 @@
 #include <qgisinterface.h>
 #include <qgisgui.h>
 #include <qgsproject.h>
+#include <qgsmapcanvas.h>
+#include <qgsmaprenderer.h>
+
+#include <qgsgraphbuilder.h>
+#include <qgsgraphdirector.h>
 
 // Road grap plugin includes
 #include "roadgraphplugin.h"
@@ -255,9 +260,22 @@ QgisInterface* RoadGraphPlugin::iface()
   return mQGisIface;
 }
 
-const QgsGraphDirector* RoadGraphPlugin::director() const
+QgsGraph* RoadGraphPlugin::graph( const QVector< QgsPoint >& additionalPoint, QVector< QgsPoint >& tiedPoint ) const
 {
-  return mSettings->director();
+  if ( RgLineVectorLayerSettings* vlSettings = dynamic_cast< RgLineVectorLayerSettings* >( mSettings ) )
+  {
+    QgsGraphBuilder builder( mQGisIface->mapCanvas()->mapRenderer()->destinationCrs(), 
+        mQGisIface->mapCanvas()->mapRenderer()->hasCrsTransformEnabled(), mTopologyToleranceFactor );
+    
+    vlSettings->director()->makeGraph( &builder, additionalPoint, tiedPoint );
+    return builder.graph();
+  }else if ( RgRasterLayerSettings *rlSettings = dynamic_cast< RgRasterLayerSettings* >( mSettings ) )
+  {
+    return rlSettings->graph( mQGisIface->mapCanvas()->mapRenderer()->destinationCrs(), 
+                mQGisIface->mapCanvas()->mapRenderer()->hasCrsTransformEnabled(),
+                additionalPoint, tiedPoint );
+  }
+  return NULL;
 }
 
 QString RoadGraphPlugin::timeUnitName()

@@ -18,12 +18,14 @@
 #include <qstring.h>
 
 // Qgis includes
+#include <qgscoordinatereferencesystem.h>
+#include <qgspoint.h>
 
 // standard includes
 
 // forward declaration Qgis-classes
 class QWidget;
-class QgsGraphDirector;
+class QgsGraph;
 
 /**
 @author Sergey Yakushev
@@ -55,9 +57,10 @@ class RgRasterLayerSettings: public RgSettings
     QWidget *getGui( QWidget* Parent );
     void    setFromGui( QWidget* );
     QString name();
-    QgsGraphDirector* director();
-  public:
-
+   public:
+    
+    QgsGraph* graph( const QgsCoordinateReferenceSystem& crs, bool crsTransformEnabled, const QVector< QgsPoint >& additionalPoint, QVector< QgsPoint >& tiedPoint );
+    
     /**
      * contained Layer name
      */
