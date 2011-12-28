@@ -19,10 +19,10 @@
 
 #include "qgsrastergraph.h"
 
-QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer )
+QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer, bool coordinateTransformEnabled, const QgsCoordinateReferenceSystem& destCrs )
 {
   
-/*  QgsRasterDataProvider *prov = layer->dataProvider();
+  QgsRasterDataProvider *prov = layer->dataProvider();
   if ( prov == NULL )
     return;
   
@@ -30,19 +30,48 @@ QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer )
   for( i = 0; i < prov->bandCount(); ++i )
   {
        
-    int dataTypeSize = prov->dataTypeSize( i );
-    char *data = new char[ prov->xSize()*prov->ySize()*dataTypeSize ];
-    prov->readBlock( i, 0, 0, data );
+    int dataTypeSize = prov->dataTypeSize( i + 1 );
+    int size = prov->xSize()*prov->ySize()*dataTypeSize/8/sizeof(char);
+     
+    unsigned char *data = new unsigned char[ size ];
+    prov->readBlock( i + 1, layer->extent(), layer->width(), layer->height(), data );
    
-    mDataType.push_back( prov->dataType( i ) );
+    mDataType.push_back( prov->dataType( i + 1 ) );
     mDataTypeSize.push_back( dataTypeSize );
-    mData.push_back( data );
+    QVector< double > d;
+    d.reserve( prov->xSize()*prov->ySize() );
+    
+    int k1;
+    for ( k1 = 0; k1 < prov->xSize()*prov->ySize() ; ++k1)
+    {
+      double t = prov->readValue( data, prov->dataType( i + 1 ), k1 );
+      //FIXME: clean it
+      if ( t <= 0.0 || t >= 100000.0 )
+        std::cout << k1 << " !! " << t << "\n";
 
-  } */
+      d.push_back( t );
+    }
+    mData.push_back( d );
+    delete [] data;
+  }
 
   mWidth = layer->width();
   mHeight = layer->height();
   mExtent = layer->extent();
+  mExtent.normalize();
+
+  mCoordinateTransform.setSourceCrs( layer->crs() );
+  mDistanceArea.setSourceCrs( layer->crs().srsid() );
+
+  if ( coordinateTransformEnabled )
+  {
+    mCoordinateTransform.setDestCRS( destCrs );
+    mDistanceArea.setProjectionsEnabled( true );
+  }
+}
+
+QgsRasterGraph::~QgsRasterGraph()
+{
 }
 
 const QgsGraphVertex QgsRasterGraph::vertex( int idx ) const
@@ -51,11 +80,12 @@ const QgsGraphVertex QgsRasterGraph::vertex( int idx ) const
   double plusHeight = mExtent.height()/mHeight/2;
 
   int x = idx % mWidth;
-  int y = idx / mHeight;
+  int y = idx / mWidth;
   
   QgsGraphVertex v;
   v.mCoordinate = QgsPoint( mExtent.xMinimum() + mExtent.width() * x / mWidth + plusWidth,
     mExtent.yMinimum() + mExtent.height() * y / mHeight + plusHeight );
+  v.mCoordinate = mCoordinateTransform.transform( v.mCoordinate );
 
   int i = 0;
   if ( y == 0 )
@@ -183,7 +213,7 @@ const QgsGraphArc QgsRasterGraph::arc( int idx ) const
         arc.mIn = arc.mOut - 1;
       }else
       {
-        arc.mIn = (idx - 12) % 5 + mWidth - 1;
+        arc.mIn = arc.mOut + mWidth + 2 -(idx - 12) % 5;
       }
     }else
     {
@@ -236,9 +266,9 @@ const QgsGraphArc QgsRasterGraph::arc( int idx ) const
   {
     arc.mOut = (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) / 8;
     int x = arc.mOut % (mWidth - 2);
-    int y = arc.mOut / (mHeight - 2);
+    int y = arc.mOut / (mWidth - 2);
     
-    arc.mOut = mWidth*(y+1) + 1 + x;
+    arc.mOut = mWidth*(y+1) + 1 + x;// 44
     if ( (idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) % 8 == 4 )
     {
       arc.mIn = arc.mOut - mWidth;
@@ -253,6 +283,27 @@ const QgsGraphArc QgsRasterGraph::arc( int idx ) const
       arc.mIn = arc.mOut - 1 + ((idx - 12 - (mWidth - 2) * 2 * 5 - (mHeight - 2) * 2 * 5) % 8 - 6 )*mWidth;
     }
   }
+  
+  double plusWidth = mExtent.width()/mWidth/2;
+  double plusHeight = mExtent.height()/mHeight/2;
+
+  int x = arc.mOut % mWidth;
+  int y = arc.mOut / mWidth;
+ 
+  QgsPoint pt1( mExtent.xMinimum() + mExtent.width() * x / mWidth + plusWidth,
+    mExtent.yMinimum() + mExtent.height() * y / mHeight + plusHeight );
+
+  x = arc.mIn % mWidth;
+  y = arc.mIn / mWidth;
+
+  QgsPoint pt2( mExtent.xMinimum() + mExtent.width() * x / mWidth + plusWidth,
+          mExtent.yMinimum() + mExtent.height() * y / mHeight + plusHeight );
+  
+  //FIXME:currently for any test
+  double dist = mDistanceArea.measureLine( pt1, pt2 );
+  arc.mProperties.push_back( dist ); 
+  arc.mProperties.push_back( dist*( mData[0][arc.mIn]+mData[0][arc.mOut] )/2 );
+
   return arc;
 }
 
@@ -266,7 +317,15 @@ int QgsRasterGraph::arcCount() const
   return 4 * 3 + ( (mWidth - 2) * 5) * 2 + ( (mHeight - 2) * 5) * 2 + (mWidth - 2) * (mHeight - 2) * 8;
 }
 
-int QgsRasterGraph::findVertex( const QgsPoint& pt ) const
+int QgsRasterGraph::findVertex( const QgsPoint& point ) const
 {
-  return -1;
+  QgsPoint pt = mCoordinateTransform.transform( point, QgsCoordinateTransform::ReverseTransform );
+  
+  if ( !mExtent.contains( pt ) )
+    return -1;
+
+  int x = floor( ( pt.x() - mExtent.xMinimum() ) * mWidth / mExtent.width() );
+  int y = floor( ( pt.y() - mExtent.yMinimum() ) * mHeight / mExtent.height() );
+
+  return mWidth * y + x;
 }

@@ -22,6 +22,8 @@
 #include <QVector>
 
 #include <qgsrectangle.h>
+#include <qgscoordinatetransform.h>
+#include <qgsdistancearea.h>
 
 #include "qgsgraph.h"
 
@@ -31,7 +33,8 @@ class ANALYSIS_EXPORT QgsRasterGraph : public QgsGraph
 {
 
   public:
-    QgsRasterGraph( QgsRasterLayer *layer );
+    QgsRasterGraph( QgsRasterLayer *layer, bool coordinateTansformEnbled, const QgsCoordinateReferenceSystem& destCrs );
+    ~QgsRasterGraph();
 
     int vertexCount() const;
 
@@ -55,7 +58,7 @@ class ANALYSIS_EXPORT QgsRasterGraph : public QgsGraph
     int addArc( int outVertexIdx, int inVertexIdx, const QVector< QVariant >& properties );
 
   private:
-    QVector< void* > mData;
+    QVector< QVector<double> > mData;
 
     QVector< int > mDataType;
 
@@ -65,5 +68,9 @@ class ANALYSIS_EXPORT QgsRasterGraph : public QgsGraph
     int mHeight;
 
     QgsRectangle mExtent;
+
+    QgsCoordinateTransform  mCoordinateTransform;
+    
+    mutable QgsDistanceArea mDistanceArea;
 };
 #endif
