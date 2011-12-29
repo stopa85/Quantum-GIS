@@ -38,18 +38,15 @@ QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer, bool coordinateTransformE
    
     mDataType.push_back( prov->dataType( i + 1 ) );
     mDataTypeSize.push_back( dataTypeSize );
-    QVector< double > d;
-    d.reserve( prov->xSize()*prov->ySize() );
+    QVector< double > d( prov->xSize()*prov->ySize() );
     
     int k1;
     for ( k1 = 0; k1 < prov->xSize()*prov->ySize() ; ++k1)
     {
       double t = prov->readValue( data, prov->dataType( i + 1 ), k1 );
-      //FIXME: clean it
-      if ( t <= 0.0 || t >= 100000.0 )
-        std::cout << k1 << " !! " << t << "\n";
-
-      d.push_back( t );
+      int x = k1 % prov->xSize();
+      int y = prov->ySize() - ( k1 / prov->xSize() ) - 1;
+      d[ y*prov->xSize() + x ] = t;
     }
     mData.push_back( d );
     delete [] data;
