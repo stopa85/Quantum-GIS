@@ -70,7 +70,7 @@ class ANALYSIS_EXPORT QgsRasterGraph : public QgsGraph
     QgsRectangle mExtent;
 
     QgsCoordinateTransform  mCoordinateTransform;
-    
-    mutable QgsDistanceArea mDistanceArea;
+     
+    QVector < double > mCacheDistance;
 };
 #endif

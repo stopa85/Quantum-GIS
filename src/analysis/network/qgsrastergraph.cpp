@@ -58,12 +58,36 @@ QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer, bool coordinateTransformE
   mExtent.normalize();
 
   mCoordinateTransform.setSourceCrs( layer->crs() );
-  mDistanceArea.setSourceCrs( layer->crs().srsid() );
+  QgsDistanceArea da;
+  da.setSourceCrs( layer->crs().srsid() );
 
   if ( coordinateTransformEnabled )
   {
     mCoordinateTransform.setDestCRS( destCrs );
-    mDistanceArea.setProjectionsEnabled( true );
+    da.setProjectionsEnabled( true );
+  }
+
+  double plusWidth = mExtent.width()/mWidth/2;
+  double plusHeight = mExtent.height()/mHeight/2;
+ 
+  int y1=0;
+  for ( y1 = 0; y1 < mHeight; ++y1 )
+  {
+    int y2=-1;
+    QgsPoint pt1( mExtent.xMinimum() + plusWidth,
+      mExtent.yMinimum() + mExtent.height() * y1 / mHeight + plusHeight );
+
+    for ( y2 = -1; y2 < 2; ++y2 )
+    {
+      QgsPoint pt2( mExtent.xMinimum() + mExtent.width() / mWidth + plusWidth,
+        mExtent.yMinimum() + mExtent.height() * (y1+y2) / mHeight + plusHeight );
+      
+      mCacheDistance.push_back( da.measureLine( pt1, pt2 ) );
+    }
+    QgsPoint pt2( mExtent.xMinimum() + plusWidth,
+        mExtent.yMinimum() + mExtent.height() * (y1+1) / mHeight + plusHeight );
+    
+    mCacheDistance.push_back( da.measureLine( pt1, pt2 ) );
   }
 }
 
@@ -281,23 +305,21 @@ const QgsGraphArc QgsRasterGraph::arc( int idx ) const
     }
   }
   
-  double plusWidth = mExtent.width()/mWidth/2;
-  double plusHeight = mExtent.height()/mHeight/2;
-
-  int x = arc.mOut % mWidth;
   int y = arc.mOut / mWidth;
- 
-  QgsPoint pt1( mExtent.xMinimum() + mExtent.width() * x / mWidth + plusWidth,
-    mExtent.yMinimum() + mExtent.height() * y / mHeight + plusHeight );
 
-  x = arc.mIn % mWidth;
-  y = arc.mIn / mWidth;
-
-  QgsPoint pt2( mExtent.xMinimum() + mExtent.width() * x / mWidth + plusWidth,
-          mExtent.yMinimum() + mExtent.height() * y / mHeight + plusHeight );
+  int deltaX = ( arc.mIn % mWidth ) - ( arc.mOut % mWidth );
+  int deltaY = ( arc.mIn / mWidth ) - y;
+  double dist = 0.0;
+  
+  if ( deltaX == 0 )
+  {
+    dist = mCacheDistance[ y*4 + 3 ];
+  }else
+  {
+    dist = mCacheDistance[ y*4 + 1 + deltaY ];
+  }
   
   //FIXME:currently for any test
-  double dist = mDistanceArea.measureLine( pt1, pt2 );
   arc.mProperties.push_back( dist ); 
   arc.mProperties.push_back( dist*( mData[0][arc.mIn]+mData[0][arc.mOut] )/2 );
 
