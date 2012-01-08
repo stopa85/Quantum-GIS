@@ -17,6 +17,7 @@
 #include "rasterlayersettings.h"
 #include "rasterlayerwidget.h"
 #include "units.h"
+#include "rasterspeedprop.h"
 
 // Qgis includes
 #include <qgsrasterlayer.h>
@@ -25,6 +26,9 @@
 #include <qgsrastergraph.h>
 #include <qgscoordinatereferencesystem.h>
 #include <qgsdistancearea.h>
+
+
+#include <qgsrasterdistancearcprop.h>
 
 // QT includes
 #include <QComboBox>
@@ -95,8 +99,12 @@ QgsGraph* RgRasterLayerSettings::graph( const QgsCoordinateReferenceSystem& crs,
   }
   if ( layer == NULL )
     return NULL;
-  
-  QgsRasterGraph *graph = new QgsRasterGraph( layer, crsTransformEnabled, crs );
+ 
+  QVector< QgsRasterArcProperter* > prop;
+  prop.push_back( new QgsRasterDistanceArcProperter );
+  prop.push_back( new RgRasterSpeedProperter( mSpeedBand, 1, 1 ) );
+
+  QgsRasterGraph *graph = new QgsRasterGraph( layer, crsTransformEnabled, crs, prop );
 
   tiedPoint = QVector< QgsPoint >( additionalPoint.size(), QgsPoint(0.0,0.0) );
   QVector< double > distance( additionalPoint.size(), std::numeric_limits<double>::infinity() );
