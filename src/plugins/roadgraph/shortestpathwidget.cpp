@@ -38,7 +38,7 @@
 #include <qgsapplication.h>
 #include <qgsvectorlayer.h>
 
-#include <qgsmemorygraph.h>
+#include <qgsgraph.h>
 #include <qgsgraphanalyzer.h>
 
 // roadgraph plugin includes
@@ -228,7 +228,7 @@ void RgShortestPathWidget::setBackPoint( const QgsPoint& pt )
   mrbBackPoint->show();
 }
 
-bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, QgsPoint& p2 )
+QgsGraph* RgShortestPathWidget::getPath( QgsPoint& p1, QgsPoint& p2 )
 {
   if ( mFrontPointLineEdit->text().isNull() || mBackPointLineEdit->text().isNull() )
   {
@@ -247,7 +247,7 @@ bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, 
   if ( graph == NULL )
   {
     QMessageBox::critical( this, tr( "Plugin isn't configured" ), tr( "Plugin isn't configured!" ) );
-    return false;
+    return NULL;
   }
 
   p1 = tiedPoint[ 0 ];
@@ -255,16 +255,14 @@ bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, 
   if ( p1 == QgsPoint( 0.0, 0.0 ) )
   {
     QMessageBox::critical( this, tr( "Tie point failed" ), tr( "Start point doesn't tie to the road!" ) );
-    return false;
+    return NULL;
   }
   if ( p2 == QgsPoint( 0.0, 0.0 ) )
   {
     QMessageBox::critical( this, tr( "Tie point failed" ), tr( "Stop point doesn't tie to the road!" ) );
-    return false;
+    return NULL;
   }
 
-  QVector< int > pointIdx( 0, 0 );
-  QVector< double > pointCost( 0, 0.0 );
 
   int startVertexIdx = graph->findVertex( p1 );
 
@@ -272,43 +270,43 @@ bool RgShortestPathWidget::getPath( QgsMemoryGraph* shortestTree, QgsPoint& p1, 
   if ( mCriterionName->currentIndex() > 0 )
     criterionNum = 1;
 
-  QgsGraphAnalyzer::shortestpath( graph, startVertexIdx, criterionNum, pointIdx, pointCost, shortestTree );
+  QgsGraph* shortestTree = QgsGraphAnalyzer::shortestTree( graph, startVertexIdx, criterionNum );
   delete graph;
 
   if ( shortestTree->findVertex( p2 ) == -1 )
   {
     QMessageBox::critical( this, tr( "Path not found" ), tr( "Path not found" ) );
-    return false;
+    delete shortestTree;
+    return NULL;
   }
-  return true;
+  return shortestTree;
 }
 
 void RgShortestPathWidget::findingPath()
 {
   QgsPoint p1, p2;
-  QgsMemoryGraph path;
-
-  if ( !getPath( &path, p1, p2 ) )
+  QgsGraph* path = getPath( p1, p2 );
+  if ( path == NULL )
     return;
 
   mrbPath->reset( false );
   double time = 0.0;
   double cost = 0.0;
 
-  int startVertexIdx = path.findVertex( p1 );
-  int stopVertexIdx  = path.findVertex( p2 );
+  int startVertexIdx = path->findVertex( p1 );
+  int stopVertexIdx  = path->findVertex( p2 );
   QList< QgsPoint > p;
   while ( startVertexIdx != stopVertexIdx )
   {
-    const QgsGraphArcIdList l = path.vertex( stopVertexIdx ).mInArc;
+    const QgsGraphArcIdList l = path->vertex( stopVertexIdx ).mInArc;
     if ( l.empty() )
       break;
-    const QgsGraphArc& e = path.arc( l.front() );
+    const QgsGraphArc& e = path->arc( l.front() );
 
     cost += e.mProperties[ 0 ].toDouble();
     time += e.mProperties[ 1 ].toDouble();
 
-    p.push_front( path.vertex( e.mIn ).mCoordinate );
+    p.push_front( path->vertex( e.mIn ).mCoordinate );
 
     stopVertexIdx = e.mOut;
   }
@@ -326,6 +324,8 @@ void RgShortestPathWidget::findingPath()
   mPathTimeLineEdit->setText( QString().setNum( time / timeUnit.multipler() ) + timeUnit.name() );
 
   mrbPath->setColor( Qt::red );
+
+  delete path;
 }
 
 void RgShortestPathWidget::clear()
@@ -341,7 +341,7 @@ void RgShortestPathWidget::clear()
 
 void RgShortestPathWidget::exportPath()
 {
-  RgExportDlg dlg( this );
+/*  RgExportDlg dlg( this );
   if ( !dlg.exec() )
     return;
 
@@ -379,6 +379,7 @@ void RgShortestPathWidget::exportPath()
   vl->updateExtents();
 
   mPlugin->iface()->mapCanvas()->update();
+  */
 }
 
 void RgShortestPathWidget::helpRequested()
