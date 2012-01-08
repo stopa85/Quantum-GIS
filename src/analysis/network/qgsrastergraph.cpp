@@ -19,7 +19,7 @@
 
 #include "qgsrastergraph.h"
 
-QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer, bool coordinateTransformEnabled, const QgsCoordinateReferenceSystem& destCrs )
+QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer, bool coordinateTransformEnabled, const QgsCoordinateReferenceSystem& destCrs , const QVector< QgsRasterArcProperter* >& prop )
 {
   
   QgsRasterDataProvider *prov = layer->dataProvider();
@@ -89,10 +89,15 @@ QgsRasterGraph::QgsRasterGraph( QgsRasterLayer *layer, bool coordinateTransformE
     
     mCacheDistance.push_back( da.measureLine( pt1, pt2 ) );
   }
+
+  mProp = prop;
 }
 
 QgsRasterGraph::~QgsRasterGraph()
 {
+  QVector< QgsRasterArcProperter* >::iterator it;
+  for ( it = mProp.begin(); it != mProp.end(); ++it )
+    delete *it;
 }
 
 const QgsGraphVertex QgsRasterGraph::vertex( int idx ) const
@@ -319,9 +324,21 @@ const QgsGraphArc QgsRasterGraph::arc( int idx ) const
     dist = mCacheDistance[ y*4 + 1 + deltaY ];
   }
   
-  //FIXME:currently for any test
-  arc.mProperties.push_back( dist ); 
-  arc.mProperties.push_back( dist*( mData[0][arc.mIn]+mData[0][arc.mOut] )/2 );
+  QVector <double> pixel1( mData.size(), 0 );
+  QVector <double> pixel2( mData.size(), 0 );
+
+  int i = 0;
+  for ( i = 0; i < mData.size(); ++i )
+  {
+    pixel1[ i ] = mData[ i ][ arc.mOut ];
+    pixel2[ i ] = mData[ i ][ arc.mIn ];
+  }
+
+  QVector< QgsRasterArcProperter* >::const_iterator it;
+  for ( it = mProp.constBegin(); it != mProp.constEnd(); ++it )
+  {
+    arc.mProperties.push_back( QVariant( (*it)->property( dist, pixel1, pixel2 ) ) );
+  }
 
   return arc;
 }
